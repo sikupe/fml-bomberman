@@ -4,7 +4,6 @@ from dataclasses import dataclass
 import numpy as np
 
 
-@dataclass
 class Neighborhood:
     north: int | float | bool
     south: int | float | bool
