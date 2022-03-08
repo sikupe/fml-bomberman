@@ -16,5 +16,4 @@
 - In blast radius for all 4 directions + current point
 - Can move in direction for all 4 directions
 - Can escape from bomb for all 4 directions
-- Is crate for all 4 directions
 - Number of opponents
