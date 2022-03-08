@@ -14,20 +14,23 @@ from agent_code.strong_students.game_state import GameState
 
 
 def convert_to_state_object(state: Dict) -> GameState:
-    rnd: int = state['round']
-    step: int = state['step']
-    field: np.ndarray = state['field']
-    bombs: List[Bomb] = state['bombs']
-    explosion_map: np.ndarray = state['explosion_map']
-    coins: List[Position] = state['coins']
-    self: Player = Player(state['self'])
-    others: List[Player] = list(map(Player, state['others']))
-    user_input: str | None = state['user_input']
-    return GameState(rnd, step, field, bombs, explosion_map, coins, self, others, user_input)
+    rnd: int = state["round"]
+    step: int = state["step"]
+    field: np.ndarray = state["field"]
+    bombs: List[Bomb] = state["bombs"]
+    explosion_map: np.ndarray = state["explosion_map"]
+    coins: List[Position] = state["coins"]
+    self: Player = Player(state["self"])
+    others: List[Player] = list(map(Player, state["others"]))
+    user_input: str | None = state["user_input"]
+    return GameState(
+        rnd, step, field, bombs, explosion_map, coins, self, others, user_input
+    )
 
 
-def calculate_neighborhood_distance(field: np.ndarray, origin: Position, destinations: List[Position],
-                                    bombs: List[Bomb]) -> Neighborhood:
+def calculate_neighborhood_distance(
+    field: np.ndarray, origin: Position, destinations: List[Position], bombs: List[Bomb]
+) -> Neighborhood:
     field_without_obstacles: np.ndarray = field.copy()
     field_with_obstacles = field.copy()
     field_with_obstacles[field < 0] = 1
@@ -41,7 +44,7 @@ def calculate_neighborhood_distance(field: np.ndarray, origin: Position, destina
     finder = AStarFinder()
     for d in Direction:
         name, coords = d.value
-        shortest_path = float('inf')
+        shortest_path = float("inf")
 
         for dest in destinations:
             x = origin[0] + coords[0]
@@ -74,7 +77,9 @@ def can_move(field: np.ndarray, position: Position) -> Neighborhood:
     return neighborhood
 
 
-def is_in_blast_radius(field: np.ndarray, position: Position, bombs: List[Bomb]) -> tuple[Neighborhood, bool]:
+def is_in_blast_radius(
+    field: np.ndarray, position: Position, bombs: List[Bomb]
+) -> tuple[Neighborhood, bool]:
     neighborhood = Neighborhood()
     for d in Direction:
         name, coord = d.value
@@ -105,21 +110,40 @@ def is_in_line_with_bomb(bombs, coord, field, position):
 def extract_features(state_dict: Dict) -> FeatureVector:
     state = convert_to_state_object(state_dict)
 
-    opponent_distance = calculate_neighborhood_distance(state.field, state.self.position,
-                                                        list(map(lambda x: x.position, state.others)), state.bombs)
-    coin_distance = calculate_neighborhood_distance(state.field, state.self.position, state.coins, state.bombs)
-    bomb_distance = calculate_neighborhood_distance(state.field, state.self.position,
-                                                    list(map(lambda x: x[0], state.bombs)), [])
+    opponent_distance = calculate_neighborhood_distance(
+        state.field,
+        state.self.position,
+        list(map(lambda x: x.position, state.others)),
+        state.bombs,
+    )
+    coin_distance = calculate_neighborhood_distance(
+        state.field, state.self.position, state.coins, state.bombs
+    )
+    bomb_distance = calculate_neighborhood_distance(
+        state.field, state.self.position, list(map(lambda x: x[0], state.bombs)), []
+    )
 
     crates = extract_crates(state.field)
 
-    crates_distance = calculate_neighborhood_distance(state.field, state.self.position, crates, state.bombs)
+    crates_distance = calculate_neighborhood_distance(
+        state.field, state.self.position, crates, state.bombs
+    )
 
     can_move_in_direction = can_move(state.field, state.self.position)
 
-    in_blast_radius, in_blast_radius_currently = is_in_blast_radius(state.field, state.self.position, state.bombs)
+    in_blast_radius, in_blast_radius_currently = is_in_blast_radius(
+        state.field, state.self.position, state.bombs
+    )
 
     n_opponents = len(state.others)
 
-    return FeatureVector(opponent_distance, coin_distance, bomb_distance, crates_distance, can_move_in_direction,
-                         in_blast_radius, in_blast_radius_currently, n_opponents)
+    return FeatureVector(
+        opponent_distance,
+        coin_distance,
+        bomb_distance,
+        crates_distance,
+        can_move_in_direction,
+        in_blast_radius,
+        in_blast_radius_currently,
+        n_opponents,
+    )

@@ -13,12 +13,14 @@ def measure_feature_extraction(game_state: dict):
     start = time.time()
     extract_features(game_state)
     end = time.time()
-    print(f'extract_features took: {end - start} seconds')
+    print(f"extract_features took: {end - start} seconds")
 
 
 def act(agent, game_state: dict):
-    agent.logger.info('Pick action at random')
+    agent.logger.info("Pick action at random")
 
     measure_feature_extraction(game_state)
 
-    return np.random.choice(['RIGHT', 'LEFT', 'UP', 'DOWN', 'BOMB'], p=[.23, .23, .23, .23, .08])
+    return np.random.choice(
+        ["RIGHT", "LEFT", "UP", "DOWN", "BOMB"], p=[0.23, 0.23, 0.23, 0.23, 0.08]
+    )

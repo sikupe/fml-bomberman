@@ -12,9 +12,17 @@ class Neighborhood:
 
     def to_feature_vector(self, normalize_max: int) -> np.ndarray:
         if normalize_max >= 0:
-            return np.array([self.north / normalize_max, self.south / normalize_max, self.east / normalize_max,
-                             self.west / normalize_max])
-        return np.array([float(self.north), float(self.south), float(self.east), float(self.west)])
+            return np.array(
+                [
+                    self.north / normalize_max,
+                    self.south / normalize_max,
+                    self.east / normalize_max,
+                    self.west / normalize_max,
+                ]
+            )
+        return np.array(
+            [float(self.north), float(self.south), float(self.east), float(self.west)]
+        )
 
 
 @dataclass
@@ -30,11 +38,15 @@ class FeatureVector:
     number_of_opponents: int
 
     def to_feature_vector(self, game_size, total_opponent_count):
-        return np.concatenate([self.opponent_distance.to_feature_vector(game_size),
-                               self.coin_distance.to_feature_vector(game_size),
-                               self.bomb_distance.to_feature_vector(game_size),
-                               self.crate_distance.to_feature_vector(game_size),
-                               self.can_move_in_direction.to_feature_vector(0),
-                               self.in_blast_radius.to_feature_vector(game_size),
-                               float(self.in_blast_radius_currently),
-                               self.number_of_opponents / total_opponent_count])
+        return np.concatenate(
+            [
+                self.opponent_distance.to_feature_vector(game_size),
+                self.coin_distance.to_feature_vector(game_size),
+                self.bomb_distance.to_feature_vector(game_size),
+                self.crate_distance.to_feature_vector(game_size),
+                self.can_move_in_direction.to_feature_vector(0),
+                self.in_blast_radius.to_feature_vector(game_size),
+                float(self.in_blast_radius_currently),
+                self.number_of_opponents / total_opponent_count,
+            ]
+        )
