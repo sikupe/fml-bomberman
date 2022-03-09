@@ -2,7 +2,8 @@ import numpy as np
 
 
 def setup(self):
-    np.random.seed()
+    # np.random.seed()
+    pass
 
 
 def act(agent, game_state: dict):

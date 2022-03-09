@@ -332,6 +332,7 @@ class BombeRLeWorld(GenericWorld):
     def __init__(self, args: WorldArgs, agents):
         super().__init__(args)
 
+        np.random.seed(args.seed)
         self.rng = np.random.default_rng(args.seed)
         self.setup_agents(agents)
 

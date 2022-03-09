@@ -3,6 +3,8 @@ from __future__ import annotations
 from typing import Dict, List
 
 import numpy as np
+import pandas as pd
+
 from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
 
@@ -23,21 +25,25 @@ def convert_to_state_object(state: Dict):
     self: Player = Player(state['self'])
     others: List[Player] = list(map(Player, state['others']))
     user_input: str | None = state['user_input']
-    return GameState(rnd, step, field, bombs, explosion_map, coins, self, others, user_input)
+    return GameState(rnd, step, field.T, bombs, explosion_map, coins, self, others, user_input)
 
 
 def calculate_neighborhood_distance(field: np.ndarray, origin: Position, destinations: List[Position],
-                                    bombs: List[Bomb]) -> Neighborhood:
-    field_without_obstacles: np.ndarray = field.copy()
-    field_with_obstacles = field.copy()
-    field_with_obstacles[field < 0] = 1
-    field_without_obstacles[field < 0] = 0
+                                    bombs: List[Bomb], with_crates: bool = True,
+                                    with_bombs: bool = True) -> Neighborhood:
+    field: np.ndarray = field.copy()
 
-    for bomb_coord, time in bombs:
-        field_with_obstacles[bomb_coord] = 1
+    if not with_crates:
+        field[field > 0] = 0
+
+    field[field < 0] = 1
+
+    if with_bombs:
+        for bomb_coord, time in bombs:
+            field[bomb_coord] = 1
 
     neighborhood = Neighborhood()
-    grid = Grid(matrix=field_with_obstacles)
+    grid = Grid(matrix=field)
     finder = AStarFinder()
     for d in Direction:
         name, coords = d.value
@@ -46,21 +52,31 @@ def calculate_neighborhood_distance(field: np.ndarray, origin: Position, destina
         for dest in destinations:
             x = origin[0] + coords[0]
             y = origin[1] + coords[1]
-            start = grid.node(x, y)
-            end = grid.node(dest[0], dest[1])
-            path, runs = finder.find_path(start, end, grid)
+            if field[x][y] == 0:
+                start = grid.node(x, y)
+                end = grid.node(dest[0], dest[1])
 
-            if len(path) < shortest_path:
-                shortest_path = len(path)
+                try:
+                    path, runs = finder.find_path(start, end, grid)
+
+                    if len(path) < shortest_path:
+                        shortest_path = len(path)
+                except ValueError as e:
+                    print(f"Start: {x} {y}")
+                    print(f"End: {dest[0]} {dest[1]}")
+                    print(pd.DataFrame(field))
+
+            else:
+                break
 
         setattr(neighborhood, name, shortest_path)
 
     return neighborhood
 
 
-def extract_crates(field: np.ndarray):
-    crates = np.where(field == -1)
-    return list(crates)
+def extract_crates(field: np.ndarray) -> np.ndarray:
+    crates = np.where(field == 1)
+    return np.array(crates).T
 
 
 def can_move(field: np.ndarray, position: Position) -> Neighborhood:
@@ -106,14 +122,15 @@ def extract_features(state: Dict) -> FeatureVector:
     state = convert_to_state_object(state)
 
     opponent_distance = calculate_neighborhood_distance(state.field, state.self.position,
-                                                        list(map(lambda x: x.position, state.others)), state.bombs)
+                                                        list(map(lambda x: x.position, state.others)), state.bombs, with_bombs=False)
     coin_distance = calculate_neighborhood_distance(state.field, state.self.position, state.coins, state.bombs)
     bomb_distance = calculate_neighborhood_distance(state.field, state.self.position,
                                                     list(map(lambda x: x[0], state.bombs)), [])
 
     crates = extract_crates(state.field)
 
-    crates_distance = calculate_neighborhood_distance(state.field, state.self.position, crates, state.bombs)
+    crates_distance = calculate_neighborhood_distance(state.field, state.self.position, crates, state.bombs,
+                                                      with_crates=False)
 
     can_move_in_direction = can_move(state.field, state.self.position)
 

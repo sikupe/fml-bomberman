@@ -6,14 +6,24 @@ from agent_code.strong_students.feature_extractor import extract_features
 
 
 def setup(self):
-    np.random.seed()
+    # np.random.seed()
+    pass
+
+times = []
 
 
 def measure_feature_extraction(game_state: dict):
     start = time.time()
     extract_features(game_state)
     end = time.time()
-    print(f'extract_features took: {end - start} seconds')
+
+    exec_time = end - start
+    times.append(exec_time)
+
+    mean = np.mean(times)
+
+    # print(f'extract_features took: {exec_time} seconds')
+    # print(f'mean extract_features took: {mean} seconds')
 
 
 def act(agent, game_state: dict):
