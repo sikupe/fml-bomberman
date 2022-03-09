@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import numpy as np
 import pandas as pd
@@ -30,7 +30,7 @@ def convert_to_state_object(state: Dict) -> GameState:
 
 def calculate_neighborhood_distance(field: np.ndarray, origin: Position, destinations: List[Position],
                                     bombs: List[Bomb], with_crates: bool = True,
-                                    with_bombs: bool = True) -> Neighborhood:
+                                    with_bombs: bool = True) -> int:
     field: np.ndarray = field.copy()
 
     if not with_crates:
@@ -42,41 +42,36 @@ def calculate_neighborhood_distance(field: np.ndarray, origin: Position, destina
         for bomb_coord, time in bombs:
             field[bomb_coord] = 1
 
-    neighborhood = Neighborhood()
     grid = Grid(matrix=field)
     finder = AStarFinder()
-    for d in Direction:
-        name, coords = d.value
-        shortest_path = float('inf')
+    shortest_path = float('inf')
 
-        for dest in destinations:
-            x = origin[0] + coords[0]
-            y = origin[1] + coords[1]
-            if field[x][y] == 0:
-                start = grid.node(x, y)
-                end = grid.node(dest[0], dest[1])
+    for dest in destinations:
+        x = origin[0]
+        y = origin[1]
+        if field[x][y] == 0:
+            start = grid.node(x, y)
+            end = grid.node(dest[0], dest[1])
 
-                try:
-                    path, runs = finder.find_path(start, end, grid)
+            try:
+                path, runs = finder.find_path(start, end, grid)
 
-                    if len(path) < shortest_path:
-                        shortest_path = len(path)
-                except ValueError as e:
-                    print(f"Start: {x} {y}")
-                    print(f"End: {dest[0]} {dest[1]}")
-                    print(pd.DataFrame(field))
+                if len(path) < shortest_path:
+                    shortest_path = len(path)
+            except ValueError as e:
+                print(f"Start: {x} {y}")
+                print(f"End: {dest[0]} {dest[1]}")
+                print(pd.DataFrame(field))
 
-            else:
-                break
+        else:
+            break
 
-        setattr(neighborhood, name, shortest_path)
-
-    return neighborhood
+    return shortest_path
 
 
-def extract_crates(field: np.ndarray) -> np.ndarray:
+def extract_crates(field: np.ndarray) -> List[Tuple[int, int]]:
     crates = np.where(field == 1)
-    return np.array(crates).T
+    return list(np.array(crates).T)
 
 
 def can_move(field: np.ndarray, position: Position) -> Neighborhood:
@@ -90,15 +85,9 @@ def can_move(field: np.ndarray, position: Position) -> Neighborhood:
     return neighborhood
 
 
-def is_in_blast_radius(field: np.ndarray, position: Position, bombs: List[Bomb]) -> tuple[Neighborhood, bool]:
-    neighborhood = Neighborhood()
-    for d in Direction:
-        name, coord = d.value
-        can_burn = is_in_line_with_bomb(bombs, coord, field, position)
-        setattr(neighborhood, name, can_burn)
-
+def is_in_blast_radius(field: np.ndarray, position: Position, bombs: List[Bomb]) -> bool:
     currently = is_in_line_with_bomb(bombs, (0, 0), field, position)
-    return neighborhood, currently
+    return currently
 
 
 def is_in_line_with_bomb(bombs, coord, field, position):
@@ -122,7 +111,8 @@ def extract_features(state_dict: Dict) -> FeatureVector:
     state = convert_to_state_object(state_dict)
 
     opponent_distance = calculate_neighborhood_distance(state.field, state.self.position,
-                                                        list(map(lambda x: x.position, state.others)), state.bombs, with_bombs=False)
+                                                        list(map(lambda x: x.position, state.others)), state.bombs,
+                                                        with_bombs=False)
     coin_distance = calculate_neighborhood_distance(state.field, state.self.position, state.coins, state.bombs)
     bomb_distance = calculate_neighborhood_distance(state.field, state.self.position,
                                                     list(map(lambda x: x[0], state.bombs)), [])
@@ -134,9 +124,9 @@ def extract_features(state_dict: Dict) -> FeatureVector:
 
     can_move_in_direction = can_move(state.field, state.self.position)
 
-    in_blast_radius, in_blast_radius_currently = is_in_blast_radius(state.field, state.self.position, state.bombs)
+    in_blast_radius_currently = is_in_blast_radius(state.field, state.self.position, state.bombs)
 
     n_opponents = len(state.others)
 
     return FeatureVector(opponent_distance, coin_distance, bomb_distance, crates_distance, can_move_in_direction,
-                         in_blast_radius, in_blast_radius_currently, n_opponents)
+                         in_blast_radius_currently, n_opponents)

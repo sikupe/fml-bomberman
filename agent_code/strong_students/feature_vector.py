@@ -19,22 +19,19 @@ class Neighborhood:
 
 @dataclass
 class FeatureVector:
-    opponent_distance: Neighborhood
-    coin_distance: Neighborhood
-    bomb_distance: Neighborhood
-    crate_distance: Neighborhood
+    opponent_distance: int
+    coin_distance: int
+    bomb_distance: int
+    crate_distance: int
     can_move_in_direction: Neighborhood
-    # can_escape_from_bomb: Neighborhood
-    in_blast_radius: Neighborhood
     in_blast_radius_currently: bool
     number_of_opponents: int
 
-    def to_feature_vector(self, game_size, total_opponent_count):
-        return np.concatenate([self.opponent_distance.to_feature_vector(game_size),
-                               self.coin_distance.to_feature_vector(game_size),
-                               self.bomb_distance.to_feature_vector(game_size),
-                               self.crate_distance.to_feature_vector(game_size),
+    def to_feature_vector(self, total_opponent_count):
+        return np.concatenate([self.opponent_distance,
+                               self.coin_distance,
+                               self.bomb_distance,
+                               self.crate_distance,
                                self.can_move_in_direction.to_feature_vector(0),
-                               self.in_blast_radius.to_feature_vector(game_size),
                                float(self.in_blast_radius_currently),
                                self.number_of_opponents / total_opponent_count])
