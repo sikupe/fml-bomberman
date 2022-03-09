@@ -15,7 +15,7 @@ from agent_code.strong_students.feature_vector import FeatureVector, Neighborhoo
 from agent_code.strong_students.game_state import GameState
 
 
-def convert_to_state_object(state: Dict):
+def convert_to_state_object(state: Dict) -> GameState:
     rnd: int = state['round']
     step: int = state['step']
     field: np.ndarray = state['field']
@@ -90,7 +90,7 @@ def can_move(field: np.ndarray, position: Position) -> Neighborhood:
     return neighborhood
 
 
-def is_in_blast_radius(field: np.ndarray, position: Position, bombs: List[Bomb]) -> (Neighborhood, bool):
+def is_in_blast_radius(field: np.ndarray, position: Position, bombs: List[Bomb]) -> tuple[Neighborhood, bool]:
     neighborhood = Neighborhood()
     for d in Direction:
         name, coord = d.value
@@ -118,8 +118,8 @@ def is_in_line_with_bomb(bombs, coord, field, position):
     return can_burn
 
 
-def extract_features(state: Dict) -> FeatureVector:
-    state = convert_to_state_object(state)
+def extract_features(state_dict: Dict) -> FeatureVector:
+    state = convert_to_state_object(state_dict)
 
     opponent_distance = calculate_neighborhood_distance(state.field, state.self.position,
                                                         list(map(lambda x: x.position, state.others)), state.bombs, with_bombs=False)
