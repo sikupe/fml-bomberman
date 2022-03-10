@@ -1,13 +1,12 @@
-from os.path import join, dirname, isfile
-
-import numpy as np
+from os.path import join, dirname
 from typing import List
 
-import agent_code.q_learning_task_1.rewards as rewards
+import numpy as np
 
+from agent_code.q_learning_task_1 import rewards
+from agent_code.q_learning_task_1.feature_extractor import extract_features, convert_to_state_object
 from agent_code.q_learning_task_1.feature_vector import FeatureVector
 from agent_code.q_learning_task_1.game_state import GameState
-from agent_code.q_learning_task_1.feature_extractor import extract_features, convert_to_state_object
 
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT']
 
