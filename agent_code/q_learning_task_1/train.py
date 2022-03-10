@@ -1,4 +1,4 @@
-from collections import namedtuple, deque
+from os.path import join, dirname, isfile
 
 import numpy as np
 from typing import List
@@ -11,6 +11,12 @@ from agent_code.q_learning_task_1.feature_extractor import extract_features, con
 
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT']
 
+Q_TABLE_FILE = join(dirname(__file__), '..', 'q_learning_task_1.npa')
+
+# Hyperparameter
+gamma = 0.5
+alpha = 0.1
+
 
 def setup_training(self):
     """
@@ -21,7 +27,10 @@ def setup_training(self):
     :param self: This object is passed to all callbacks and you can set arbitrary values.
     """
 
-    self.qs = np.zeros((FeatureVector, len(ACTIONS)))
+    # if isfile(Q_TABLE_FILE):
+    #     self.q_table = np.load(Q_TABLE_FILE)
+    # else:
+    self.q_table = np.zeros((FeatureVector.size(), len(ACTIONS)))
 
 
 def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_state: dict, events: List[str]):
@@ -41,8 +50,10 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     :param new_game_state: The state the agent is in now.
     :param events: The events that occurred when going from  `old_game_state` to `new_game_state`
     """
-    old_state = convert_to_state_object(last_game_state)
+    old_state = convert_to_state_object(old_game_state)
+    current_feature_state = extract_features(old_state)
     new_state = convert_to_state_object(new_game_state)
+    next_feature_state = extract_features(new_state)
 
     custom_events = extract_events_from_state(old_state, new_state)
 
@@ -50,8 +61,17 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
 
     reward = reward_from_events(self, total_events)
 
-    # TODO Update self.qs
-    pass
+    current_action_index = ACTIONS.index(self_action)
+
+    q_current = self.q_table[current_feature_state.to_state(), current_action_index]
+
+    next_action_index = np.argmax(self.q_table[next_feature_state.to_state()])
+
+    q_next = self.q_table[next_feature_state.to_state(), next_action_index]
+
+    q_updated = q_current + alpha * (reward + gamma * q_next - q_current)
+
+    self.q_table[current_feature_state.to_state(), current_action_index] = q_updated
 
 
 def end_of_round(self, last_game_state: dict, last_action: str, events: List[str]):
@@ -67,8 +87,9 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
 
     :param self: The same object that is passed to all of your callbacks.
     """
-    # TODO save training model (self.qs)
-    pass
+    # TODO save training model (self.q_table)
+
+    np.save(Q_TABLE_FILE)
 
 
 def extract_events_from_state(old_state: GameState, new_state: GameState) -> List:

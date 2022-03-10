@@ -20,9 +20,20 @@ class Neighborhood:
 
     def to_one_hot_encoding(self):
         directions = self.to_vector()
-        highest = np.argmax(directions)
+        shortest = np.argmin(directions)
         result = np.array([.0, .0, .0, .0])
-        result[highest] = 1.
+        result[shortest] = 1.
+        return result
+
+    def to_shortest_binary_encoding(self):
+        return np.argmin(self.to_vector())
+
+    def to_binary_encoding(self) -> int:
+        result = 0
+        vec = self.to_vector()
+        for i, el in enumerate(vec):
+            if el:
+                result += 2 ** i
         return result
 
     def minimum(self):
@@ -36,8 +47,11 @@ class FeatureVector:
 
     @staticmethod
     def size():
-        # One hot encoding for distance + can move neighborhood
-        return 4 + 4
+        # coin distance + can move neighborhood
+        return 4 * 2 ** 4
+
+    def to_state(self) -> int:
+        return self.coin_distance.to_shortest_binary_encoding() + (self.can_move_in_direction.to_binary_encoding() << 2)
 
     def to_feature_vector(self):
         return np.concatenate([self.coin_distance.to_one_hot_encoding(),
