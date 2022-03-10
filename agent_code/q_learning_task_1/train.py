@@ -10,7 +10,7 @@ from agent_code.q_learning_task_1.game_state import GameState
 
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT']
 
-Q_TABLE_FILE = join(dirname(__file__), '..', 'q_learning_task_1.npa')
+Q_TABLE_FILE = join(dirname(__file__), '..', 'q_learning_task_1.npy')
 
 # Hyperparameter
 gamma = 0.5
@@ -49,28 +49,29 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     :param new_game_state: The state the agent is in now.
     :param events: The events that occurred when going from  `old_game_state` to `new_game_state`
     """
-    old_state = convert_to_state_object(old_game_state)
-    current_feature_state = extract_features(old_state)
-    new_state = convert_to_state_object(new_game_state)
-    next_feature_state = extract_features(new_state)
+    if old_game_state:
+        old_state = convert_to_state_object(old_game_state)
+        current_feature_state = extract_features(old_state)
+        new_state = convert_to_state_object(new_game_state)
+        next_feature_state = extract_features(new_state)
 
-    custom_events = extract_events_from_state(old_state, new_state)
+        custom_events = extract_events_from_state(old_state, new_state)
 
-    total_events = custom_events + events
+        total_events = custom_events + events
 
-    reward = reward_from_events(self, total_events)
+        reward = reward_from_events(self, total_events)
 
-    current_action_index = ACTIONS.index(self_action)
+        current_action_index = ACTIONS.index(self_action)
 
-    q_current = self.q_table[current_feature_state.to_state(), current_action_index]
+        q_current = self.q_table[current_feature_state.to_state(), current_action_index]
 
-    next_action_index = np.argmax(self.q_table[next_feature_state.to_state()])
+        next_action_index = np.argmax(self.q_table[next_feature_state.to_state()])
 
-    q_next = self.q_table[next_feature_state.to_state(), next_action_index]
+        q_next = self.q_table[next_feature_state.to_state(), next_action_index]
 
-    q_updated = q_current + alpha * (reward + gamma * q_next - q_current)
+        q_updated = q_current + alpha * (reward + gamma * q_next - q_current)
 
-    self.q_table[current_feature_state.to_state(), current_action_index] = q_updated
+        self.q_table[current_feature_state.to_state(), current_action_index] = q_updated
 
 
 def end_of_round(self, last_game_state: dict, last_action: str, events: List[str]):
@@ -88,7 +89,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     """
     # TODO save training model (self.q_table)
 
-    np.save(Q_TABLE_FILE)
+    np.save(Q_TABLE_FILE, self.q_table)
 
 
 def extract_events_from_state(old_state: GameState, new_state: GameState) -> List:

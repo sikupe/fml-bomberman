@@ -17,16 +17,21 @@ def act(self, game_state: dict):
     game_state = convert_to_state_object(game_state)
     feature_vector = extract_features(game_state)
     if self.train:
+
         probabilities = self.q_table[feature_vector.to_state()]
+        self.logger.debug(f'Current train probabilities: {probabilities}')
+
+        probabilities -= np.min(probabilities)
         prob_sum = np.sum(probabilities)
 
-        if prob_sum == 0:
-            probabilities = np.ones_like(probabilities)
-            prob_sum = np.sum(probabilities)
+        if prob_sum != 0:
+            probabilities = probabilities / prob_sum
+        else:
+            probabilities = None
 
-        probabilities = probabilities / prob_sum
-
-        return np.random.choice(ACTIONS, p=probabilities)
+        selected_action = np.random.choice(ACTIONS, p=probabilities)
+        self.logger.info(f"Selected action: {selected_action}")
+        return selected_action
     else:
         # TODO Select action from self.q_table
         feature_state = feature_vector.to_state()
