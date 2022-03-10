@@ -31,10 +31,10 @@ def calculate_neighborhood_distance(field: np.ndarray, origin: Position, destina
                                     with_bombs: bool = True) -> Neighborhood:
     field: np.ndarray = field.copy()
 
-    if not with_crates:
-        field[field > 0] = 0
-
-    field[field < 0] = 1
+    # Make creates to obstacles for pathfinding
+    field[field > 0] = -1
+    # Make free fields to pathfinding free fields
+    field[field == 0] = 1
 
     if with_bombs:
         for bomb_coord, time in bombs:
@@ -50,7 +50,7 @@ def calculate_neighborhood_distance(field: np.ndarray, origin: Position, destina
         for dest in destinations:
             x = origin[0] + coords[0]
             y = origin[1] + coords[1]
-            if field[x][y] == 0:
+            if field[x][y] > 0:
                 start = grid.node(x, y)
                 end = grid.node(dest[0], dest[1])
 

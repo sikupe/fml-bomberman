@@ -1,8 +1,10 @@
-from os.path import join, dirname
+from os.path import join, dirname, isfile
 from typing import List
 
 import numpy as np
 
+
+import json
 from agent_code.q_learning_task_1 import rewards
 from agent_code.q_learning_task_1.feature_extractor import extract_features, convert_to_state_object
 from agent_code.q_learning_task_1.feature_vector import FeatureVector
@@ -11,6 +13,7 @@ from agent_code.q_learning_task_1.game_state import GameState
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT']
 
 Q_TABLE_FILE = join(dirname(__file__), '..', 'q_learning_task_1.npy')
+STATS_FILE = join(dirname(__file__), '..', 'stats_q_learning_task_1.txt')
 
 # Hyperparameter
 gamma = 0.5
@@ -26,10 +29,10 @@ def setup_training(self):
     :param self: This object is passed to all callbacks and you can set arbitrary values.
     """
 
-    # if isfile(Q_TABLE_FILE):
-    #     self.q_table = np.load(Q_TABLE_FILE)
-    # else:
-    self.q_table = np.zeros((FeatureVector.size(), len(ACTIONS)))
+    if isfile(Q_TABLE_FILE):
+        self.q_table = np.load(Q_TABLE_FILE)
+    else:
+        self.q_table = np.zeros((FeatureVector.size(), len(ACTIONS)))
 
 
 def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_state: dict, events: List[str]):
@@ -87,8 +90,10 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
 
     :param self: The same object that is passed to all of your callbacks.
     """
-    # TODO save training model (self.q_table)
 
+    game_state = convert_to_state_object(last_game_state)
+    with open(STATS_FILE, 'a+') as f:
+        f.write(f'{len(game_state.coins)}, ')
     np.save(Q_TABLE_FILE, self.q_table)
 
 
