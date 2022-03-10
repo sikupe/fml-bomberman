@@ -16,8 +16,8 @@ Q_TABLE_FILE = join(dirname(__file__), '..', 'q_learning_task_1.npy')
 STATS_FILE = join(dirname(__file__), '..', 'stats_q_learning_task_1.txt')
 
 # Hyperparameter
-gamma = 0.5
-alpha = 0.1
+gamma = 1
+alpha = 0.5
 
 
 def setup_training(self):
@@ -107,6 +107,8 @@ def extract_events_from_state(old_state: GameState, new_state: GameState) -> Lis
     elif old_features.coin_distance.minimum() > new_features.coin_distance.minimum():
         coin_events.append(rewards.MOVED_AWAY_FROM_COIN)
 
+    if old_features.coin_distance.minimum() < new_features.coin_distance.minimum() and old_features.coin_distance.minimum() == 1:
+        coin_events.append(rewards.DID_NOT_PICK_UP_COIN)
     return coin_events
 
 

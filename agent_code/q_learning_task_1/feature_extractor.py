@@ -55,6 +55,7 @@ def calculate_neighborhood_distance(field: np.ndarray, origin: Position, destina
                 end = grid.node(dest[0], dest[1])
 
                 path, runs = finder.find_path(start, end, grid)
+                grid.cleanup()
 
                 if len(path) < shortest_path:
                     shortest_path = len(path)
