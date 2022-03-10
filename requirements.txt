@@ -1,16 +1,11 @@
 scikit-learn
 tqdm
-tensorflow
-keras
-tensorboardX
 xgboost
 lightgbm
 scipy
 numpy
 matplotlib
 numba
-torch
-torchvision
 pathfinding
 pandas
 pygame
