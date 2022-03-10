@@ -11,7 +11,6 @@ def setup(self):
         self.q_table = np.load(Q_TABLE_FILE)
 
 
-
 def act(self, game_state: dict):
     self.logger.info('Pick action at random')
 
