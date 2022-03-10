@@ -3,11 +3,10 @@ from os.path import join, dirname, isfile
 import numpy as np
 from typing import List
 
-import rewards
-
 from agent_code.q_learning_task_1.feature_vector import FeatureVector
 from agent_code.q_learning_task_1.game_state import GameState
 from agent_code.q_learning_task_1.feature_extractor import extract_features, convert_to_state_object
+from agent_code.q_learning_task_1 import rewards
 
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT']
 
