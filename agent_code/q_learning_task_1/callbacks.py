@@ -3,7 +3,7 @@ from os.path import isfile
 import numpy as np
 
 from agent_code.q_learning_task_1.train import ACTIONS, Q_TABLE_FILE
-from feature_extractor import extract_features, convert_to_state_object
+from agent_code.q_learning_task_1.feature_extractor import extract_features, convert_to_state_object
 
 
 def setup(self):
@@ -17,7 +17,16 @@ def act(self, game_state: dict):
     game_state = convert_to_state_object(game_state)
     feature_vector = extract_features(game_state)
     if self.train:
-        return np.random.choice(ACTIONS, p=self.q_table[feature_vector.to_state()])
+        probabilities = self.q_table[feature_vector.to_state()]
+        prob_sum = np.sum(probabilities)
+
+        if prob_sum == 0:
+            probabilities = np.ones_like(probabilities)
+            prob_sum = np.sum(probabilities)
+
+        probabilities = probabilities / prob_sum
+
+        return np.random.choice(ACTIONS, p=probabilities)
     else:
         # TODO Select action from self.q_table
         feature_state = feature_vector.to_state()

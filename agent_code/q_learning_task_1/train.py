@@ -3,7 +3,7 @@ from os.path import join, dirname, isfile
 import numpy as np
 from typing import List
 
-import rewards
+import agent_code.q_learning_task_1.rewards as rewards
 
 from agent_code.q_learning_task_1.feature_vector import FeatureVector
 from agent_code.q_learning_task_1.game_state import GameState
