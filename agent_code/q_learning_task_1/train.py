@@ -1,18 +1,13 @@
 from __future__ import annotations
 
 from os.path import join, dirname, isfile
-from collections import namedtuple, deque
 from typing import List
-import contextlib
 
 import numpy as np
 
-
-import json
 from agent_code.q_learning_task_1 import rewards
 from agent_code.q_learning_task_1.feature_extractor import extract_features, convert_to_state_object
 from agent_code.q_learning_task_1.feature_vector import FeatureVector
-from agent_code.q_learning_task_1.game_state import GameState
 
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT']
 
@@ -22,10 +17,6 @@ STATS_FILE = join(dirname(__file__), 'stats_q_learning_task_1.txt')
 # Hyperparameter
 gamma = 1
 alpha = 0.5
-
-Transition = namedtuple('Transition',
-                        ('state', 'action', 'next_state', 'reward'))
-TRANSITION_HISTORY_SIZE = 3  # keep only ... last transitions
 
 
 def setup_training(self):
@@ -41,8 +32,6 @@ def setup_training(self):
         self.q_table = np.load(Q_TABLE_FILE)
     else:
         self.q_table = np.zeros((FeatureVector.size(), len(ACTIONS)))
-
-    self.transitions = deque(maxlen=TRANSITION_HISTORY_SIZE)
 
 
 def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_state: dict, events: List[str]):
@@ -68,13 +57,11 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
         new_state = convert_to_state_object(new_game_state)
         next_feature_state = extract_features(new_state)
 
-        custom_events, old_features, new_features = extract_events_from_state(self, old_state, new_state)
+        custom_events = extract_events_from_state(self, current_feature_state, next_feature_state)
 
         total_events = custom_events + events
 
         reward = reward_from_events(self, total_events)
-
-        self.transitions.append(Transition(old_features, self_action, new_features, reward))
 
         current_action_index = ACTIONS.index(self_action)
 
@@ -109,24 +96,13 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     np.save(Q_TABLE_FILE, self.q_table)
 
 
-def extract_events_from_state(self, old_state: GameState, new_state: GameState) -> List:
-    old_features = extract_features(old_state)
-    new_features = extract_features(new_state)
-
+def extract_events_from_state(self, old_features: FeatureVector, new_features: FeatureVector) -> List:
     coin_events = []
-
-    with contextlib.suppress(IndexError):
-        feature_vec, _, _, _ = self.transitions[-1]
-        if feature_vec.to_state() == new_features.to_state():
-            coin_events.append(rewards.WIGGLED)
-
     if old_features.coin_distance.minimum() < new_features.coin_distance.minimum():
-        coin_events.append(rewards.APPROACH_COIN)
-    elif old_features.coin_distance.minimum() > new_features.coin_distance.minimum():
         coin_events.append(rewards.MOVED_AWAY_FROM_COIN)
+    elif old_features.coin_distance.minimum() > new_features.coin_distance.minimum():
+        coin_events.append(rewards.APPROACH_COIN)
 
-    if old_features.coin_distance.minimum() < new_features.coin_distance.minimum() and old_features.coin_distance.minimum() == 1:
-        coin_events.append(rewards.DID_NOT_PICK_UP_COIN)
     return coin_events
 
 
