@@ -1,17 +1,16 @@
 from __future__ import annotations
 
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import numpy as np
 from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
-from pathfinding.finder.dijkstra import DijkstraFinder
 
-from agent_code.q_learning_task_1.direction import Direction
-from agent_code.q_learning_task_1.feature_vector import FeatureVector, Neighborhood
-from agent_code.q_learning_task_1.game_state import GameState
-from agent_code.q_learning_task_1.player import Player
-from agent_code.q_learning_task_1.types import Position, Bomb
+from agent_code.q_learning_task_2.direction import Direction
+from agent_code.q_learning_task_2.feature_vector import FeatureVector, Neighborhood
+from agent_code.q_learning_task_2.game_state import GameState
+from agent_code.q_learning_task_2.player import Player
+from agent_code.q_learning_task_2.types import Position, Bomb
 
 
 def convert_to_state_object(state: Dict) -> GameState:
@@ -81,9 +80,35 @@ def can_move(field: np.ndarray, position: Position) -> Neighborhood:
     return neighborhood
 
 
+def is_in_danger(origin: Position, bombs: List[Bomb]):
+    in_danger = False
+
+    for bomb_coords, exp_time in bombs:
+        for i in range(2):
+            if origin[i] == bomb_coords[i]:
+                other_i = (i + 1) % 2
+                dist = abs(origin[other_i] - bomb_coords[other_i])
+                if dist < 4:
+                    in_danger = True
+                    break
+
+    return in_danger
+
+
+def extract_crates(field: np.ndarray) -> List[Position]:
+    crates = np.where(field == 1)
+    return list(np.array(crates).T)
+
+
 def extract_features(state: GameState) -> FeatureVector:
     coin_distance = calculate_neighborhood_distance(state.field, state.self.position, state.coins, state.bombs)
 
+    crates = extract_crates(state.field)
+
+    crate_distance = calculate_neighborhood_distance(state.field, state.self.position, crates, state.bombs)
+
     can_move_in_direction = can_move(state.field, state.self.position)
 
-    return FeatureVector(coin_distance, can_move_in_direction)
+    in_danger = is_in_danger(state.self.position, state.bombs)
+
+    return FeatureVector(coin_distance, crate_distance, in_danger, can_move_in_direction)

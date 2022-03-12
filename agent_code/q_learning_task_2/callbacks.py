@@ -2,8 +2,8 @@ from os.path import isfile
 
 import numpy as np
 
-from agent_code.q_learning_task_1.train import ACTIONS, Q_TABLE_FILE
-from agent_code.q_learning_task_1.feature_extractor import extract_features, convert_to_state_object
+from agent_code.q_learning_task_2.train import ACTIONS, Q_TABLE_FILE
+from agent_code.q_learning_task_2.feature_extractor import extract_features, convert_to_state_object
 
 
 def setup(self):

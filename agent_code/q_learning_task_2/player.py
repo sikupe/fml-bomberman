@@ -1,6 +1,6 @@
 from typing import Tuple
 
-from agent_code.q_learning_task_1.types import Position
+from agent_code.q_learning_task_2.types import Position
 
 
 class Player:

@@ -1,18 +1,18 @@
 from __future__ import annotations
 
 from os.path import join, dirname, isfile
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 
-from agent_code.q_learning_task_1 import rewards
-from agent_code.q_learning_task_1.feature_extractor import extract_features, convert_to_state_object
-from agent_code.q_learning_task_1.feature_vector import FeatureVector
+from agent_code.q_learning_task_2 import rewards
+from agent_code.q_learning_task_2.feature_extractor import extract_features, convert_to_state_object
+from agent_code.q_learning_task_2.feature_vector import FeatureVector
 
-ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT']
+ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB']
 
-Q_TABLE_FILE = join(dirname(__file__), 'q_learning_task_1.npy')
-STATS_FILE = join(dirname(__file__), 'stats_q_learning_task_1.txt')
+Q_TABLE_FILE = join(dirname(__file__), 'q_learning_task_2.npy')
+STATS_FILE = join(dirname(__file__), 'stats_q_learning_task_2.txt')
 
 # Hyperparameter
 gamma = 1
@@ -61,22 +61,26 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
 
         total_events = custom_events + events
 
-        reward = reward_from_events(self, total_events)
+        update_q_table(self, current_feature_state, next_feature_state, self_action, total_events)
 
-        current_action_index = ACTIONS.index(self_action)
 
-        q_current = self.q_table[current_feature_state.to_state(), current_action_index]
+def update_q_table(self, current_feature_state: FeatureVector, next_feature_state: Optional[FeatureVector],
+                   self_action: str, total_events: List[str]):
+    reward = reward_from_events(self, total_events)
 
+    current_action_index = ACTIONS.index(self_action)
+
+    q_current = self.q_table[current_feature_state.to_state(), current_action_index]
+
+    if next_feature_state:
         next_action_index = np.argmax(self.q_table[next_feature_state.to_state()])
-
         q_next = self.q_table[next_feature_state.to_state(), next_action_index]
+    else:
+        q_next = 0
 
-        q_updated = q_current + alpha * (reward + gamma * q_next - q_current)
+    q_updated = q_current + alpha * (reward + gamma * q_next - q_current)
 
-        # if self_action == 'WAIT' and q_updated > 0:
-        #     breakpoint()
-
-        self.q_table[current_feature_state.to_state(), current_action_index] = q_updated
+    self.q_table[current_feature_state.to_state(), current_action_index] = q_updated
 
 
 def end_of_round(self, last_game_state: dict, last_action: str, events: List[str]):
@@ -92,21 +96,32 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
 
     :param self: The same object that is passed to all of your callbacks.
     """
+    old_state = convert_to_state_object(last_game_state)
+    current_feature_state = extract_features(old_state)
 
-    game_state = convert_to_state_object(last_game_state)
+    update_q_table(self, current_feature_state, None, last_action, events)
+
     with open(STATS_FILE, 'a+') as f:
-        f.write(f'{len(game_state.coins)}, ')
+        f.write(f'{len(old_state.coins)}, ')
     np.save(Q_TABLE_FILE, self.q_table)
 
 
 def extract_events_from_state(self, old_features: FeatureVector, new_features: FeatureVector) -> List:
-    coin_events = []
+    custom_events = []
     if old_features.coin_distance.minimum() < new_features.coin_distance.minimum():
-        coin_events.append(rewards.MOVED_AWAY_FROM_COIN)
+        custom_events.append(rewards.MOVED_AWAY_FROM_COIN)
     elif old_features.coin_distance.minimum() > new_features.coin_distance.minimum():
-        coin_events.append(rewards.APPROACH_COIN)
+        custom_events.append(rewards.APPROACH_COIN)
 
-    return coin_events
+    if old_features.crate_distance.minimum() < new_features.crate_distance.minimum():
+        custom_events.append(rewards.MOVED_AWAY_FROM_CRATE)
+    elif old_features.crate_distance.minimum() > new_features.crate_distance.minimum():
+        custom_events.append(rewards.APPROACH_CRATE)
+
+    if new_features.in_danger:
+        custom_events.append(rewards.IN_DANGER)
+
+    return custom_events
 
 
 def reward_from_events(self, events: List[str]) -> int:
