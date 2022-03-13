@@ -95,6 +95,32 @@ def is_in_danger(origin: Position, bombs: List[Bomb]):
     return in_danger
 
 
+def move_to_danger(field: np.ndarray, origin: Position, bombs: List[Bomb], explosion_map: np.ndarray):
+    neighborhood = Neighborhood()
+    for name, coords in Direction:
+        x = origin[0] + coords[0]
+        y = origin[1] + coords[1]
+
+        in_danger = False
+
+        if field[x, y] == 0:
+            for bomb_coords, _ in bombs:
+                if x == bomb_coords[0] or y == bomb_coords[1]:
+                    dist = max(abs(x - bomb_coords[0]), abs(y - bomb_coords[1]))
+
+                    if dist <= 4:
+                        in_danger = True
+                        break
+
+            if not in_danger:
+                if explosion_map[x, y] > 0:
+                    in_danger = True
+
+        setattr(neighborhood, name, in_danger)
+
+    return neighborhood
+
+
 def extract_crates(field: np.ndarray) -> List[Position]:
     crates = np.where(field == 1)
     return list(np.array(crates).T)
