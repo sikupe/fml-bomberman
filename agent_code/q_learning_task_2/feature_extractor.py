@@ -26,9 +26,15 @@ def convert_to_state_object(state: Dict) -> GameState:
     return GameState(rnd, step, field.T, bombs, explosion_map, coins, self, others, user_input)
 
 
-def calculate_neighborhood_distance(field: np.ndarray, origin: Position, destinations: List[Position],
-                                    bombs: List[Bomb], with_crates: bool = True,
-                                    with_bombs: bool = True) -> Neighborhood:
+def calculate_neighborhood_distance(
+    field: np.ndarray,
+    origin: Position,
+    destinations: List[Position],
+    bombs: List[Bomb],
+    with_crates: bool = True,
+    with_bombs: bool = True,
+) -> Neighborhood:
+
     field: np.ndarray = field.copy()
 
     # Make creates to obstacles for pathfinding
@@ -129,6 +135,10 @@ def extract_crates(field: np.ndarray) -> List[Position]:
 def extract_features(state: GameState) -> FeatureVector:
     coin_distance = calculate_neighborhood_distance(state.field, state.self.position, state.coins, state.bombs)
 
+    bombs = [(x, y) for ((x, y), _) in state.bombs]
+
+    bomb_distance = calculate_neighborhood_distance(state.field, state.self.position, bombs, state.bombs)
+
     crates = extract_crates(state.field)
 
     crate_distance = calculate_neighborhood_distance(state.field, state.self.position, crates, state.bombs)
@@ -137,4 +147,4 @@ def extract_features(state: GameState) -> FeatureVector:
 
     in_danger = is_in_danger(state.self.position, state.bombs)
 
-    return FeatureVector(coin_distance, crate_distance, in_danger, can_move_in_direction)
+    return FeatureVector(coin_distance, crate_distance, in_danger, can_move_in_direction, bomb_distance)

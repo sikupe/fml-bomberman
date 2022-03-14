@@ -46,13 +46,17 @@ class FeatureVector:
     crate_distance: Neighborhood
     in_danger: bool
     can_move_in_direction: Neighborhood
+    bomb_distance: Neighborhood
 
     @staticmethod
     def size():
-        # in danger (1 bit) + coin distance (2 bit) + crate distance (2 bit) + can move neighborhood (4 bit)
-        return 1 << 1 << 2 << 2 << 4
+        # in danger (1 bit) + coin distance (2 bit) + crate distance (2 bit) + can move neighborhood (4 bit) + bomb_distance (2 bit)
+        return 1 << 1 << 2 << 2 << 4 << 2
 
     def to_state(self) -> int:
-        return self.coin_distance.to_shortest_binary_encoding() + (
-                    self.crate_distance.to_shortest_binary_encoding() << 2) + (
-                           self.can_move_in_direction.to_binary_encoding() << 4)
+        return int(
+            self.coin_distance.to_shortest_binary_encoding()
+            + (self.crate_distance.to_shortest_binary_encoding() << 2)
+            + (self.can_move_in_direction.to_binary_encoding() << 4)
+            + (self.bomb_distance.to_binary_encoding() << 2)
+        )
