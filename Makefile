@@ -7,7 +7,7 @@ test:
 	PYTHONPATH=. pytest
 
 clean:
-	rip ./agent_code/q_learning_task_1.npy ./agent_code/stats_q_learning_task_1.txt
+	rm ./agent_code/q_learning_task_1.npy ./agent_code/stats_q_learning_task_1.txt
 
 format:
 	black ./agent_code/strong_students/
