@@ -1,6 +1,11 @@
 all:
 	# run with: $$ python3 main.py play [options]
 
+
+.PHONY: test
+test:
+	PYTHONPATH=. pytest
+
 clean:
 	rip ./agent_code/q_learning_task_1.npy ./agent_code/stats_q_learning_task_1.txt
 
