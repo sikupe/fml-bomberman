@@ -83,6 +83,21 @@ def test_neighborhood_minimum(
     assert -1 == neighborhood.minimum()
 
 
+def test_neighborhood_maximum(
+    neighborhood_int: Neighborhood,
+    neighborhood_float: Neighborhood,
+    neighborhood_bool: Neighborhood,
+):
+
+    assert 9 == neighborhood_int.maximum()
+    assert 9.0 == neighborhood_float.maximum()
+    assert 1 == neighborhood_bool.maximum()
+
+    neighborhood = Neighborhood(101, 8, -1, 6)
+
+    assert 101 == neighborhood.maximum()
+
+
 def test_neighborhood_iter(neighborhood_int):
     res = []
     for i in neighborhood_int:
@@ -90,3 +105,8 @@ def test_neighborhood_iter(neighborhood_int):
         res.append(i)
 
     assert len(res) == 4
+
+
+def test_neighborhood_all_same():
+    neigh = Neighborhood(float("inf"), float("inf"), float("inf"), float("inf"))
+    assert 0 == neigh.to_shortest_binary_encoding()

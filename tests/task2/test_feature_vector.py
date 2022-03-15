@@ -8,7 +8,7 @@ def int_to_list_of_bit(num: int) -> list[int]:
     Returns binary representation of integer in form of a list of length 11.
     https://stackoverflow.com/questions/30971079/how-to-convert-an-integer-to-a-list-of-bits
     """
-    return [1 if num & (1 << (10-n)) else 0 for n in range(11)]
+    return [1 if num & (1 << (14-n)) else 0 for n in range(15)]
 
 
 @pytest.fixture
@@ -22,7 +22,7 @@ def feature_vector(
 
 
 def test_feature_vector_size(feature_vector: FeatureVector):
-    assert 2 ** 11 == feature_vector.size()
+    assert 2 ** 15 == feature_vector.size()
 
 
 def test_feature_vector_to_state(feature_vector: FeatureVector):
@@ -35,13 +35,13 @@ def test_feature_vector_to_state(feature_vector: FeatureVector):
     argmax(bomb_distance)  = 0    -> 00
     _______________________________
 
-    |00|0001|11|11|1|
-    |  |    |  |  |
-    |  |    |  |  |-in_danger
-    |  |    |  |-coin_distance
-    |  |    |-crate_distance
-    |  |-can_move_in_direction
-    |-bomb_distance
+    |1111|00|0001|11|11|1|
+         |  |    |  |  |
+         |  |    |  |  |-in_danger
+         |  |    |  |-coin_distance
+         |  |    |-crate_distance
+         |  |-can_move_in_direction
+         |-bomb_distance
     """
     result = 0
     bit_representation = [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1]

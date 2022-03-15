@@ -11,3 +11,4 @@ pandas
 pygame
 sklearn
 pytest
+pytest_mock
