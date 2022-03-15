@@ -10,3 +10,4 @@ pathfinding
 pandas
 pygame
 sklearn
+pytest
