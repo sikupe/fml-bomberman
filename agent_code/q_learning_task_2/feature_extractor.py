@@ -33,6 +33,7 @@ def calculate_neighborhood_distance(
     bombs: List[Bomb],
     with_crates: bool = True,
     with_bombs: bool = True,
+    calc_bomb_distance: bool = False,
 ) -> Neighborhood:
 
     field: np.ndarray = field.copy()
@@ -60,6 +61,8 @@ def calculate_neighborhood_distance(
             if field[x][y] > 0:
                 start = grid.node(x, y)
                 end = grid.node(dest[0], dest[1])
+                if (x, y) == (dest[0], dest[1]) and calc_bomb_distance:
+                    return Neighborhood(0, 0, 0, 0)
 
                 path, runs = finder.find_path(start, end, grid)
                 grid.cleanup()
@@ -137,7 +140,7 @@ def extract_features(state: GameState) -> FeatureVector:
 
     bombs = [(x, y) for ((x, y), _) in state.bombs]
 
-    bomb_distance = calculate_neighborhood_distance(state.field, state.self.position, bombs, state.bombs)
+    bomb_distance = calculate_neighborhood_distance(state.field, state.self.position, bombs, state.bombs, calc_bomb_distance=True)
 
     crates = extract_crates(state.field)
 
