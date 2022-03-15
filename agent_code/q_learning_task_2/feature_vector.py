@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import numpy as np
 
 
+@dataclass
 class Neighborhood:
-    north: int | float | bool
-    south: int | float | bool
-    east: int | float | bool
-    west: int | float | bool
+    north: int | float | bool = field(default=0)
+    south: int | float | bool = field(default=0)
+    east: int | float | bool = field(default=0)
+    west: int | float | bool = field(default=0)
 
     def to_feature_vector(self, normalize_max: int) -> np.ndarray:
         if normalize_max >= 0:
@@ -50,13 +51,26 @@ class FeatureVector:
 
     @staticmethod
     def size():
-        # in danger (1 bit) + coin distance (2 bit) + crate distance (2 bit) + can move neighborhood (4 bit) + bomb_distance (2 bit)
+        """Returns the needed size for 11 bit."""
+        # in danger (1 bit) + coin distance (2 bit) + crate distance (2 bit) +
+        # can move neighborhood (4 bit) + bomb_distance (2 bit)
         return 1 << 1 << 2 << 2 << 4 << 2
 
     def to_state(self) -> int:
+        """
+        Layout: |xx|xxxx|xx|xx|x|
+                |  |    |  |  |
+                |  |    |  |  |-in_danger
+                |  |    |  |-coin_distance
+                |  |    |-crate_distance
+                |  |-can_move_in_direction
+                |-bomb_distance
+        """
+
         return int(
-            self.coin_distance.to_shortest_binary_encoding()
-            + (self.crate_distance.to_shortest_binary_encoding() << 2)
-            + (self.can_move_in_direction.to_binary_encoding() << 4)
-            + (self.bomb_distance.to_binary_encoding() << 2)
+            self.in_danger
+            + (self.coin_distance.to_shortest_binary_encoding() << 1)
+            + (self.crate_distance.to_shortest_binary_encoding() << 3)
+            + (self.can_move_in_direction.to_binary_encoding() << 5)
+            + (self.bomb_distance.to_shortest_binary_encoding() << 9)
         )
