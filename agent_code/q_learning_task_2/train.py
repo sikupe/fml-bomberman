@@ -8,11 +8,12 @@ import numpy as np
 from agent_code.q_learning_task_2 import rewards
 from agent_code.q_learning_task_2.feature_extractor import extract_features, convert_to_state_object
 from agent_code.q_learning_task_2.feature_vector import FeatureVector
+import os
 
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB']
 
-Q_TABLE_FILE = join(dirname(__file__), 'q_learning_task_2.npy')
-STATS_FILE = join(dirname(__file__), 'stats_q_learning_task_2.txt')
+Q_TABLE_FILE = os.environ.get("Q_TABLE_FILE", join(dirname(__file__), 'q_learning_task_2.npy'))
+STATS_FILE = os.environ.get("STATS_FILE", join(dirname(__file__), 'stats_q_learning_task_2.txt'))
 
 # Hyperparameter
 gamma = 1
