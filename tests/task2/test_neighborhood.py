@@ -81,3 +81,12 @@ def test_neighborhood_minimum(
     neighborhood.west = 6
 
     assert -1 == neighborhood.minimum()
+
+
+def test_neighborhood_iter(neighborhood_int):
+    res = []
+    for i in neighborhood_int:
+        assert isinstance(i, int)
+        res.append(i)
+
+    assert len(res) == 4

@@ -11,10 +11,34 @@ class Neighborhood:
     east: int | float | bool = field(default=0)
     west: int | float | bool = field(default=0)
 
+    def __str__(self):
+        return (
+            f"Neighborhood [north: {self.north}, south: {self.south}, "
+            f"east: {self.east}, west: {self.west}]"
+        )
+
+    def __repr__(self):
+        return (
+            f"Neighborhood [north: {self.north}, south: {self.south}, "
+            f"east: {self.east}, west: {self.west}]"
+        )
+
+    def __iter__(self):
+        self._iter_values = [self.north, self.south, self.east, self.west]
+        self._count = 0
+        return self
+
+    def __next__(self):
+        if self._count == len(self._iter_values):
+            raise StopIteration
+        result = self._iter_values[self._count]
+        self._count += 1
+        return result
+
     def to_feature_vector(self, normalize_max: int) -> np.ndarray:
         if normalize_max >= 0:
             return self.to_vector() / normalize_max
-        return self.to_vector().astype('float64')
+        return self.to_vector().astype("float64")
 
     def to_vector(self):
         return np.array([self.north, self.south, self.east, self.west])
@@ -22,8 +46,8 @@ class Neighborhood:
     def to_one_hot_encoding(self):
         directions = self.to_vector()
         shortest = np.argmin(directions)
-        result = np.array([.0, .0, .0, .0])
-        result[shortest] = 1.
+        result = np.array([0.0, 0.0, 0.0, 0.0])
+        result[shortest] = 1.0
         return result
 
     def to_shortest_binary_encoding(self, argmax=False):
