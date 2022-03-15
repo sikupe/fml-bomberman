@@ -66,37 +66,55 @@ class Neighborhood:
     def minimum(self):
         return np.min(self.to_vector())
 
+    def maximum(self):
+        return np.max(self.to_vector())
+
 
 @dataclass
 class FeatureVector:
     coin_distance: Neighborhood
+    coin_exists: bool
     crate_distance: Neighborhood
+    crate_exists: bool
     in_danger: bool
     can_move_in_direction: Neighborhood
     bomb_distance: Neighborhood
+    bomb_exists: bool
+    move_to_danger: Neighborhood
 
     @staticmethod
     def size():
-        """Returns the needed size for 11 bit."""
-        # in danger (1 bit) + coin distance (2 bit) + crate distance (2 bit) +
-        # can move neighborhood (4 bit) + bomb_distance (2 bit)
-        return 1 << 1 << 2 << 2 << 4 << 2
+        """
+        Returns the needed size for 11 bit.
+
+        in_danger, coin_distance, coin_exists, crate_distance, crate_exists,
+        can_move_in_direction, bomb_distance, bomb_exists, move_to_danger,
+        """
+        return 1 << 2 << 1 << 2 << 1 << 4 << 2 << 1 << 4
 
     def to_state(self) -> int:
         """
-        Layout: |xx|xxxx|xx|xx|x|
-                |  |    |  |  |
-                |  |    |  |  |-in_danger
-                |  |    |  |-coin_distance
-                |  |    |-crate_distance
-                |  |-can_move_in_direction
-                |-bomb_distance
+        Layout: |xxxx|x|xx|xxxx|x|xx|x|xx|x|
+                |    | |  |    | |  | |  |
+                |    | |  |    | |  | |  |-in_danger
+                |    | |  |    | |  | |-coin_distance
+                |    | |  |    | |  |-coin_exists
+                |    | |  |    | |-crate_distance
+                |    | |  |    |-crate_exists
+                |    | |  |-can_move_in_direction
+                |    | |-bomb_distance
+                |    |-bomb_exists
+                |-move_to_danger
         """
 
         return int(
             self.in_danger
             + (self.coin_distance.to_shortest_binary_encoding() << 1)
-            + (self.crate_distance.to_shortest_binary_encoding() << 3)
-            + (self.can_move_in_direction.to_binary_encoding() << 5)
-            + (self.bomb_distance.to_shortest_binary_encoding(argmax=True) << 9)
+            + (self.coin_exists << 3)
+            + (self.crate_distance.to_shortest_binary_encoding() << 4)
+            + (self.crate_exists << 6)
+            + (self.can_move_in_direction.to_binary_encoding() << 7)
+            + (self.bomb_distance.to_shortest_binary_encoding(argmax=True)<<11)
+            + (self.bomb_exists << 13)
+            + (self.bomb_distance.to_shortest_binary_encoding(argmax=True)<<14)
         )
