@@ -26,7 +26,9 @@ class Neighborhood:
         result[shortest] = 1.
         return result
 
-    def to_shortest_binary_encoding(self):
+    def to_shortest_binary_encoding(self, argmax=False):
+        if argmax:
+            return np.argmax(self.to_vector())
         return np.argmin(self.to_vector())
 
     def to_binary_encoding(self) -> int:
@@ -72,5 +74,5 @@ class FeatureVector:
             + (self.coin_distance.to_shortest_binary_encoding() << 1)
             + (self.crate_distance.to_shortest_binary_encoding() << 3)
             + (self.can_move_in_direction.to_binary_encoding() << 5)
-            + (self.bomb_distance.to_shortest_binary_encoding() << 9)
+            + (self.bomb_distance.to_shortest_binary_encoding(argmax=True) << 9)
         )

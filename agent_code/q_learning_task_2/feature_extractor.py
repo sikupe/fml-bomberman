@@ -61,8 +61,6 @@ def calculate_neighborhood_distance(
             if field[x][y] > 0:
                 start = grid.node(x, y)
                 end = grid.node(dest[0], dest[1])
-                if (x, y) == (dest[0], dest[1]) and calc_bomb_distance:
-                    return Neighborhood(0, 0, 0, 0)
 
                 path, runs = finder.find_path(start, end, grid)
                 grid.cleanup()

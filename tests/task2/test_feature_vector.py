@@ -28,14 +28,14 @@ def test_feature_vector_size(feature_vector: FeatureVector):
 def test_feature_vector_to_state(feature_vector: FeatureVector):
     """
     in_danger              = True -> 1
-    argmax(coin_distance)  = 3    -> 11
-    argmax(crate_distance) = 3    -> 11
+    argmin(coin_distance)  = 3    -> 11
+    argmin(crate_distance) = 3    -> 11
     can_move_in_direction  = [True, False, False, False]
                                   -> 0001
-    argmax(bomb_distance)  = 3    -> 11
+    argmax(bomb_distance)  = 0    -> 00
     _______________________________
 
-    |11|0001|11|11|1|
+    |00|0001|11|11|1|
     |  |    |  |  |
     |  |    |  |  |-in_danger
     |  |    |  |-coin_distance
@@ -44,7 +44,7 @@ def test_feature_vector_to_state(feature_vector: FeatureVector):
     |-bomb_distance
     """
     result = 0
-    bit_representation = [1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1]
+    bit_representation = [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1]
     bit_representation.reverse()
     for i, v in enumerate(bit_representation):
         result += (v*2)**i
