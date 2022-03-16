@@ -51,6 +51,17 @@ class Neighborhood:
         result[shortest] = 1.0
         return result
 
+    def to_relative_distance_encoding(self):
+        directions = self.to_vector()
+        max_value = np.max(directions)
+
+        if max_value == 0:
+            result = directions / max_value
+        else:
+            result = np.zeros_like(directions)
+
+        return result
+
     def to_shortest_binary_encoding(self, argmax=False):
         if argmax:
             return np.argmax(self.to_vector())
@@ -107,4 +118,4 @@ class FeatureVector:
         vector = np.array([*self.coin_distance.to_one_hot_encoding(), self.coin_exists,
                            *self.can_move_in_direction.to_nn_vector()]) * 2 - 1
 
-        return torch.tensor(vector)
+        return torch.tensor(vector).double()
