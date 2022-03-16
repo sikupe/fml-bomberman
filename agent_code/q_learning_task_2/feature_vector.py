@@ -90,18 +90,17 @@ class FeatureVector:
         in_danger, coin_distance, coin_exists, crate_distance, crate_exists,
         can_move_in_direction, bomb_distance, bomb_exists, move_to_danger,
         """
-        return 1 << 2 << 1 << 2 << 1 << 4 << 2 << 1 << 4
+        return 2**14
 
     def to_state(self) -> int:
         """
-        Layout: |xxxx|x|xx|xxxx|x|xx|x|xx|x|
-                |    | |  |    | |  | |  |
-                |    | |  |    | |  | |  |-in_danger
-                |    | |  |    | |  | |-coin_distance
-                |    | |  |    | |  |-coin_exists
-                |    | |  |    | |-crate_distance
-                |    | |  |    |-crate_exists
-                |    | |  |-can_move_in_direction
+        Layout: |xxxx|x|xx|x|xx|x|xx|x|
+                |    | |  | |  | |  |
+                |    | |  | |  | |  |-in_danger
+                |    | |  | |  | |-coin_distance
+                |    | |  | |  |-coin_exists
+                |    | |  | |-crate_distance
+                |    | |  |-crate_exists
                 |    | |-bomb_distance
                 |    |-bomb_exists
                 |-move_to_danger
@@ -113,8 +112,7 @@ class FeatureVector:
             + (self.coin_exists << 3)
             + (self.crate_distance.to_shortest_binary_encoding() << 4)
             + (self.crate_exists << 6)
-            + (self.can_move_in_direction.to_binary_encoding() << 7)
-            + (self.bomb_distance.to_shortest_binary_encoding(argmax=True)<<11)
-            + (self.bomb_exists << 13)
-            + (self.bomb_distance.to_shortest_binary_encoding(argmax=True)<<14)
+            + (self.bomb_distance.to_shortest_binary_encoding(argmax=True)<<7)
+            + (self.bomb_exists << 9)
+            + (self.move_to_danger.to_binary_encoding()<<10)
         )

@@ -20,6 +20,9 @@ gamma = 1
 alpha = 0.05
 
 
+#def is_action_allowed(self, action: ACTIONS, ):
+
+
 def setup_training(self):
     """
     Initialise self for training purpose.
@@ -58,7 +61,7 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
         new_state = convert_to_state_object(new_game_state)
         next_feature_state = extract_features(new_state)
 
-        custom_events = extract_events_from_state(self, current_feature_state, next_feature_state)
+        custom_events = extract_events_from_state(self, current_feature_state, next_feature_state, self_action)
 
         total_events = custom_events + events
 
@@ -107,7 +110,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     np.save(Q_TABLE_FILE, self.q_table)
 
 
-def extract_events_from_state(self, old_features: FeatureVector, new_features: FeatureVector) -> List:
+def extract_events_from_state(self, old_features: FeatureVector, new_features: FeatureVector, action: ACTIONS) -> List:
     custom_events = []
     if old_features.coin_distance.minimum() < new_features.coin_distance.minimum():
         custom_events.append(rewards.MOVED_AWAY_FROM_COIN)
@@ -133,8 +136,27 @@ def extract_events_from_state(self, old_features: FeatureVector, new_features: F
 
     if new_features.in_danger:
         custom_events.append(rewards.IN_DANGER)
+        
+    if not old_features.in_danger and new_features.in_danger and not action == "BOMB":
+        custom_events.append(rewards.MOVE_IN_DANGER)
 
     return custom_events
+
+def is_invalid_action(action: ACTIONS, game_state):
+    field = game_state.field
+    origin = game_state.self.position
+    is_bomb_possible = game_state.self.is_bomb_possible
+    if action == "UP" and field[origin[0], origin[1]-1] != 0:
+        return True;
+    if action == "DOWN" and field[origin[0], origin[1]+1] != 0:
+        return True;
+    if action == "LEFT" and field[origin[0]-1, origin[1]] != 0:
+        return True;
+    if action == "RIGHT" and field[origin[0]+1, origin[1]] != 0:
+        return True;
+    if action == "BOMB" and not is_bomb_possible:
+        return True;
+    return False;
 
 
 def reward_from_events(self, events: List[str]) -> int:
@@ -148,5 +170,7 @@ def reward_from_events(self, events: List[str]) -> int:
     for event in events:
         if event in rewards.rewards:
             reward_sum += rewards.rewards[event]
+        else:
+            raise Exception("Event is not in reward list")
     self.logger.info(f"Awarded {reward_sum} for events {', '.join(events)}")
     return reward_sum
