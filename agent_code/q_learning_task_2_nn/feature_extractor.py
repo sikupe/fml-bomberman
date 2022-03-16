@@ -6,11 +6,11 @@ import numpy as np
 from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
 
-from agent_code.q_learning_task_1_nn.direction import Direction
-from agent_code.q_learning_task_1_nn.feature_vector import FeatureVector, Neighborhood
-from agent_code.q_learning_task_1_nn.game_state import GameState
-from agent_code.q_learning_task_1_nn.player import Player
-from agent_code.q_learning_task_1_nn.types import Position, Bomb
+from agent_code.q_learning_task_2_nn.direction import Direction
+from agent_code.q_learning_task_2_nn.feature_vector import FeatureVector, Neighborhood
+from agent_code.q_learning_task_2_nn.game_state import GameState
+from agent_code.q_learning_task_2_nn.player import Player
+from agent_code.q_learning_task_2_nn.types import Position, Bomb
 
 
 def convert_to_state_object(state: Dict) -> GameState:
