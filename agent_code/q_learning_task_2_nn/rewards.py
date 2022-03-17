@@ -17,7 +17,7 @@ rewards = {
     e.MOVED_DOWN: -1,
     e.MOVED_LEFT: -1,
     e.MOVED_RIGHT: -1,
-    e.INVALID_ACTION: -10,
+    e.INVALID_ACTION: -20,
     e.WAITED: -15,
     APPROACH_COIN: 9,
     MOVED_AWAY_FROM_COIN: -9,
