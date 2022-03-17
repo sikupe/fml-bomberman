@@ -8,7 +8,7 @@ def int_to_list_of_bit(num: int) -> list[int]:
     Returns binary representation of integer in form of a list of length 11.
     https://stackoverflow.com/questions/30971079/how-to-convert-an-integer-to-a-list-of-bits
     """
-    return [1 if num & (1 << (13-n)) else 0 for n in range(14)]
+    return [1 if num & (1 << (13 - n)) else 0 for n in range(14)]
 
 
 @pytest.fixture
@@ -58,12 +58,12 @@ def test_feature_vector_to_state(feature_vector: FeatureVector):
     bit_representation = [0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1]
     bit_representation.reverse()
     for i, v in enumerate(bit_representation):
-        result += (v*2)**i
+        result += (v * 2) ** i
     assert result == feature_vector.to_state()
 
     result = 0
     bit_representation = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     for i, v in enumerate(bit_representation):
-        result += (v*2)**i
-    assert int_to_list_of_bit(feature_vector.size()-1) == bit_representation
-    assert result == feature_vector.size()-1
+        result += (v * 2) ** i
+    assert int_to_list_of_bit(feature_vector.size() - 1) == bit_representation
+    assert result == feature_vector.size() - 1
