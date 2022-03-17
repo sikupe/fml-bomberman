@@ -77,7 +77,6 @@ class FeatureVector:
     crate_distance: Neighborhood
     crate_exists: bool
     in_danger: bool
-    can_move_in_direction: Neighborhood
     bomb_distance: Neighborhood
     bomb_exists: bool
     move_to_danger: Neighborhood
@@ -88,7 +87,7 @@ class FeatureVector:
         Returns the needed size for 11 bit.
 
         in_danger, coin_distance, coin_exists, crate_distance, crate_exists,
-        can_move_in_direction, bomb_distance, bomb_exists, move_to_danger,
+        bomb_distance, bomb_exists, move_to_danger,
         """
         return 2**14
 
