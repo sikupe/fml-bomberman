@@ -23,7 +23,7 @@ def test_try_to_move_into_safety(mocker: MockerFixture):
     can_move_in_direction = Neighborhood(True, True, True, True)
     # Places that are in danger when there are places that will lead to no
     # danger will be -1
-    assert Neighborhood(-1, 3, -1, 4) == try_to_move_into_safety(
+    assert Neighborhood(0, 3, 0, 4) == try_to_move_into_safety(
         origin, bombs, bomb_distance, can_move_in_direction
     )
 
