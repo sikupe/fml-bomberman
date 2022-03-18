@@ -38,7 +38,8 @@ def calculate_neighborhood_distance(
     field: np.ndarray = field.copy()
 
     # Make creates to obstacles for pathfinding
-    field[field > 0] = -1
+    if with_crates:
+        field[field > 0] = -1
     # Make free fields to pathfinding free fields
     field[field == 0] = 1
 
@@ -205,7 +206,7 @@ def move_to_danger(field: np.ndarray, origin: Position, bombs: List[Bomb], explo
 
 
 def extract_crates(field: np.ndarray) -> List[Position]:
-    crates = np.where(field == 1)
+    crates = np.where(field.T == 1)
     return list(np.array(crates).T)
 
 
@@ -217,7 +218,7 @@ def extract_features(state: GameState) -> FeatureVector:
     crates = extract_crates(state.field)
 
     crate_exists = len(crates) > 0
-    crate_distance = calculate_neighborhood_distance(state.field, state.self.position, crates, state.bombs)
+    crate_distance = calculate_neighborhood_distance(state.field, state.self.position, crates, state.bombs, with_crates=False)
 
     can_move_in_direction = can_move(state.field, state.self.position)
 
