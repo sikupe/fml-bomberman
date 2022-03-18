@@ -17,6 +17,29 @@ def test_try_to_move_into_safety(mocker: MockerFixture):
     Check that the safety neighborhood is an inverse is_in_danger, for each
     direction.
     """
+    
+    arena = np.array(
+        [
+            [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
+            [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1],
+            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
+            [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1],
+            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
+            [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1],
+            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
+            [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1],
+            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
+            [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1],
+            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
+            [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1],
+            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
+            [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1],
+            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
+            [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+        ]
+    )
+    
     mocker.patch(
         "agent_code.q_learning_task_2.feature_extractor.is_in_danger",
         side_effect=[True, False, True, False],
@@ -29,7 +52,7 @@ def test_try_to_move_into_safety(mocker: MockerFixture):
     # Places that are in danger when there are places that will lead to no
     # danger will be -1
     assert Neighborhood(0, 3, 0, 4) == try_to_move_into_safety(
-        origin, bombs, bomb_distance, can_move_in_direction
+        arena, origin, bombs, bomb_distance, can_move_in_direction
     )
 
 
@@ -59,36 +82,56 @@ def test_is_in_danger():
     arena = np.array(
         [
             [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
-            [-1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, -1],
+            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
+            [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1],
+            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
+            [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1],
+            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
             [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1],
             [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
             [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1],
             [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
             [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1],
             [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
-            [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 1, -1],
-            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
-            [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 1, -1, 0, -1, 0, -1],
-            [-1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
             [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1],
             [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
             [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1],
-            [-1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, -1],
+            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
             [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
         ]
     )
 
     origin = (6, 5)
     bombs = [((5, 4), 1)]
-    assert not is_in_danger(origin, bombs)
+    assert not is_in_danger(arena, origin, bombs)
 
     origin = (5, 5)
     bombs = [((5, 4), 1)]
-    assert is_in_danger(origin, bombs)
+    assert is_in_danger(arena, origin, bombs)
 
     origin = (7, 7)
     bombs = [((10, 7), 1)]
-    assert is_in_danger(origin, bombs)
+    assert is_in_danger(arena, origin, bombs)
+    
+    origin = (7, 4)
+    bombs = [((5, 4), 1)]
+    assert not is_in_danger(arena, origin, bombs)
+    
+    origin = (7, 3)
+    bombs = [((5, 3), 1)]
+    assert is_in_danger(arena, origin, bombs)
+    
+    origin = (7, 3)
+    bombs = [((5, 3), 1)]
+    arena_cp = arena.copy()
+    arena_cp[6,3] = 1
+    assert not is_in_danger(arena_cp, origin, bombs)
+    
+    origin = (7, 3)
+    bombs = [((5, 3), 1)]
+    arena_cp = arena.copy()
+    arena_cp[3,6] = 1
+    assert is_in_danger(arena_cp, origin, bombs)
 
     for i, bol in [(6, False), (7, True), (8, True)]:
         origin = (i, 7)
@@ -97,8 +140,8 @@ def test_is_in_danger():
         game_bomb = Bomb((10, 7), mock, 2, BOMB_POWER, mock)
         coords = game_bomb.get_blast_coords(arena)
         assert bol == (origin in coords)
-        assert bol == is_in_danger(origin, bombs)
-        assert (origin in coords) == is_in_danger(origin, bombs)
+        assert bol == is_in_danger(arena, origin, bombs)
+        assert (origin in coords) == is_in_danger(arena, origin, bombs)
 
 
 def test_extract_crates():
@@ -123,8 +166,7 @@ def test_extract_crates():
             [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
             [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
         ]
-    )
-    arena
+    ).T
 
     wanted_crates = [
         (1, 1),
@@ -135,7 +177,7 @@ def test_extract_crates():
         (5, 6),
     ]
     for (x, y) in wanted_crates:
-        arena[y, x] = 1
+        arena[x, y] = 1
 
     received_crates = [np_array.tolist() for np_array in extract_crates(arena)]
 

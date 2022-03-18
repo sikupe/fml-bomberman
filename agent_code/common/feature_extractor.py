@@ -24,18 +24,19 @@ def convert_to_state_object(state: Dict) -> GameState:
     others: List[Player] = list(map(Player, state["others"]))
     user_input: str | None = state["user_input"]
     return GameState(
-        rnd, step, field.T, bombs, explosion_map, coins, self, others, user_input
+        rnd, step, field, bombs, explosion_map, coins, self, others, user_input
     )
 
 
 def calculate_neighborhood_distance(
-        field: np.ndarray,
-        origin: Position,
-        destinations: List[Position],
-        bombs: List[Bomb],
-        with_crates: bool = True,
-        with_bombs: bool = True,
+    field: np.ndarray,
+    origin: Position,
+    destinations: List[Position],
+    bombs: List[Bomb],
+    with_crates: bool = True,
+    with_bombs: bool = True,
 ) -> Neighborhood:
+
     field: np.ndarray = field.copy()
 
     # Make creates to obstacles for pathfinding
@@ -49,7 +50,7 @@ def calculate_neighborhood_distance(
             field[bomb_coord] = 1
 
     neighborhood = Neighborhood()
-    grid = Grid(matrix=field)
+    grid = Grid(matrix=field.T)
     finder = AStarFinder()
 
     for d in Direction:
@@ -78,11 +79,12 @@ def calculate_neighborhood_distance(
 
 
 def calculate_neighborhood_distance_for_bombs(
-        field: np.ndarray,
-        origin: Position,
-        destinations: List[Position],
-        bombs: List[Bomb],
+    field: np.ndarray,
+    origin: Position,
+    destinations: List[Position],
+    bombs: List[Bomb],
 ) -> Neighborhood:
+
     field: np.ndarray = field.copy()
 
     # Make creates to obstacles for pathfinding
@@ -94,7 +96,7 @@ def calculate_neighborhood_distance_for_bombs(
         field[bomb_coord] = 1
 
     neighborhood = Neighborhood()
-    grid = Grid(matrix=field)
+    grid = Grid(matrix=field.T)
     finder = AStarFinder()
 
     for d in Direction:
@@ -125,8 +127,11 @@ def calculate_neighborhood_distance_for_bombs(
     return neighborhood
 
 
-def can_move(field: np.ndarray, position: Position) -> Neighborhood:
+def can_move(field: np.ndarray, position: Position, bombs: List[Position]) -> Neighborhood:
     neighborhood = Neighborhood()
+    field = field.copy()
+    for bomb in bombs:
+        field[bomb[0], bomb[1]] = 1
     for d in Direction:
         name, coords = d.value
         x = position[0] + coords[0]
@@ -137,14 +142,14 @@ def can_move(field: np.ndarray, position: Position) -> Neighborhood:
 
 
 def try_to_move_into_safety(
-        origin: Position,
-        bombs: List[Bomb],
-        bomb_distance: Neighborhood,
-        can_move_in_direction: Neighborhood,
+    field,
+    origin: Position,
+    bombs: List[Bomb],
+    bomb_distance: Neighborhood,
+    can_move_in_direction: Neighborhood,
 ) -> Neighborhood:
     """
     Go into each direction and check if it safe.
-
     We check for each direction if we would still be in danger.
     To see if something is really safe we also check if we can move towards it.
     Still existing valid paths are keept, invalid paths (not movable, and not
@@ -155,7 +160,7 @@ def try_to_move_into_safety(
     for d in Direction:
         _, coords = d.value
         new_origin = (origin[0] + coords[0], origin[1] + coords[1])
-        safety.append(not is_in_danger(new_origin, bombs))
+        safety.append(not is_in_danger(field, new_origin, bombs))
 
     for i, move in enumerate(can_move_in_direction):
         safety[i] = move and safety[i]
@@ -168,7 +173,7 @@ def try_to_move_into_safety(
     return bomb_distance
 
 
-def is_in_danger(origin: Position, bombs: List[Bomb]) -> bool:
+def is_in_danger(field: np.ndarray, origin: Position, bombs: List[Bomb]) -> bool:
     in_danger = False
 
     for bomb_coords, exp_time in bombs:
@@ -177,14 +182,28 @@ def is_in_danger(origin: Position, bombs: List[Bomb]) -> bool:
                 other_i = (i + 1) % 2
                 dist = abs(origin[other_i] - bomb_coords[other_i])
                 if dist < 4:
-                    in_danger = True
-                    break
+                    if not crate_or_wall_in_between(field, i, other_i, origin, bomb_coords):
+                        in_danger = True
+                        break
 
     return in_danger
 
+def crate_or_wall_in_between(field: np.ndarray, i, other_i: int, origin: Position, bomb: Position):
+    steps = 1 if origin[other_i] < bomb[other_i] else -1
+    
+    for position in range(origin[other_i], bomb[other_i], steps):
+        if i == 0:
+            x = origin[i]
+            y = position
+        else:
+            x = position
+            y = origin[i]
+        if field[x,y] != 0:
+            return True
+    return False
 
 def move_to_danger(
-        field: np.ndarray, origin: Position, bombs: List[Bomb], explosion_map: np.ndarray
+    field: np.ndarray, origin: Position, bombs: List[Bomb], explosion_map: np.ndarray
 ):
     neighborhood = Neighborhood()
     for d in Direction:
@@ -213,5 +232,5 @@ def move_to_danger(
 
 
 def extract_crates(field: np.ndarray) -> List[Position]:
-    crates = np.where(field.T == 1)
+    crates = np.where(field == 1)
     return list(np.array(crates).T)

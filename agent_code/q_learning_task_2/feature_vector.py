@@ -44,10 +44,10 @@ class FeatureVector:
                 |-move_to_danger
         """
 
-        if self.in_danger:
+        if not self.in_danger:
             return int(
                 self.in_danger
-                + (self.coin_distance.to_shortest_binary_encoding(argmax=True) << 1)
+                + (self.coin_distance.to_shortest_binary_encoding() << 1)
                 + (self.coin_exists << 3)
                 + (self.crate_distance.to_shortest_binary_encoding() << 4)
                 + (self.crate_exists << 6)
