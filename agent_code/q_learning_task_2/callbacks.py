@@ -4,7 +4,8 @@ from attr import field
 import numpy as np
 
 from agent_code.q_learning_task_2.train import ACTIONS, Q_TABLE_FILE, is_invalid_action   
-from agent_code.q_learning_task_2.feature_extractor import extract_features, convert_to_state_object
+from agent_code.q_learning_task_2.feature_extractor import extract_features
+from agent_code.common.feature_extractor import convert_to_state_object
 
 
 def setup(self):

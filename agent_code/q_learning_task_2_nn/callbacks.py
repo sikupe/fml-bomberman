@@ -6,7 +6,8 @@ import torch
 from agent_code.q_learning_task_2_nn.feature_vector import FeatureVector
 from agent_code.q_learning_task_2_nn.q_nn import QNN
 from agent_code.q_learning_task_2_nn.train import ACTIONS, Q_NN_FILE
-from agent_code.q_learning_task_2_nn.feature_extractor import extract_features, convert_to_state_object
+from agent_code.q_learning_task_2_nn.feature_extractor import extract_features
+from agent_code.common.feature_extractor import convert_to_state_object
 
 
 def setup(self):

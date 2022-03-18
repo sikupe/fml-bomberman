@@ -1,19 +1,19 @@
 from __future__ import annotations
 
+import os
 from os.path import join, dirname, isfile
 from typing import List, Optional
 
 import numpy as np
 import torch
+import torch.nn as nn
+from torch import optim
 
+from agent_code.common.feature_extractor import convert_to_state_object
 from agent_code.q_learning_task_2_nn import rewards
-from agent_code.q_learning_task_2_nn.feature_extractor import extract_features, convert_to_state_object
+from agent_code.q_learning_task_2_nn.feature_extractor import extract_features
 from agent_code.q_learning_task_2_nn.feature_vector import FeatureVector, Mirror
 from agent_code.q_learning_task_2_nn.q_nn import QNN
-from torch import optim
-import torch.nn as nn
-
-import os
 
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB']
 

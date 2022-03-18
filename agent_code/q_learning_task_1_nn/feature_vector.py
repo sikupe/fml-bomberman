@@ -1,88 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+
 import numpy as np
 import torch
 
-
-@dataclass
-class Neighborhood:
-    north: int | float | bool = field(default=0)
-    south: int | float | bool = field(default=0)
-    east: int | float | bool = field(default=0)
-    west: int | float | bool = field(default=0)
-
-    def __str__(self):
-        return (
-            f"Neighborhood [north: {self.north}, south: {self.south}, "
-            f"east: {self.east}, west: {self.west}]"
-        )
-
-    def __repr__(self):
-        return (
-            f"Neighborhood [north: {self.north}, south: {self.south}, "
-            f"east: {self.east}, west: {self.west}]"
-        )
-
-    def __iter__(self):
-        self._iter_values = [self.north, self.south, self.east, self.west]
-        self._count = 0
-        return self
-
-    def __next__(self):
-        if self._count == len(self._iter_values):
-            raise StopIteration
-        result = self._iter_values[self._count]
-        self._count += 1
-        return result
-
-    def to_feature_vector(self, normalize_max: int) -> np.ndarray:
-        if normalize_max >= 0:
-            return self.to_vector() / normalize_max
-        return self.to_vector().astype("float64")
-
-    def to_vector(self):
-        return np.array([self.north, self.south, self.east, self.west])
-
-    def to_one_hot_encoding(self):
-        directions = self.to_vector()
-        shortest = np.argmin(directions)
-        result = np.array([0.0, 0.0, 0.0, 0.0])
-        result[shortest] = 1.0
-        return result
-
-    def to_relative_distance_encoding(self):
-        directions = self.to_vector()
-        max_value = np.max(directions)
-
-        if max_value == 0:
-            result = directions / max_value
-        else:
-            result = np.zeros_like(directions)
-
-        return result
-
-    def to_shortest_binary_encoding(self, argmax=False):
-        if argmax:
-            return np.argmax(self.to_vector())
-        return np.argmin(self.to_vector())
-
-    def to_binary_encoding(self) -> int:
-        result = 0
-        vec = self.to_vector()
-        for i, el in enumerate(vec):
-            if el:
-                result += 2 ** i
-        return result
-
-    def to_nn_vector(self):
-        return self.to_vector() > 0
-
-    def minimum(self):
-        return np.min(self.to_vector())
-
-    def maximum(self):
-        return np.max(self.to_vector())
+from agent_code.common.neighborhood import Neighborhood
 
 
 @dataclass

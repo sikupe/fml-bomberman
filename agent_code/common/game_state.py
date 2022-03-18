@@ -5,8 +5,8 @@ from typing import List
 
 import numpy as np
 
-from agent_code.q_learning_task_1.types import Position, Bomb
-from agent_code.q_learning_task_1.player import Player
+from agent_code.common.types import Position, Bomb
+from agent_code.common.player import Player
 
 
 @dataclass
