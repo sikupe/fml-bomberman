@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 import numpy as np
 from pathfinding.core.grid import Grid
@@ -27,14 +27,13 @@ def convert_to_state_object(state: Dict) -> GameState:
 
 
 def calculate_neighborhood_distance(
-    field: np.ndarray,
-    origin: Position,
-    destinations: List[Position],
-    bombs: List[Bomb],
-    with_crates: bool = True,
-    with_bombs: bool = True,
+        field: np.ndarray,
+        origin: Position,
+        destinations: List[Position],
+        bombs: List[Bomb],
+        with_crates: bool = True,
+        with_bombs: bool = True,
 ) -> Neighborhood:
-
     field: np.ndarray = field.copy()
 
     # Make creates to obstacles for pathfinding
@@ -76,12 +75,11 @@ def calculate_neighborhood_distance(
 
 
 def calculate_neighborhood_distance_for_bombs(
-    field: np.ndarray,
-    origin: Position,
-    destinations: List[Position],
-    bombs: List[Bomb],
+        field: np.ndarray,
+        origin: Position,
+        destinations: List[Position],
+        bombs: List[Bomb],
 ) -> Neighborhood:
-
     field: np.ndarray = field.copy()
 
     # Make creates to obstacles for pathfinding
@@ -135,7 +133,8 @@ def can_move(field: np.ndarray, position: Position) -> Neighborhood:
     return neighborhood
 
 
-def try_to_move_into_safety(origin: Position, bombs: List[Bomb], bomb_distance: Neighborhood, can_move_in_direction: Neighborhood) -> Neighborhood:
+def try_to_move_into_safety(origin: Position, bombs: List[Bomb], bomb_distance: Neighborhood,
+                            can_move_in_direction: Neighborhood) -> Neighborhood:
     """
     Go into each direction and check if it safe.
 
@@ -206,11 +205,12 @@ def move_to_danger(field: np.ndarray, origin: Position, bombs: List[Bomb], explo
 
 def extract_crates(field: np.ndarray) -> List[Position]:
     crates = np.where(field == 1)
-    return list(np.array(crates).T)
+    crates = np.array([np.array(c) for c in crates])
+    crates = np.swapaxes(crates, 0, 1)[:, [1, 0]]
+    return crates
 
 
 def extract_features(state: GameState) -> FeatureVector:
-
     coin_exists = len(state.coins) > 0
     coin_distance = calculate_neighborhood_distance(state.field, state.self.position, state.coins, state.bombs)
 
@@ -233,4 +233,5 @@ def extract_features(state: GameState) -> FeatureVector:
     else:
         mv_to_danger = Neighborhood(False, False, False, False)
 
-    return FeatureVector(coin_distance, coin_exists, crate_distance, crate_exists, in_danger, can_move_in_direction, bomb_distance, bomb_exists, mv_to_danger)
+    return FeatureVector(coin_distance, coin_exists, crate_distance, crate_exists, in_danger, can_move_in_direction,
+                         bomb_distance, bomb_exists, mv_to_danger)

@@ -8,14 +8,11 @@ class QNN(nn.Module):
         super(QNN, self).__init__()
         intermediate_size = input_size * 2
 
-        self.layer1 = nn.Linear(input_size, intermediate_size).double()
-        self.layer2 = nn.Linear(intermediate_size, intermediate_size).double()
-        self.layer3 = nn.Linear(intermediate_size, output_size).double()
+        self.layer1 = nn.Linear(input_size, output_size).double()
 
     def forward(self, x):
-        x = F.relu(self.layer1(x))
-        x = F.relu(self.layer2(x))
-        x = torch.sigmoid(self.layer3(x))
+        x = self.layer1(x)
+        x = torch.sigmoid(x)
         return x
 
     def num_flat_features(self, x):

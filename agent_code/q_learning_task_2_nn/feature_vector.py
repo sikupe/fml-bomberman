@@ -18,6 +18,7 @@ class Mirror(Enum):
     ROT_CLOCKWISE_1 = 4,
     ROT_CLOCKWISE_2 = 5,
     ROT_CLOCKWISE_3 = 6,
+    NO_MIRROR = 7,
 
     @staticmethod
     def mirror_action(mirror: Mirror, action: str):
@@ -159,6 +160,8 @@ class Neighborhood:
             return Neighborhood(self.south, self.north, self.west, self.east)
         elif mirror_state == Mirror.ROT_CLOCKWISE_3:
             return Neighborhood(self.east, self.west, self.south, self.north)
+        elif mirror_state == Mirror.NO_MIRROR:
+            return self
 
 
 @dataclass

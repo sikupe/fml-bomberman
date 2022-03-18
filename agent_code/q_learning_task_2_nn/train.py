@@ -158,6 +158,8 @@ def extract_events_from_state(self, old_features: FeatureVector, new_features: F
 
     if new_features.in_danger:
         custom_events.append(rewards.IN_DANGER)
+    elif old_features.in_danger:
+        custom_events.append(rewards.MOVED_AWAY_FROM_DANGER)
 
     return custom_events
 
