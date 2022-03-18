@@ -5,6 +5,7 @@ from typing import List, Optional
 
 import numpy as np
 
+from agent_code.common.neighborhood import Mirror
 from agent_code.q_learning_task_2 import rewards
 from agent_code.q_learning_task_2.feature_extractor import extract_features
 from agent_code.common.feature_extractor import convert_to_state_object
@@ -66,7 +67,13 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
 
         total_events = custom_events + events
 
-        update_q_table(self, current_feature_state, next_feature_state, self_action, total_events)
+        for mirror in Mirror:
+            rot_current_state = current_feature_state.mirror(mirror)
+            rot_next_state = next_feature_state.mirror(mirror)
+            rot_action = Mirror.mirror_action(mirror, self_action)
+            rot_events = Mirror.mirror_events(mirror, total_events)
+
+            update_q_table(self, rot_current_state, rot_next_state, rot_action, rot_events)
 
 
 def update_q_table(self, current_feature_state: FeatureVector, next_feature_state: Optional[FeatureVector],
@@ -104,7 +111,12 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     old_state = convert_to_state_object(last_game_state)
     current_feature_state = extract_features(old_state)
 
-    update_q_table(self, current_feature_state, None, last_action, events)
+    for mirror in Mirror:
+        rot_current_state = current_feature_state.mirror(mirror)
+        rot_action = Mirror.mirror_action(mirror, last_action)
+        rot_events = Mirror.mirror_events(mirror, events)
+
+        update_q_table(self, rot_current_state, None, rot_action, rot_events)
 
     with open(STATS_FILE, 'a+') as f:
         f.write(f'{len(old_state.coins)}, ')

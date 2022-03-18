@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from agent_code.common.neighborhood import Neighborhood
+from agent_code.common.neighborhood import Neighborhood, Mirror
 
 
 @dataclass
@@ -15,6 +15,11 @@ class FeatureVector:
     bomb_distance: Neighborhood
     bomb_exists: bool
     move_to_danger: Neighborhood
+
+    def mirror(self, mirror: Mirror) -> FeatureVector:
+        return FeatureVector(self.coin_distance.mirror(mirror), self.coin_exists, self.crate_distance.mirror(mirror),
+                             self.crate_exists, self.in_danger, self.bomb_distance.mirror(mirror),
+                             self.bomb_exists, self.move_to_danger.mirror(mirror))
 
     @staticmethod
     def bits():
@@ -30,7 +35,7 @@ class FeatureVector:
         in_danger, coin_distance, coin_exists, crate_distance, crate_exists,
         bomb_distance, bomb_exists, move_to_danger,
         """
-        return 2**FeatureVector.bits()
+        return 2 ** FeatureVector.bits()
 
     def to_state(self) -> int:
         """
@@ -51,14 +56,14 @@ class FeatureVector:
                 + (self.coin_exists << 3)
                 + (self.crate_distance.to_shortest_binary_encoding() << 4)
                 + (self.crate_exists << 6)
-                + (self.move_to_danger.to_binary_encoding()<<7)
+                + (self.move_to_danger.to_binary_encoding() << 7)
             )
         else:
             return int(
                 self.in_danger
-                + (self.bomb_distance.to_shortest_binary_encoding(argmax=True)<<1)
+                + (self.bomb_distance.to_shortest_binary_encoding(argmax=True) << 1)
                 + (self.bomb_exists << 3)
                 + (self.crate_distance.to_shortest_binary_encoding() << 4)
                 + (self.crate_exists << 6)
-                + (self.move_to_danger.to_binary_encoding()<<7)
+                + (self.move_to_danger.to_binary_encoding() << 7)
             )
