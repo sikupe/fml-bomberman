@@ -234,4 +234,4 @@ def extract_features(state: GameState) -> FeatureVector:
     else:
         mv_to_danger = Neighborhood(False, False, False, False)
 
-    return FeatureVector(coin_distance, coin_exists, crate_distance, crate_exists, in_danger, can_move_in_direction, bomb_distance, bomb_exists, mv_to_danger)
+    return FeatureVector(coin_distance, coin_exists, crate_distance, crate_exists, in_danger, bomb_distance, bomb_exists, mv_to_danger)

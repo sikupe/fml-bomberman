@@ -8,7 +8,7 @@ import torch
 
 from agent_code.q_learning_task_2_nn import rewards
 from agent_code.q_learning_task_2_nn.feature_extractor import extract_features, convert_to_state_object
-from agent_code.q_learning_task_2_nn.feature_vector import FeatureVector
+from agent_code.q_learning_task_2_nn.feature_vector import FeatureVector, Mirror
 from agent_code.q_learning_task_2_nn.q_nn import QNN
 from torch import optim
 import torch.nn as nn
@@ -72,7 +72,13 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
 
         total_events = custom_events + events
 
-        update_nn(self, current_feature_state, next_feature_state, self_action, total_events)
+        for mirror in Mirror:
+            rot_current_state = current_feature_state.mirror(mirror)
+            rot_next_state = next_feature_state.mirror(mirror)
+            rot_action = Mirror.mirror_action(mirror, self_action)
+            rot_events = Mirror.mirror_events(mirror, total_events)
+
+            update_nn(self, rot_current_state, rot_next_state, rot_action, rot_events)
 
 
 def update_nn(self, current_feature_state: FeatureVector, next_feature_state: Optional[FeatureVector],
@@ -114,7 +120,12 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     old_state = convert_to_state_object(last_game_state)
     current_feature_state = extract_features(old_state)
 
-    update_nn(self, current_feature_state, None, last_action, events)
+    for mirror in Mirror:
+        rot_current_state = current_feature_state.mirror(mirror)
+        rot_action = Mirror.mirror_action(mirror, last_action)
+        rot_events = Mirror.mirror_events(mirror, events)
+
+        update_nn(self, rot_current_state, None, rot_action, rot_events)
 
     with open(STATS_FILE, 'a+') as f:
         f.write(f'{len(old_state.coins)}, ')
