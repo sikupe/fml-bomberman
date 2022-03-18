@@ -41,7 +41,7 @@ def test_try_to_move_into_safety(mocker: MockerFixture):
     )
     
     mocker.patch(
-        "agent_code.q_learning_task_2.feature_extractor.is_in_danger",
+        "agent_code.common.feature_extractor.is_in_danger",
         side_effect=[True, False, True, False],
     )
 
