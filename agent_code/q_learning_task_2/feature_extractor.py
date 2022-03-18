@@ -14,16 +14,18 @@ from agent_code.q_learning_task_2.types import Position, Bomb
 
 
 def convert_to_state_object(state: Dict) -> GameState:
-    rnd: int = state['round']
-    step: int = state['step']
-    field: np.ndarray = state['field']
-    bombs: List[Bomb] = state['bombs']
-    explosion_map: np.ndarray = state['explosion_map']
-    coins: List[Position] = state['coins']
-    self: Player = Player(state['self'])
-    others: List[Player] = list(map(Player, state['others']))
-    user_input: str | None = state['user_input']
-    return GameState(rnd, step, field.T, bombs, explosion_map, coins, self, others, user_input)
+    rnd: int = state["round"]
+    step: int = state["step"]
+    field: np.ndarray = state["field"]
+    bombs: List[Bomb] = state["bombs"]
+    explosion_map: np.ndarray = state["explosion_map"]
+    coins: List[Position] = state["coins"]
+    self: Player = Player(state["self"])
+    others: List[Player] = list(map(Player, state["others"]))
+    user_input: str | None = state["user_input"]
+    return GameState(
+        rnd, step, field.T, bombs, explosion_map, coins, self, others, user_input
+    )
 
 
 def calculate_neighborhood_distance(
@@ -38,7 +40,8 @@ def calculate_neighborhood_distance(
     field: np.ndarray = field.copy()
 
     # Make creates to obstacles for pathfinding
-    field[field > 0] = -1
+    if with_crates:
+        field[field > 0] = -1
     # Make free fields to pathfinding free fields
     field[field == 0] = 1
 
@@ -52,7 +55,7 @@ def calculate_neighborhood_distance(
 
     for d in Direction:
         name, coords = d.value
-        shortest_path = float('inf')
+        shortest_path = float("inf")
 
         for dest in destinations:
             x = origin[0] + coords[0]
@@ -227,7 +230,7 @@ def extract_features(state: GameState) -> FeatureVector:
 
     crate_exists = len(crates) > 0
     crate_distance = calculate_neighborhood_distance(
-        state.field, state.self.position, crates, state.bombs
+        state.field, state.self.position, crates, state.bombs, with_crates=False
     )
 
     can_move_in_direction = can_move(state.field, state.self.position)
