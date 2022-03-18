@@ -7,8 +7,8 @@ from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
 
 from agent_code.common.direction import Direction
-from agent_code.common.neighborhood import Neighborhood
 from agent_code.common.game_state import GameState
+from agent_code.common.neighborhood import Neighborhood
 from agent_code.common.player import Player
 from agent_code.common.types import Position, Bomb
 
@@ -29,14 +29,13 @@ def convert_to_state_object(state: Dict) -> GameState:
 
 
 def calculate_neighborhood_distance(
-    field: np.ndarray,
-    origin: Position,
-    destinations: List[Position],
-    bombs: List[Bomb],
-    with_crates: bool = True,
-    with_bombs: bool = True,
+        field: np.ndarray,
+        origin: Position,
+        destinations: List[Position],
+        bombs: List[Bomb],
+        with_crates: bool = True,
+        with_bombs: bool = True,
 ) -> Neighborhood:
-
     field: np.ndarray = field.copy()
 
     # Make creates to obstacles for pathfinding
@@ -79,12 +78,11 @@ def calculate_neighborhood_distance(
 
 
 def calculate_neighborhood_distance_for_bombs(
-    field: np.ndarray,
-    origin: Position,
-    destinations: List[Position],
-    bombs: List[Bomb],
+        field: np.ndarray,
+        origin: Position,
+        destinations: List[Position],
+        bombs: List[Bomb],
 ) -> Neighborhood:
-
     field: np.ndarray = field.copy()
 
     # Make creates to obstacles for pathfinding
@@ -142,11 +140,11 @@ def can_move(field: np.ndarray, position: Position, bombs: List[Position]) -> Ne
 
 
 def try_to_move_into_safety(
-    field,
-    origin: Position,
-    bombs: List[Bomb],
-    bomb_distance: Neighborhood,
-    can_move_in_direction: Neighborhood,
+        field,
+        origin: Position,
+        bombs: List[Bomb],
+        bomb_distance: Neighborhood,
+        can_move_in_direction: Neighborhood,
 ) -> Neighborhood:
     """
     Go into each direction and check if it safe.
@@ -188,9 +186,10 @@ def is_in_danger(field: np.ndarray, origin: Position, bombs: List[Bomb]) -> bool
 
     return in_danger
 
+
 def crate_or_wall_in_between(field: np.ndarray, i, other_i: int, origin: Position, bomb: Position):
     steps = 1 if origin[other_i] < bomb[other_i] else -1
-    
+
     for position in range(origin[other_i], bomb[other_i], steps):
         if i == 0:
             x = origin[i]
@@ -198,12 +197,13 @@ def crate_or_wall_in_between(field: np.ndarray, i, other_i: int, origin: Positio
         else:
             x = position
             y = origin[i]
-        if field[x,y] != 0:
+        if field[x, y] != 0:
             return True
     return False
 
+
 def move_to_danger(
-    field: np.ndarray, origin: Position, bombs: List[Bomb], explosion_map: np.ndarray
+        field: np.ndarray, origin: Position, bombs: List[Bomb], explosion_map: np.ndarray
 ):
     neighborhood = Neighborhood()
     for d in Direction:
