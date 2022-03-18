@@ -1,20 +1,19 @@
 from __future__ import annotations
 
+import os
 from os.path import join, dirname, isfile
 from typing import List, Optional
 
 import numpy as np
 import torch
+import torch.nn as nn
+from torch import optim
 
+from agent_code.common.feature_extractor import convert_to_state_object
 from agent_code.q_learning_task_1_nn import rewards
 from agent_code.q_learning_task_1_nn.feature_extractor import extract_features
-from agent_code.common.feature_extractor import convert_to_state_object
 from agent_code.q_learning_task_1_nn.feature_vector import FeatureVector
 from agent_code.q_learning_task_1_nn.q_nn import QNN
-from torch import optim
-import torch.nn as nn
-
-import os
 
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT']
 
@@ -133,21 +132,6 @@ def extract_events_from_state(self, old_features: FeatureVector, new_features: F
         custom_events.append(rewards.MOVED_AWAY_FROM_COIN)
     elif old_features.coin_distance.minimum() > new_features.coin_distance.minimum():
         custom_events.append(rewards.APPROACH_COIN)
-
-    if old_features.crate_distance.minimum() < new_features.crate_distance.minimum():
-        custom_events.append(rewards.MOVED_AWAY_FROM_CRATE)
-    elif old_features.crate_distance.minimum() > new_features.crate_distance.minimum():
-        custom_events.append(rewards.APPROACH_CRATE)
-
-    if old_features.bomb_exists and old_features.bomb_distance.maximum() < new_features.bomb_distance.maximum():
-        custom_events.append(rewards.MOVED_AWAY_FROM_BOMB)
-    elif old_features.bomb_exists and old_features.bomb_distance.maximum() == new_features.bomb_distance.maximum() and new_features.in_danger:
-        custom_events.append(rewards.APPROACH_BOMB)
-    elif old_features.bomb_exists and old_features.bomb_distance.maximum() > new_features.bomb_distance.maximum():
-        custom_events.append(rewards.APPROACH_BOMB)
-
-    if new_features.in_danger:
-        custom_events.append(rewards.IN_DANGER)
 
     return custom_events
 

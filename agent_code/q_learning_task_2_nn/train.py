@@ -68,7 +68,7 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
         new_state = convert_to_state_object(new_game_state)
         next_feature_state = extract_features(new_state)
 
-        custom_events = extract_events_from_state(self, current_feature_state, next_feature_state)
+        custom_events = extract_events_from_state(self, current_feature_state, next_feature_state, self_action)
 
         total_events = custom_events + events
 
@@ -132,7 +132,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     torch.save(self.model.state_dict(), Q_NN_FILE)
 
 
-def extract_events_from_state(self, old_features: FeatureVector, new_features: FeatureVector) -> List:
+def extract_events_from_state(self, old_features: FeatureVector, new_features: FeatureVector, action: str) -> List:
     custom_events = []
     if old_features.coin_distance.minimum() < new_features.coin_distance.minimum():
         custom_events.append(rewards.MOVED_AWAY_FROM_COIN)
@@ -160,6 +160,12 @@ def extract_events_from_state(self, old_features: FeatureVector, new_features: F
         custom_events.append(rewards.IN_DANGER)
     elif old_features.in_danger:
         custom_events.append(rewards.MOVED_AWAY_FROM_DANGER)
+
+    if action == 'BOMB':
+        if old_features.next_to_bomb_target:
+            custom_events.append(rewards.GOOD_BOMB)
+        else:
+            custom_events.append(rewards.BAD_BOMB)
 
     return custom_events
 

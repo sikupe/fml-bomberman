@@ -5,20 +5,18 @@ from dataclasses import dataclass
 import numpy as np
 import torch
 
-from agent_code.common.neighborhood import Neighborhood
+from agent_code.common.neighborhood import Neighborhood, Mirror
 
 
 @dataclass
 class FeatureVector:
     coin_distance: Neighborhood
     coin_exists: bool
-    crate_distance: Neighborhood
-    crate_exists: bool
-    in_danger: bool
     can_move_in_direction: Neighborhood
-    bomb_distance: Neighborhood
-    bomb_exists: bool
-    move_to_danger: Neighborhood
+
+    def mirror(self, mirror: Mirror):
+        return FeatureVector(self.coin_distance.mirror(mirror), self.coin_exists,
+                             self.can_move_in_direction.mirror(mirror))
 
     @staticmethod
     def size() -> int:
