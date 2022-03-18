@@ -1,9 +1,12 @@
-from agent_code.q_learning_task_2.feature_vector import FeatureVector, Neighborhood
+from typing import List
+
+from agent_code.q_learning_task_2.feature_vector import FeatureVector
+from agent_code.common.neighborhood import Neighborhood
 
 import pytest
 
 
-def int_to_list_of_bit(num: int) -> list[int]:
+def int_to_list_of_bit(num: int) -> List[int]:
     """
     Returns binary representation of integer in form of a list of length 11.
     https://stackoverflow.com/questions/30971079/how-to-convert-an-integer-to-a-list-of-bits

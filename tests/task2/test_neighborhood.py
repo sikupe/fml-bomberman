@@ -1,4 +1,4 @@
-from agent_code.q_learning_task_2.feature_vector import Neighborhood
+from agent_code.common.neighborhood import Neighborhood
 import numpy as np
 import itertools
 

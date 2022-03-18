@@ -2,12 +2,12 @@ from unittest.mock import MagicMock
 from pytest_mock import MockerFixture
 import numpy as np
 
-from agent_code.q_learning_task_2.feature_extractor import (
+from agent_code.common.feature_extractor import (
     extract_crates,
     try_to_move_into_safety,
     is_in_danger,
 )
-from agent_code.q_learning_task_2.feature_vector import Neighborhood
+from agent_code.common.neighborhood import Neighborhood
 from items import Bomb
 from settings import BOMB_POWER
 
