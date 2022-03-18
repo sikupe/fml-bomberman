@@ -7,30 +7,43 @@ from agent_code.q_learning_task_2.feature_vector import FeatureVector, Neighborh
 
 
 def extract_features(state: GameState) -> FeatureVector:
+    
+    # Coins
     coin_exists = len(state.coins) > 0
-    coin_distance = calculate_neighborhood_distance(
-        state.field, state.self.position, state.coins, state.bombs
-    )
+    
+    coin_distance = Neighborhood(0,0,0,0)
+    if coin_exists:
+        coin_distance = calculate_neighborhood_distance(
+            state.field, state.self.position, state.coins, state.bombs
+        )
 
+    # Crates
     crates = extract_crates(state.field)
-
     crate_exists = len(crates) > 0
-    crate_distance = calculate_neighborhood_distance(
-        state.field, state.self.position, crates, state.bombs, with_crates=False
-    )
+    
+    crate_distance = Neighborhood(0,0,0,0)
+    if crate_exists:
+        crate_distance = calculate_neighborhood_distance(
+            state.field, state.self.position, crates, state.bombs, with_crates=False
+        )
 
-    can_move_in_direction = can_move(state.field, state.self.position)
-
+    # Bombs
     bombs = [(x, y) for ((x, y), _) in state.bombs]
     bomb_exists = len(bombs) > 0
-    bomb_distance = calculate_neighborhood_distance_for_bombs(
-        state.field, state.self.position, bombs, state.bombs
-    )
-    bomb_distance = try_to_move_into_safety(
-        state.self.position, state.bombs, bomb_distance, can_move_in_direction
-    )
+    
+    can_move_in_direction = can_move(state.field, state.self.position, bombs)
+    
+    bomb_distance = Neighborhood(0,0,0,0)
+    if bomb_exists:
+        bomb_distance = calculate_neighborhood_distance_for_bombs(
+            state.field, state.self.position, bombs, state.bombs
+        )
+        bomb_distance = try_to_move_into_safety(
+            state.field, state.self.position, state.bombs, bomb_distance, can_move_in_direction
+        )
 
-    in_danger = is_in_danger(state.self.position, state.bombs)
+    # Danger
+    in_danger = is_in_danger(state.field, state.self.position, state.bombs)
 
     if not in_danger:
         mv_to_danger = move_to_danger(
