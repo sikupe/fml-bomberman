@@ -14,16 +14,18 @@ from agent_code.q_learning_task_2.types import Position, Bomb
 
 
 def convert_to_state_object(state: Dict) -> GameState:
-    rnd: int = state['round']
-    step: int = state['step']
-    field: np.ndarray = state['field']
-    bombs: List[Bomb] = state['bombs']
-    explosion_map: np.ndarray = state['explosion_map']
-    coins: List[Position] = state['coins']
-    self: Player = Player(state['self'])
-    others: List[Player] = list(map(Player, state['others']))
-    user_input: str | None = state['user_input']
-    return GameState(rnd, step, field.T, bombs, explosion_map, coins, self, others, user_input)
+    rnd: int = state["round"]
+    step: int = state["step"]
+    field: np.ndarray = state["field"]
+    bombs: List[Bomb] = state["bombs"]
+    explosion_map: np.ndarray = state["explosion_map"]
+    coins: List[Position] = state["coins"]
+    self: Player = Player(state["self"])
+    others: List[Player] = list(map(Player, state["others"]))
+    user_input: str | None = state["user_input"]
+    return GameState(
+        rnd, step, field.T, bombs, explosion_map, coins, self, others, user_input
+    )
 
 
 def calculate_neighborhood_distance(
@@ -38,7 +40,8 @@ def calculate_neighborhood_distance(
     field: np.ndarray = field.copy()
 
     # Make creates to obstacles for pathfinding
-    field[field > 0] = -1
+    if with_crates:
+        field[field > 0] = -1
     # Make free fields to pathfinding free fields
     field[field == 0] = 1
 
@@ -52,7 +55,7 @@ def calculate_neighborhood_distance(
 
     for d in Direction:
         name, coords = d.value
-        shortest_path = float('inf')
+        shortest_path = float("inf")
 
         for dest in destinations:
             x = origin[0] + coords[0]
@@ -135,7 +138,12 @@ def can_move(field: np.ndarray, position: Position) -> Neighborhood:
     return neighborhood
 
 
-def try_to_move_into_safety(origin: Position, bombs: List[Bomb], bomb_distance: Neighborhood, can_move_in_direction: Neighborhood) -> Neighborhood:
+def try_to_move_into_safety(
+    origin: Position,
+    bombs: List[Bomb],
+    bomb_distance: Neighborhood,
+    can_move_in_direction: Neighborhood,
+) -> Neighborhood:
     """
     Go into each direction and check if it safe.
 
@@ -177,7 +185,9 @@ def is_in_danger(origin: Position, bombs: List[Bomb]) -> bool:
     return in_danger
 
 
-def move_to_danger(field: np.ndarray, origin: Position, bombs: List[Bomb], explosion_map: np.ndarray):
+def move_to_danger(
+    field: np.ndarray, origin: Position, bombs: List[Bomb], explosion_map: np.ndarray
+):
     neighborhood = Neighborhood()
     for d in Direction:
         name, coords = d.value
@@ -205,32 +215,51 @@ def move_to_danger(field: np.ndarray, origin: Position, bombs: List[Bomb], explo
 
 
 def extract_crates(field: np.ndarray) -> List[Position]:
-    crates = np.where(field == 1)
+    crates = np.where(field.T == 1)
     return list(np.array(crates).T)
 
 
 def extract_features(state: GameState) -> FeatureVector:
 
     coin_exists = len(state.coins) > 0
-    coin_distance = calculate_neighborhood_distance(state.field, state.self.position, state.coins, state.bombs)
+    coin_distance = calculate_neighborhood_distance(
+        state.field, state.self.position, state.coins, state.bombs
+    )
 
     crates = extract_crates(state.field)
 
     crate_exists = len(crates) > 0
-    crate_distance = calculate_neighborhood_distance(state.field, state.self.position, crates, state.bombs)
+    crate_distance = calculate_neighborhood_distance(
+        state.field, state.self.position, crates, state.bombs, with_crates=False
+    )
 
     can_move_in_direction = can_move(state.field, state.self.position)
 
     bombs = [(x, y) for ((x, y), _) in state.bombs]
     bomb_exists = len(bombs) > 0
-    bomb_distance = calculate_neighborhood_distance_for_bombs(state.field, state.self.position, bombs, state.bombs)
-    bomb_distance = try_to_move_into_safety(state.self.position, state.bombs, bomb_distance, can_move_in_direction)
+    bomb_distance = calculate_neighborhood_distance_for_bombs(
+        state.field, state.self.position, bombs, state.bombs
+    )
+    bomb_distance = try_to_move_into_safety(
+        state.self.position, state.bombs, bomb_distance, can_move_in_direction
+    )
 
     in_danger = is_in_danger(state.self.position, state.bombs)
 
     if not in_danger:
-        mv_to_danger = move_to_danger(state.field, state.self.position, state.bombs, state.explosion_map)
+        mv_to_danger = move_to_danger(
+            state.field, state.self.position, state.bombs, state.explosion_map
+        )
     else:
         mv_to_danger = Neighborhood(False, False, False, False)
 
-    return FeatureVector(coin_distance, coin_exists, crate_distance, crate_exists, in_danger, bomb_distance, bomb_exists, mv_to_danger)
+    return FeatureVector(
+        coin_distance,
+        coin_exists,
+        crate_distance,
+        crate_exists,
+        in_danger,
+        bomb_distance,
+        bomb_exists,
+        mv_to_danger,
+    )

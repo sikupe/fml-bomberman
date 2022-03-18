@@ -1,10 +1,15 @@
+from unittest.mock import MagicMock
 from pytest_mock import MockerFixture
+import numpy as np
 
 from agent_code.q_learning_task_2.feature_extractor import (
+    extract_crates,
     try_to_move_into_safety,
     is_in_danger,
 )
 from agent_code.q_learning_task_2.feature_vector import Neighborhood
+from items import Bomb
+from settings import BOMB_POWER
 
 
 def test_try_to_move_into_safety(mocker: MockerFixture):
@@ -40,7 +45,7 @@ def test_is_in_danger():
     [-1  0 -1  0 -1  B -1  0 -1  0 -1  0 -1  0 -1  0 -1] 4  <-- B
     [-1  0  0  0  0  0  X  0  0  0  0  0  0  0  0  0 -1] 5  <-- X
     [-1  0 -1  0 -1  0 -1  0 -1  0 -1  0 -1  0 -1  0 -1] 6
-    [-1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 -1] 7
+    [-1  0  0  0  0  0  0  X  0  0  O  0  0  0  0  0 -1] 7
     [-1  0 -1  0 -1  0 -1  0 -1  0 -1  0 -1  0 -1  1 -1] 8
     [-1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 -1] 9
     [-1  0 -1  0 -1  0 -1  0 -1  0 -1  1 -1  0 -1  0 -1] 10
@@ -51,6 +56,28 @@ def test_is_in_danger():
     [-1  0  0  0  0  0  0  1  0  0  0  0  0  0  0  0 -1] 15
     [-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1] 16
     """
+    arena = np.array(
+        [
+            [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+            [-1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, -1],
+            [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1],
+            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
+            [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1],
+            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
+            [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1],
+            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
+            [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 1, -1],
+            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
+            [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 1, -1, 0, -1, 0, -1],
+            [-1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
+            [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1],
+            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
+            [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1],
+            [-1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, -1],
+            [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+        ]
+    )
+
     origin = (6, 5)
     bombs = [((5, 4), 1)]
     assert not is_in_danger(origin, bombs)
@@ -58,3 +85,61 @@ def test_is_in_danger():
     origin = (5, 5)
     bombs = [((5, 4), 1)]
     assert is_in_danger(origin, bombs)
+
+    origin = (7, 7)
+    bombs = [((10, 7), 1)]
+    assert is_in_danger(origin, bombs)
+
+    for i, bol in [(6, False), (7, True), (8, True)]:
+        origin = (i, 7)
+        mock = MagicMock()
+        bombs = [((10, 7), 1)]
+        game_bomb = Bomb((10, 7), mock, 2, BOMB_POWER, mock)
+        coords = game_bomb.get_blast_coords(arena)
+        assert bol == (origin in coords)
+        assert bol == is_in_danger(origin, bombs)
+        assert (origin in coords) == is_in_danger(origin, bombs)
+
+
+def test_extract_crates():
+    """Test the extract_crates function."""
+    arena = np.array(
+        [
+            [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
+            [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1],
+            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
+            [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1],
+            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
+            [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1],
+            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
+            [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1],
+            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
+            [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1],
+            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
+            [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1],
+            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
+            [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1],
+            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
+            [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+        ]
+    )
+    arena
+
+    wanted_crates = [
+        (1, 1),
+        (2, 1),
+        (15, 15),
+        (13, 3),
+        (7, 4),
+        (5, 6),
+    ]
+    for (x, y) in wanted_crates:
+        arena[y, x] = 1
+
+    received_crates = [np_array.tolist() for np_array in extract_crates(arena)]
+
+    for (x, y) in received_crates:
+        assert (x, y) in wanted_crates
+
+    assert len(wanted_crates) == len(received_crates)
