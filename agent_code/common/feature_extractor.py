@@ -202,6 +202,22 @@ def crate_or_wall_in_between(field: np.ndarray, i, other_i: int, origin: Positio
     return False
 
 
+def next_to_bomb_target(field: np.ndarray, position: Position, players: List[Player]):
+    for d in Direction:
+        _, coords = d.value
+        x = position[0] + coords[0]
+        y = position[1] + coords[1]
+
+        if field[x, y] == 1:
+            return True
+
+        for player in players:
+            if player.position == (x, y):
+                return True
+
+    return False
+
+
 def move_to_danger(
         field: np.ndarray, origin: Position, bombs: List[Bomb], explosion_map: np.ndarray
 ):
