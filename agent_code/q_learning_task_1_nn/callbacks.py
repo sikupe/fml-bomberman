@@ -24,17 +24,20 @@ def act(self, game_state: dict):
     feature_vector = extract_features(game_state)
 
     probabilities = self.model(feature_vector.to_nn_state()).detach().numpy()
-    self.logger.debug(f'Current train probabilities: {probabilities}')
+    if self.train:
+        self.logger.debug(f'Current train probabilities: {probabilities}')
 
-    probabilities -= np.min(probabilities)
-    prob_sum = np.sum(probabilities)
+        probabilities -= np.min(probabilities)
+        prob_sum = np.sum(probabilities)
 
-    if prob_sum != 0:
-        probabilities = probabilities / prob_sum
+        if prob_sum != 0:
+            probabilities = probabilities / prob_sum
+        else:
+            probabilities = None
+
+        selected_action = np.random.choice(ACTIONS, p=probabilities)
     else:
-        probabilities = None
-
-    selected_action = np.random.choice(ACTIONS, p=probabilities)
+        selected_action = ACTIONS[np.argmax(probabilities)]
     self.logger.info(f"Selected action: {selected_action}")
     return selected_action
 # else:

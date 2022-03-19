@@ -25,9 +25,6 @@ STATS_FILE = os.environ.get("STATS_FILE", join(dirname(__file__), 'q_learning_ta
 gamma = 1
 alpha = 0.05
 
-mirror_dirs = [Mirror.ROT_CLOCKWISE_1]
-
-
 def setup_training(self):
     """
     Initialise self for training purpose.
@@ -75,7 +72,7 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
 
         total_events = custom_events + events
 
-        for mirror in mirror_dirs:
+        for mirror in Mirror:
             rot_current_state = current_feature_state.mirror(mirror)
             rot_next_state = next_feature_state.mirror(mirror)
             rot_action = Mirror.mirror_action(mirror, self_action)
@@ -103,12 +100,12 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     old_state = convert_to_state_object(last_game_state)
     current_feature_state = extract_features(old_state)
 
-    for mirror in mirror_dirs:
-        rot_current_state = current_feature_state.mirror(mirror)
-        rot_action = Mirror.mirror_action(mirror, last_action)
-        rot_events = Mirror.mirror_events(mirror, events)
-
-        update_nn(self, rot_current_state, None, rot_action, rot_events, reward_from_events, ACTIONS, gamma)
+    # for mirror in mirror_dirs:
+    #     rot_current_state = current_feature_state.mirror(mirror)
+    #     rot_action = Mirror.mirror_action(mirror, last_action)
+    #     rot_events = Mirror.mirror_events(mirror, events)
+    #
+    #     update_nn(self, rot_current_state, None, rot_action, rot_events, reward_from_events, ACTIONS, gamma)
     # update_nn(self, current_feature_state, None, last_action, events, reward_from_events, ACTIONS, gamma)
 
     with open(STATS_FILE, 'a+') as f:

@@ -13,10 +13,10 @@ IN_DANGER = 'IN_DANGER'
 
 rewards = {
     e.COIN_COLLECTED: 25,
-    e.MOVED_UP: -1,
-    e.MOVED_DOWN: -1,
-    e.MOVED_LEFT: -1,
-    e.MOVED_RIGHT: -1,
+    e.MOVED_UP: -2,
+    e.MOVED_DOWN: -2,
+    e.MOVED_LEFT: -2,
+    e.MOVED_RIGHT: -2,
     e.INVALID_ACTION: -10,
     e.WAITED: -15,
     APPROACH_COIN: 9,
