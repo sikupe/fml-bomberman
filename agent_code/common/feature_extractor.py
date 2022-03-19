@@ -1,11 +1,13 @@
 from __future__ import annotations
 
-from typing import Dict, List
+from typing import Dict, List, Set
 
 import numpy as np
 from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
 
+import items
+import settings
 from agent_code.common.direction import Direction
 from agent_code.common.game_state import GameState
 from agent_code.common.neighborhood import Neighborhood
@@ -46,7 +48,7 @@ def calculate_neighborhood_distance(
 
     if with_bombs:
         for bomb_coord, time in bombs:
-            field[bomb_coord] = 1
+            field[bomb_coord] = -1
 
     neighborhood = Neighborhood()
     grid = Grid(matrix=field.T)
@@ -245,6 +247,57 @@ def move_to_danger(
         setattr(neighborhood, name, in_danger)
 
     return neighborhood
+
+
+def nearest_path_to_safety(field: np.ndarray, explosion_map: np.ndarray, position: Position, bombs: List[Bomb]):
+    field = field.copy()
+    possible_safety: Set = set()
+
+    # Finding all spots next to a position in the explosion radius
+    for bomb in bombs:
+        if is_in_danger(field, position, [bomb]):
+            bomb_coords, t = bomb
+            b = items.Bomb(bomb_coords, None, t, settings.BOMB_POWER, None)
+            blast_coords = b.get_blast_coords(field)
+
+            dangers = list(filter(lambda coord: (coord[0] == bomb_coords[0] and coord[0] == position[0]) or (
+                    coord[1] == bomb_coords[1] and coord[1] == position[1]), blast_coords))
+
+            for danger in dangers:
+                for d in Direction:
+                    name, coords = d.value
+                    possible_safe_position = (danger[0] + coords[0], danger[1] + coords[1])
+                    if possible_safe_position not in possible_safety:
+                        possible_safety.add(possible_safe_position)
+
+    # Removing the spots which are actually in the explosion
+    safety = possible_safety.copy()
+    # For bombs that are not detonated now
+    for bomb in bombs:
+        bomb_coords, t = bomb
+        b = items.Bomb(bomb_coords, None, t, settings.BOMB_POWER, None)
+        blast_coords = b.get_blast_coords(field)
+
+        for blast_coord in blast_coords:
+            if blast_coord in safety:
+                safety.remove(blast_coord)
+    # For actual current explosions
+    for safety_pos in safety:
+        explosion_time = explosion_map[safety_pos]
+        min_steps = abs(position[0] - safety_pos[0]) + abs(position[1] - safety_pos[1])
+        if explosion_time >= min_steps:
+            safety.remove(safety_pos)
+    # Remove positions which are not accessible
+    for safety_pos in safety.copy():
+        if field[safety_pos] != 0:
+            safety.remove(safety_pos)
+    # Remove safety positions which are bombs:
+    for bomb_coords, _ in bombs:
+        if bomb_coords in safety:
+            safety.remove(bomb_coords)
+
+    shortest_safety_neighborhood = calculate_neighborhood_distance(field, position, list(safety), bombs)
+    return shortest_safety_neighborhood
 
 
 def extract_crates(field: np.ndarray) -> List[Position]:
