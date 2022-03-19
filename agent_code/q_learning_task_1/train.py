@@ -4,7 +4,7 @@ from os.path import join, dirname, isfile
 from typing import List
 
 import numpy as np
-from agent_code.common.train_q_table import update_q_table
+from agent_code.common.train import update_q_table
 
 from agent_code.common.feature_extractor import convert_to_state_object
 from agent_code.common.neighborhood import Mirror

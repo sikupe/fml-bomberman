@@ -21,7 +21,7 @@ def act(self, game_state: dict):
     q_table = self.q_table.copy()
 
     probabilities = q_table[feature_vector.to_state()].copy()
-    print(f'{self.index}: Current train probabilities: {probabilities}')
+    self.logger.info(f'{self.index}: Current train probabilities: {probabilities}')
     if self.train:
         probabilities -= np.min(probabilities)
         prob_sum = np.sum(probabilities)
@@ -34,7 +34,7 @@ def act(self, game_state: dict):
         selected_action = np.random.choice(ACTIONS, p=probabilities)
     else:
         selected_action = ACTIONS[np.argmax(probabilities)]
-    print(f"{self.index}: Selected action: {selected_action}")
+    self.logger.info(f"{self.index}: Selected action: {selected_action}")
     self.index += 1
     return selected_action
 # else:
