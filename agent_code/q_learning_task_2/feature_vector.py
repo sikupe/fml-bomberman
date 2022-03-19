@@ -3,10 +3,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from agent_code.common.neighborhood import Neighborhood, Mirror
+from agent_code.common.q_table_feature_vector import QTableFeatureVector
 
 
 @dataclass
-class FeatureVector:
+class FeatureVector(QTableFeatureVector):
     coin_distance: Neighborhood
     coin_exists: bool
     crate_distance: Neighborhood

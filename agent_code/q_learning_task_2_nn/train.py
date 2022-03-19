@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import os
 from os.path import join, dirname, isfile
-from typing import List, Optional
+from typing import List
 
-import numpy as np
 import torch
 import torch.nn as nn
 from torch import optim
 
 from agent_code.common.feature_extractor import convert_to_state_object
+from agent_code.common.train import update_nn
 from agent_code.q_learning_task_2_nn import rewards
 from agent_code.q_learning_task_2_nn.feature_extractor import extract_features
 from agent_code.q_learning_task_2_nn.feature_vector import FeatureVector, Mirror
@@ -78,30 +78,8 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
             rot_action = Mirror.mirror_action(mirror, self_action)
             rot_events = Mirror.mirror_events(mirror, total_events)
 
-            update_nn(self, rot_current_state, rot_next_state, rot_action, rot_events)
-
-
-def update_nn(self, current_feature_state: FeatureVector, next_feature_state: Optional[FeatureVector],
-              self_action: str, total_events: List[str]):
-    reward = reward_from_events(self, total_events)
-
-    current_action_index = ACTIONS.index(self_action)
-
-    prediction = self.model(current_feature_state.to_nn_state())
-    target = prediction.clone()
-
-    if next_feature_state:
-        q_next = np.max(prediction.detach().numpy())
-    else:
-        q_next = 0
-
-    q_updated = reward + gamma * q_next
-
-    target[current_action_index] = q_updated
-
-    loss = self.criterion(prediction, target)
-    loss.backward()
-    self.optimizer.step()
+            update_nn(self, rot_current_state, rot_next_state, rot_action, rot_events, reward_from_events, ACTIONS,
+                      gamma)
 
 
 def end_of_round(self, last_game_state: dict, last_action: str, events: List[str]):
@@ -125,7 +103,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
         rot_action = Mirror.mirror_action(mirror, last_action)
         rot_events = Mirror.mirror_events(mirror, events)
 
-        update_nn(self, rot_current_state, None, rot_action, rot_events)
+        update_nn(self, rot_current_state, None, rot_action, rot_events, reward_from_events, ACTIONS, gamma)
 
     with open(STATS_FILE, 'a+') as f:
         f.write(f'{len(old_state.coins)}, ')
@@ -134,17 +112,12 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
 
 def extract_events_from_state(self, old_features: FeatureVector, new_features: FeatureVector, action: str) -> List:
     custom_events = []
-    if old_features.coin_distance.minimum() < new_features.coin_distance.minimum():
+    if old_features.coin_distance.minimum() <= new_features.coin_distance.minimum():
         custom_events.append(rewards.MOVED_AWAY_FROM_COIN)
     elif old_features.coin_distance.minimum() > new_features.coin_distance.minimum():
         custom_events.append(rewards.APPROACH_COIN)
 
-    if old_features.coin_distance.minimum() < new_features.coin_distance.minimum():
-        custom_events.append(rewards.MOVED_AWAY_FROM_COIN)
-    elif old_features.coin_distance.minimum() > new_features.coin_distance.minimum():
-        custom_events.append(rewards.APPROACH_COIN)
-
-    if old_features.crate_distance.minimum() < new_features.crate_distance.minimum():
+    if old_features.crate_distance.minimum() <= new_features.crate_distance.minimum():
         custom_events.append(rewards.MOVED_AWAY_FROM_CRATE)
     elif old_features.crate_distance.minimum() > new_features.crate_distance.minimum():
         custom_events.append(rewards.APPROACH_CRATE)

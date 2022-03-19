@@ -4,13 +4,17 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from agent_code.common.neighborhood import Neighborhood
+from agent_code.common.neighborhood import Neighborhood, Mirror
+from agent_code.common.q_table_feature_vector import QTableFeatureVector
 
 
 @dataclass
-class FeatureVector:
+class FeatureVector(QTableFeatureVector):
     coin_distance: Neighborhood
     can_move_in_direction: Neighborhood
+
+    def mirror(self, mirror: Mirror):
+        return FeatureVector(self.coin_distance.mirror(mirror), self.can_move_in_direction.mirror(mirror))
 
     @staticmethod
     def size():

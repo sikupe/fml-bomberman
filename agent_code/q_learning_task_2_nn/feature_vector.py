@@ -6,10 +6,11 @@ import numpy as np
 import torch
 
 from agent_code.common.neighborhood import Neighborhood, Mirror
+from agent_code.common.nn_feature_vector import NNFeatureVector
 
 
 @dataclass
-class FeatureVector:
+class FeatureVector(NNFeatureVector):
     coin_distance: Neighborhood
     coin_exists: bool
     crate_distance: Neighborhood

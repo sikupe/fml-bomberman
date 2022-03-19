@@ -2,19 +2,18 @@ from os.path import isfile
 
 import numpy as np
 
-from agent_code.q_learning_task_1.train import ACTIONS, Q_TABLE_FILE
-from agent_code.q_learning_task_1.feature_extractor import extract_features
 from agent_code.common.feature_extractor import convert_to_state_object
+from agent_code.q_learning_task_1.feature_extractor import extract_features
+from agent_code.q_learning_task_1.train import ACTIONS, Q_TABLE_FILE
 
 
 def setup(self):
     if isfile(Q_TABLE_FILE):
         self.q_table = np.load(Q_TABLE_FILE)
+    self.index = 0
 
 
 def act(self, game_state: dict):
-    self.logger.info('Pick action at random')
-
     game_state = convert_to_state_object(game_state)
     feature_vector = extract_features(game_state)
     # if self.train:
@@ -22,18 +21,21 @@ def act(self, game_state: dict):
     q_table = self.q_table.copy()
 
     probabilities = q_table[feature_vector.to_state()].copy()
-    self.logger.debug(f'Current train probabilities: {probabilities}')
+    print(f'{self.index}: Current train probabilities: {probabilities}')
+    if self.train:
+        probabilities -= np.min(probabilities)
+        prob_sum = np.sum(probabilities)
 
-    probabilities -= np.min(probabilities)
-    prob_sum = np.sum(probabilities)
+        if prob_sum != 0:
+            probabilities = probabilities / prob_sum
+        else:
+            probabilities = None
 
-    if prob_sum != 0:
-        probabilities = probabilities / prob_sum
+        selected_action = np.random.choice(ACTIONS, p=probabilities)
     else:
-        probabilities = None
-
-    selected_action = np.random.choice(ACTIONS, p=probabilities)
-    self.logger.info(f"Selected action: {selected_action}")
+        selected_action = ACTIONS[np.argmax(probabilities)]
+    print(f"{self.index}: Selected action: {selected_action}")
+    self.index += 1
     return selected_action
 # else:
 #     # TODO Select action from q_table

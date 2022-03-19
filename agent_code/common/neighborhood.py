@@ -10,14 +10,14 @@ import events
 
 
 class Mirror(Enum):
-    X_AXIS = 0,
-    Y_AXIS = 1,
-    DIAGONAL_LEFT_DOWN_RIGHT_TOP = 2,
-    DIAGONAL_LEFT_TOP_RIGHT_DOWN = 3,
-    ROT_CLOCKWISE_1 = 4,
-    ROT_CLOCKWISE_2 = 5,
-    ROT_CLOCKWISE_3 = 6,
-    NO_MIRROR = 7,
+    NO_MIRROR = 0,
+    X_AXIS = 1,
+    Y_AXIS = 2,
+    DIAGONAL_LEFT_DOWN_RIGHT_TOP = 3,
+    DIAGONAL_LEFT_TOP_RIGHT_DOWN = 4,
+    ROT_CLOCKWISE_1 = 5,
+    ROT_CLOCKWISE_2 = 6,
+    ROT_CLOCKWISE_3 = 7,
 
     @staticmethod
     def mirror_action(mirror: Mirror, action: str):

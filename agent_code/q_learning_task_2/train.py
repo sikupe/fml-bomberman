@@ -1,16 +1,17 @@
 from __future__ import annotations
 
+import os
 from os.path import join, dirname, isfile
-from typing import List, Optional
+from typing import List
 
 import numpy as np
 
+from agent_code.common.feature_extractor import convert_to_state_object
 from agent_code.common.neighborhood import Mirror
+from agent_code.common.train_q_table import update_q_table
 from agent_code.q_learning_task_2 import rewards
 from agent_code.q_learning_task_2.feature_extractor import extract_features
-from agent_code.common.feature_extractor import convert_to_state_object
 from agent_code.q_learning_task_2.feature_vector import FeatureVector
-import os
 
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB']
 
@@ -22,7 +23,7 @@ gamma = 1
 alpha = 0.05
 
 
-#def is_action_allowed(self, action: ACTIONS, ):
+# def is_action_allowed(self, action: ACTIONS, ):
 
 
 def setup_training(self):
@@ -73,26 +74,8 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
             rot_action = Mirror.mirror_action(mirror, self_action)
             rot_events = Mirror.mirror_events(mirror, total_events)
 
-            update_q_table(self, rot_current_state, rot_next_state, rot_action, rot_events)
-
-
-def update_q_table(self, current_feature_state: FeatureVector, next_feature_state: Optional[FeatureVector],
-                   self_action: str, total_events: List[str]):
-    reward = reward_from_events(self, total_events)
-
-    current_action_index = ACTIONS.index(self_action)
-
-    q_current = self.q_table[current_feature_state.to_state(), current_action_index]
-
-    if next_feature_state:
-        next_action_index = np.argmax(self.q_table[next_feature_state.to_state()])
-        q_next = self.q_table[next_feature_state.to_state(), next_action_index]
-    else:
-        q_next = 0
-
-    q_updated = q_current + alpha * (reward + gamma * q_next - q_current)
-
-    self.q_table[current_feature_state.to_state(), current_action_index] = q_updated
+            update_q_table(self, rot_current_state, rot_next_state, rot_action, rot_events, reward_from_events, ACTIONS,
+                           alpha, gamma)
 
 
 def end_of_round(self, last_game_state: dict, last_action: str, events: List[str]):
@@ -116,7 +99,8 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
         rot_action = Mirror.mirror_action(mirror, last_action)
         rot_events = Mirror.mirror_events(mirror, events)
 
-        update_q_table(self, rot_current_state, None, rot_action, rot_events)
+        update_q_table(self, rot_current_state, None, rot_action, rot_events, reward_from_events, ACTIONS,
+                       alpha, gamma)
 
     with open(STATS_FILE, 'a+') as f:
         f.write(f'{len(old_state.coins)}, ')
@@ -125,17 +109,12 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
 
 def extract_events_from_state(self, old_features: FeatureVector, new_features: FeatureVector, action: ACTIONS) -> List:
     custom_events = []
-    if old_features.coin_distance.minimum() < new_features.coin_distance.minimum():
+    if old_features.coin_distance.minimum() <= new_features.coin_distance.minimum():
         custom_events.append(rewards.MOVED_AWAY_FROM_COIN)
     elif old_features.coin_distance.minimum() > new_features.coin_distance.minimum():
         custom_events.append(rewards.APPROACH_COIN)
 
-    if old_features.coin_distance.minimum() < new_features.coin_distance.minimum():
-        custom_events.append(rewards.MOVED_AWAY_FROM_COIN)
-    elif old_features.coin_distance.minimum() > new_features.coin_distance.minimum():
-        custom_events.append(rewards.APPROACH_COIN)
-
-    if old_features.crate_distance.minimum() < new_features.crate_distance.minimum():
+    if old_features.crate_distance.minimum() <= new_features.crate_distance.minimum():
         custom_events.append(rewards.MOVED_AWAY_FROM_CRATE)
     elif old_features.crate_distance.minimum() > new_features.crate_distance.minimum():
         custom_events.append(rewards.APPROACH_CRATE)
@@ -149,27 +128,28 @@ def extract_events_from_state(self, old_features: FeatureVector, new_features: F
 
     if new_features.in_danger:
         custom_events.append(rewards.IN_DANGER)
-        
+
     if not old_features.in_danger and new_features.in_danger and not action == "BOMB":
         custom_events.append(rewards.MOVE_IN_DANGER)
 
     return custom_events
 
+
 def is_invalid_action(action: ACTIONS, game_state):
     field = game_state.field
     origin = game_state.self.position
     is_bomb_possible = game_state.self.is_bomb_possible
-    if action == "UP" and field[origin[0], origin[1]-1] != 0:
-        return True;
-    if action == "DOWN" and field[origin[0], origin[1]+1] != 0:
-        return True;
-    if action == "LEFT" and field[origin[0]-1, origin[1]] != 0:
-        return True;
-    if action == "RIGHT" and field[origin[0]+1, origin[1]] != 0:
-        return True;
+    if action == "UP" and field[origin[0], origin[1] - 1] != 0:
+        return True
+    if action == "DOWN" and field[origin[0], origin[1] + 1] != 0:
+        return True
+    if action == "LEFT" and field[origin[0] - 1, origin[1]] != 0:
+        return True
+    if action == "RIGHT" and field[origin[0] + 1, origin[1]] != 0:
+        return True
     if action == "BOMB" and not is_bomb_possible:
-        return True;
-    return False;
+        return True
+    return False
 
 
 def reward_from_events(self, events: List[str]) -> int:
