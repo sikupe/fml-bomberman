@@ -8,7 +8,7 @@ import numpy as np
 
 from agent_code.common.feature_extractor import convert_to_state_object
 from agent_code.common.neighborhood import Mirror
-from agent_code.common.train_q_table import update_q_table
+from agent_code.common.train import update_q_table
 from agent_code.q_learning_task_2 import rewards
 from agent_code.q_learning_task_2.feature_extractor import extract_features
 from agent_code.q_learning_task_2.feature_vector import FeatureVector
@@ -109,28 +109,45 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
 
 def extract_events_from_state(self, old_features: FeatureVector, new_features: FeatureVector, action: ACTIONS) -> List:
     custom_events = []
-    if old_features.coin_distance.minimum() <= new_features.coin_distance.minimum():
+    if old_features.coin_exists and old_features.coin_distance.minimum() <= new_features.coin_distance.minimum():
         custom_events.append(rewards.MOVED_AWAY_FROM_COIN)
-    elif old_features.coin_distance.minimum() > new_features.coin_distance.minimum():
+    elif old_features.coin_exists and old_features.coin_distance.minimum() > new_features.coin_distance.minimum():
         custom_events.append(rewards.APPROACH_COIN)
 
-    if old_features.crate_distance.minimum() <= new_features.crate_distance.minimum():
+    if old_features.crate_exists and old_features.crate_distance.minimum() <= new_features.crate_distance.minimum():
         custom_events.append(rewards.MOVED_AWAY_FROM_CRATE)
-    elif old_features.crate_distance.minimum() > new_features.crate_distance.minimum():
+    elif old_features.crate_exists and old_features.crate_distance.minimum() > new_features.crate_distance.minimum():
         custom_events.append(rewards.APPROACH_CRATE)
 
-    if old_features.bomb_exists and old_features.bomb_distance.maximum() < new_features.bomb_distance.maximum():
-        custom_events.append(rewards.MOVED_AWAY_FROM_BOMB)
-    elif old_features.bomb_exists and old_features.bomb_distance.maximum() == new_features.bomb_distance.maximum() and new_features.in_danger:
-        custom_events.append(rewards.APPROACH_BOMB)
-    elif old_features.bomb_exists and old_features.bomb_distance.maximum() > new_features.bomb_distance.maximum():
-        custom_events.append(rewards.APPROACH_BOMB)
+    if old_features.in_danger and old_features.shortest_path_to_safety.minimum() <= new_features.shortest_path_to_safety.minimum():
+        custom_events.append(rewards.MOVED_AWAY_FROM_SECURITY)
+    elif old_features.in_danger and old_features.shortest_path_to_safety.minimum() > new_features.shortest_path_to_safety.minimum():
+        custom_events.append(rewards.APPROACH_SECURITY)
 
     if new_features.in_danger:
-        custom_events.append(rewards.IN_DANGER)
+        # TODO is that useful?
+        if (action == 'BOMB' and old_features.in_danger) or action != 'BOMB':
+            custom_events.append(rewards.IN_DANGER)
 
     if not old_features.in_danger and new_features.in_danger and not action == "BOMB":
         custom_events.append(rewards.MOVE_IN_DANGER)
+
+    # if action == 'BOMB':
+    #     if not old_features.bomb_drop_safe:
+    #         custom_events.append(rewards.MOVED_TO_SUICIDE)
+    # elif old_features.in_danger:
+    #     d = Direction.from_action(action)
+    #     if d:
+    #         direction = d.value[0]
+    #         suicide_move = getattr(old_features.shortest_path_to_safety, direction) == float('inf')
+    #         if suicide_move:
+    #             custom_events.append(rewards.MOVED_TO_SUICIDE)
+
+    if action == 'BOMB':
+        if old_features.good_bomb:
+            custom_events.append(rewards.GOOD_BOMB)
+        else:
+            custom_events.append(rewards.BAD_BOMB)
 
     return custom_events
 

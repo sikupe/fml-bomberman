@@ -68,7 +68,7 @@ def calculate_neighborhood_distance(
                 path, runs = finder.find_path(start, end, grid)
                 grid.cleanup()
 
-                if len(path) < shortest_path:
+                if len(path) != 0 and len(path) < shortest_path:
                     shortest_path = len(path)
 
             else:

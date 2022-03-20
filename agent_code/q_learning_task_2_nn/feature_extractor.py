@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from agent_code.common.feature_extractor import calculate_neighborhood_distance, extract_crates, can_move, \
-    calculate_neighborhood_distance_for_bombs, try_to_move_into_safety, is_in_danger, move_to_danger, \
-    next_to_bomb_target
+    is_in_danger, move_to_danger, \
+    next_to_bomb_target, nearest_path_to_safety
 from agent_code.common.game_state import GameState
 from agent_code.q_learning_task_2_nn.feature_vector import FeatureVector, Neighborhood
 
@@ -14,17 +14,22 @@ def extract_features(state: GameState) -> FeatureVector:
     crates = extract_crates(state.field)
 
     crate_exists = len(crates) > 0
-    crate_distance = calculate_neighborhood_distance(state.field, state.self.position, crates, state.bombs)
+    crate_distance = calculate_neighborhood_distance(state.fiel15d, state.self.position, crates, state.bombs)
 
     bombs = [(x, y) for ((x, y), _) in state.bombs]
 
     can_move_in_direction = can_move(state.field, state.self.position, bombs)
     bomb_exists = len(bombs) > 0
-    bomb_distance = calculate_neighborhood_distance_for_bombs(state.field, state.self.position, bombs, state.bombs)
-    bomb_distance = try_to_move_into_safety(state.field, state.self.position, state.bombs, bomb_distance,
-                                            can_move_in_direction)
+    # bomb_distance = calculate_neighborhood_distance_for_bombs(state.field, state.self.position, bombs, state.bombs)
+    # bomb_distance = try_to_move_into_safety(state.field, state.self.position, state.bombs, bomb_distance,
+    #                                         can_move_in_direction)
 
     in_danger = is_in_danger(state.field, state.self.position, state.bombs)
+
+    if bomb_exists and in_danger:
+        safety = nearest_path_to_safety(state.field, state.explosion_map, state.self.position, state.bombs)
+    else:
+        safety = Neighborhood(0, 0, 0, 0)
 
     if not in_danger:
         mv_to_danger = move_to_danger(state.field, state.self.position, state.bombs, state.explosion_map)
@@ -34,4 +39,4 @@ def extract_features(state: GameState) -> FeatureVector:
     bomb_target = next_to_bomb_target(state.field, state.self.position, state.others)
 
     return FeatureVector(coin_distance, coin_exists, crate_distance, crate_exists, in_danger, can_move_in_direction,
-                         bomb_distance, bomb_exists, mv_to_danger, bomb_target)
+                         safety, bomb_exists, mv_to_danger, bomb_target)

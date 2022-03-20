@@ -122,12 +122,10 @@ def extract_events_from_state(self, old_features: FeatureVector, new_features: F
     elif old_features.crate_distance.minimum() > new_features.crate_distance.minimum():
         custom_events.append(rewards.APPROACH_CRATE)
 
-    if old_features.bomb_exists and old_features.bomb_distance.maximum() < new_features.bomb_distance.maximum():
-        custom_events.append(rewards.MOVED_AWAY_FROM_BOMB)
-    elif old_features.bomb_exists and old_features.bomb_distance.maximum() == new_features.bomb_distance.maximum() and new_features.in_danger:
-        custom_events.append(rewards.APPROACH_BOMB)
-    elif old_features.bomb_exists and old_features.bomb_distance.maximum() > new_features.bomb_distance.maximum():
-        custom_events.append(rewards.APPROACH_BOMB)
+    if old_features.in_danger and old_features.nearest_path_to_safety.minimum() <= new_features.nearest_path_to_safety.minimum():
+        custom_events.append(rewards.MOVED_AWAY_FROM_SECURITY)
+    elif old_features.in_danger and old_features.nearest_path_to_safety.minimum() > new_features.nearest_path_to_safety.minimum():
+        custom_events.append(rewards.APPROACH_SECURITY)
 
     if new_features.in_danger:
         custom_events.append(rewards.IN_DANGER)
