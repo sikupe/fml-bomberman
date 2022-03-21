@@ -23,6 +23,10 @@ SCENARIOS = {
         "CRATE_DENSITY": 0.1,
         "COIN_COUNT": 15
     },
+    "train-crates": {
+        "CRATE_DENSITY": 25,
+        "COIN_COUNT": 15
+    },
     # This is the tournament game mode
     "classic": {
         "CRATE_DENSITY": 0.75,

@@ -20,12 +20,15 @@ class FeatureVector(QTableFeatureVector):
     good_bomb: bool
     shortest_path_to_safety: Neighborhood
     can_move_in_direction: Neighborhood
+    opponent_distance: Neighborhood
+    has_opponents: bool
 
     def mirror(self, mirror: Mirror) -> FeatureVector:
         return FeatureVector(self.coin_distance.mirror(mirror), self.coin_exists, self.crate_distance.mirror(mirror),
                              self.crate_exists, self.in_danger, self.bomb_distance.mirror(mirror),
                              self.bomb_exists, self.move_to_danger.mirror(mirror), self.bomb_drop_safe, self.good_bomb,
-                             self.shortest_path_to_safety.mirror(mirror), self.can_move_in_direction.mirror(mirror))
+                             self.shortest_path_to_safety.mirror(mirror), self.can_move_in_direction.mirror(mirror),
+                             self.opponent_distance.mirror(mirror), self.has_opponents)
 
     @staticmethod
     def bits():
@@ -58,6 +61,8 @@ class FeatureVector(QTableFeatureVector):
 
         if self.in_danger:
             shortest_path = self.shortest_path_to_safety
+        elif self.has_opponents:
+            shortest_path = self.opponent_distance
         elif self.coin_exists:
             shortest_path = self.coin_distance
         else:

@@ -14,7 +14,7 @@ def extract_features(state: GameState) -> FeatureVector:
     crates = extract_crates(state.field)
 
     crate_exists = len(crates) > 0
-    crate_distance = calculate_neighborhood_distance(state.fiel15d, state.self.position, crates, state.bombs)
+    crate_distance = calculate_neighborhood_distance(state.field, state.self.position, crates, state.bombs)
 
     bombs = [(x, y) for ((x, y), _) in state.bombs]
 

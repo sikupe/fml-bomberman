@@ -128,6 +128,9 @@ class Neighborhood:
         return np.argmin(self.to_vector())
 
     def to_binary_encoding(self) -> int:
+        """
+        Returns: Returns 4 bits
+        """
         result = 0
         vec = self.to_vector()
         for i, el in enumerate(vec):

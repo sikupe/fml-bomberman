@@ -249,6 +249,27 @@ def move_to_danger(
     return neighborhood
 
 
+def find_nearest_crate_approx(field: np.ndarray, origin: Position, bombs: List[Bomb]):
+    crates = extract_crates(field)
+    if len(crates) > 0:
+        crates_np = np.array(crates)
+        position_np = np.array(origin)
+        distances = crates_np - position_np
+        distances = np.abs(distances)
+        distances = np.sum(distances, axis=1)
+
+        smallest_indices = np.argsort(distances)
+
+        crate_coords = crates_np[smallest_indices]
+
+        for crate_coord in crate_coords:
+            neighborhood = calculate_neighborhood_distance(field, origin, [crate_coord], bombs, with_crates=False)
+            if neighborhood.minimum() < float('inf'):
+                return neighborhood
+
+    return Neighborhood()
+
+
 def nearest_path_to_safety(field: np.ndarray, explosion_map: np.ndarray, position: Position, bombs: List[Bomb]):
     field = field.copy()
     possible_safety: Set = set()

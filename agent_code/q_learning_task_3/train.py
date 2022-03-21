@@ -9,17 +9,17 @@ import numpy as np
 from agent_code.common.feature_extractor import convert_to_state_object
 from agent_code.common.neighborhood import Mirror
 from agent_code.common.train import update_q_table
-from agent_code.q_learning_task_2 import rewards
-from agent_code.q_learning_task_2.feature_extractor import extract_features
-from agent_code.q_learning_task_2.feature_vector import FeatureVector
+from agent_code.q_learning_task_3 import rewards
+from agent_code.q_learning_task_3.feature_extractor import extract_features
+from agent_code.q_learning_task_3.feature_vector import FeatureVector
 
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB']
 
-Q_TABLE_FILE = os.environ.get("Q_TABLE_FILE", join(dirname(__file__), 'q_learning_task_2.npy'))
+Q_TABLE_FILE = os.environ.get("Q_TABLE_FILE", join(dirname(__file__), 'q_learning_task_3.npy'))
 STATS_FILE = os.environ.get("STATS_FILE", join(dirname(__file__), 'stats_q_learning_task_2.txt'))
 
 # Hyperparameter
-gamma = 0.8
+gamma = 1
 alpha = 0.05
 
 
