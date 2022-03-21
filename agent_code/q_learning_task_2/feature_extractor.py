@@ -52,12 +52,13 @@ def extract_features(state: GameState) -> FeatureVector:
 
     useful_bomb = next_to_bomb_target(state.field, state.self.position, state.others)
     current_bomb_drop_escapes = nearest_path_to_safety(state.field, state.explosion_map, state.self.position,
-                                                       state.bombs + [(state.self.position, 4)])
+                                                       state.bombs + [(state.self.position, 4)], state.others)
     bomb_drop_safe = current_bomb_drop_escapes.minimum() < float('inf')
     good_bomb = useful_bomb and bomb_drop_safe and state.self.is_bomb_possible
 
     if in_danger:
-        safety = nearest_path_to_safety(state.field, state.explosion_map, state.self.position, state.bombs)
+        safety = nearest_path_to_safety(state.field, state.explosion_map, state.self.position, state.bombs,
+                                        state.others)
     else:
         safety = Neighborhood()
 

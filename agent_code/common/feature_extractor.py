@@ -235,7 +235,7 @@ def next_to_bomb_target(field: np.ndarray, position: Position, players: List[Pla
 
 def move_to_danger(
         field: np.ndarray, origin: Position, bombs: List[Bomb], explosion_map: np.ndarray
-):
+) -> Neighborhood:
     neighborhood = Neighborhood()
     for d in Direction:
         name, coords = d.value
@@ -340,3 +340,26 @@ def nearest_path_to_safety(field: np.ndarray, explosion_map: np.ndarray, positio
 def extract_crates(field: np.ndarray) -> List[Position]:
     crates = np.where(field == 1)
     return list(np.array(crates).T)
+
+
+def next_to_bomb(origin: Position, bombs: List[Position]):
+    bombs = np.array(bombs)
+
+    distances = bombs - origin
+
+    in_line_with_bomb_indices = np.where(distances == 0)[0]
+
+    distances_in_line = distances[in_line_with_bomb_indices]
+
+    distances_reachable_indices = np.all(distances_in_line < 4, axis=1)
+
+    distances_reachable = distances_in_line[distances_reachable_indices]
+
+    min_dist = np.argsort(np.sum(distances_reachable, axis=1))
+
+    if len(min_dist) > 0:
+        min_bomb = min_dist[0]
+
+        if origin[0] == min_bomb[0]:
+            if origin[1] < min_bomb[1]:
+                pass

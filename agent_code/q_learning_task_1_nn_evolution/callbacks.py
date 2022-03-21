@@ -9,6 +9,7 @@ from agent_code.q_learning_task_1_nn_evolution.train import ACTIONS, Q_NN_FILE
 from agent_code.q_learning_task_1_nn_evolution.feature_extractor import extract_features
 from agent_code.common.feature_extractor import convert_to_state_object
 
+epsilon = 0.5
 
 def setup(self):
     if isfile(Q_NN_FILE):
@@ -24,19 +25,20 @@ def act(self, game_state: dict):
     feature_vector = extract_features(game_state)
 
     probabilities = self.model(feature_vector.to_nn_state()).detach().numpy()
+    self.logger.debug(f'Current train probabilities: {probabilities}')
+
+    # Smallest to highest
+    action_indices = np.argsort(probabilities)
+    # Reversing, as we are interested in the highest probability
+    action_indices = action_indices[::-1]
+
     if self.train:
-        self.logger.debug(f'Current train probabilities: {probabilities}')
-
-        probabilities -= np.min(probabilities)
-        prob_sum = np.sum(probabilities)
-
-        if prob_sum != 0:
-            probabilities = probabilities / prob_sum
+        if np.random.rand() < epsilon or np.all(probabilities == 0):
+            selected_action = np.random.choice(ACTIONS)
         else:
-            probabilities = None
-
-        selected_action = np.random.choice(ACTIONS, p=probabilities)
+            selected_action = ACTIONS[action_indices[0]]
     else:
-        selected_action = ACTIONS[np.argmax(probabilities)]
+        selected_action = ACTIONS[action_indices[0]]
+
     self.logger.info(f"Selected action: {selected_action}")
     return selected_action

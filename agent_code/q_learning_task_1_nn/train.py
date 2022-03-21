@@ -100,7 +100,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     old_state = convert_to_state_object(last_game_state)
     current_feature_state = extract_features(old_state)
 
-    # for mirror in mirror_dirs:
+    # for mirror in Mirror:
     #     rot_current_state = current_feature_state.mirror(mirror)
     #     rot_action = Mirror.mirror_action(mirror, last_action)
     #     rot_events = Mirror.mirror_events(mirror, events)

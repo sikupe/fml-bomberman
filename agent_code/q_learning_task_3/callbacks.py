@@ -37,8 +37,3 @@ def act(self, game_state: dict):
 
     self.logger.info(f"Selected action: {selected_action}")
     return selected_action
-# else:
-#     # TODO Select action from q_table
-#     feature_state = feature_vector.to_state()
-#     action_index = np.argmax(q_table[feature_state])
-#     return ACTIONS[action_index]

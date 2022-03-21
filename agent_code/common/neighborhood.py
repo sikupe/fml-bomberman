@@ -118,8 +118,10 @@ class Neighborhood:
     def to_one_hot_encoding(self):
         directions = self.to_vector()
         shortest = np.argmin(directions)
+        min_val = np.min(directions)
         result = np.array([0.0, 0.0, 0.0, 0.0])
-        result[shortest] = 1.0
+        if not np.all(directions == min_val):
+            result[shortest] = 1.0
         return result
 
     def to_shortest_binary_encoding(self, argmax=False):
