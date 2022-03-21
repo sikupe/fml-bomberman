@@ -24,7 +24,7 @@ SCENARIOS = {
         "COIN_COUNT": 15
     },
     "train-crates": {
-        "CRATE_DENSITY": 25,
+        "CRATE_DENSITY": 0.25,
         "COIN_COUNT": 15
     },
     # This is the tournament game mode

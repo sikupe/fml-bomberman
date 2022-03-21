@@ -13,7 +13,6 @@ class FeatureVector(QTableFeatureVector):
     crate_distance: Neighborhood
     crate_exists: bool
     in_danger: bool
-    bomb_distance: Neighborhood
     bomb_exists: bool
     move_to_danger: Neighborhood
     bomb_drop_safe: bool
@@ -25,7 +24,7 @@ class FeatureVector(QTableFeatureVector):
 
     def mirror(self, mirror: Mirror) -> FeatureVector:
         return FeatureVector(self.coin_distance.mirror(mirror), self.coin_exists, self.crate_distance.mirror(mirror),
-                             self.crate_exists, self.in_danger, self.bomb_distance.mirror(mirror),
+                             self.crate_exists, self.in_danger,
                              self.bomb_exists, self.move_to_danger.mirror(mirror), self.bomb_drop_safe, self.good_bomb,
                              self.shortest_path_to_safety.mirror(mirror), self.can_move_in_direction.mirror(mirror),
                              self.opponent_distance.mirror(mirror), self.has_opponents)
@@ -34,7 +33,7 @@ class FeatureVector(QTableFeatureVector):
     def bits():
         """
         Returns the bit size for the feature vector."""
-        return 11
+        return 7
 
     @staticmethod
     def size():
@@ -45,6 +44,16 @@ class FeatureVector(QTableFeatureVector):
         bomb_distance, bomb_exists, move_to_danger, good bomb
         """
         return 2 ** FeatureVector.bits()
+
+    def shortest_useful_path(self):
+        if self.in_danger:
+            return self.shortest_path_to_safety
+        elif self.coin_exists:
+            return self.coin_distance
+        elif self.crate_exists:
+            return self.crate_distance
+        else:
+            return self.opponent_distance
 
     def to_state(self) -> int:
         """
@@ -59,18 +68,10 @@ class FeatureVector(QTableFeatureVector):
                   |-good bomb
         """
 
-        if self.in_danger:
-            shortest_path = self.shortest_path_to_safety
-        elif self.has_opponents:
-            shortest_path = self.opponent_distance
-        elif self.coin_exists:
-            shortest_path = self.coin_distance
-        else:
-            shortest_path = self.crate_distance
+        shortest_path = self.shortest_useful_path()
 
         return int(
             + (shortest_path.to_shortest_binary_encoding())
             + (self.move_to_danger.to_binary_encoding() << 2)
             + (self.good_bomb << 6)
-            + (self.can_move_in_direction.to_binary_encoding() << 7)
         )

@@ -14,7 +14,7 @@ def extract_features(state: GameState) -> FeatureVector:
     coin_distance = Neighborhood(0, 0, 0, 0)
     if coin_exists:
         coin_distance = calculate_neighborhood_distance(
-            state.field, state.self.position, state.coins, state.bombs
+            state.field, state.self.position, state.coins, [b[0] for b in state.bombs]
         )
 
     # Crates
@@ -23,7 +23,7 @@ def extract_features(state: GameState) -> FeatureVector:
 
     crate_distance = Neighborhood(0, 0, 0, 0)
     if crate_exists:
-        crate_distance = find_nearest_crate_approx(state.field, state.self.position, state.bombs)
+        crate_distance = find_nearest_crate_approx(state.field, state.self.position, [b[0] for b in state.bombs])
 
     # Bombs
     bombs = [(x, y) for ((x, y), _) in state.bombs]

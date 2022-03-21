@@ -19,7 +19,7 @@ Q_TABLE_FILE = os.environ.get("Q_TABLE_FILE", join(dirname(__file__), 'q_learnin
 STATS_FILE = os.environ.get("STATS_FILE", join(dirname(__file__), 'stats_q_learning_task_2.txt'))
 
 # Hyperparameter
-gamma = 1
+gamma = 0.9
 alpha = 0.05
 
 
@@ -109,20 +109,10 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
 
 def extract_events_from_state(self, old_features: FeatureVector, new_features: FeatureVector, action: ACTIONS) -> List:
     custom_events = []
-    if old_features.coin_exists and old_features.coin_distance.minimum() <= new_features.coin_distance.minimum():
-        custom_events.append(rewards.MOVED_AWAY_FROM_COIN)
-    elif old_features.coin_exists and old_features.coin_distance.minimum() > new_features.coin_distance.minimum():
-        custom_events.append(rewards.APPROACH_COIN)
-
-    if old_features.crate_exists and old_features.crate_distance.minimum() <= new_features.crate_distance.minimum():
-        custom_events.append(rewards.MOVED_AWAY_FROM_CRATE)
-    elif old_features.crate_exists and old_features.crate_distance.minimum() > new_features.crate_distance.minimum():
-        custom_events.append(rewards.APPROACH_CRATE)
-
-    if old_features.in_danger and old_features.shortest_path_to_safety.minimum() <= new_features.shortest_path_to_safety.minimum():
-        custom_events.append(rewards.MOVED_AWAY_FROM_SECURITY)
-    elif old_features.in_danger and old_features.shortest_path_to_safety.minimum() > new_features.shortest_path_to_safety.minimum():
-        custom_events.append(rewards.APPROACH_SECURITY)
+    if old_features.shortest_useful_path().minimum() <= new_features.shortest_useful_path().minimum():
+        custom_events.append(rewards.MOVED_AWAY_FROM_USEFUL)
+    elif old_features.shortest_useful_path().minimum() > new_features.shortest_useful_path().minimum():
+        custom_events.append(rewards.APPROACH_USEFUL)
 
     if new_features.in_danger:
         # TODO is that useful?
@@ -131,17 +121,6 @@ def extract_events_from_state(self, old_features: FeatureVector, new_features: F
 
     if not old_features.in_danger and new_features.in_danger and not action == "BOMB":
         custom_events.append(rewards.MOVE_IN_DANGER)
-
-    # if action == 'BOMB':
-    #     if not old_features.bomb_drop_safe:
-    #         custom_events.append(rewards.MOVED_TO_SUICIDE)
-    # elif old_features.in_danger:
-    #     d = Direction.from_action(action)
-    #     if d:
-    #         direction = d.value[0]
-    #         suicide_move = getattr(old_features.shortest_path_to_safety, direction) == float('inf')
-    #         if suicide_move:
-    #             custom_events.append(rewards.MOVED_TO_SUICIDE)
 
     if action == 'BOMB':
         if old_features.good_bomb:
@@ -181,6 +160,6 @@ def reward_from_events(self, events: List[str]) -> int:
         if event in rewards.rewards:
             reward_sum += rewards.rewards[event]
         else:
-            raise Exception("Event is not in reward list")
+            raise Exception(f"Event is not in reward list: {event}")
     self.logger.info(f"Awarded {reward_sum} for events {', '.join(events)}")
     return reward_sum
