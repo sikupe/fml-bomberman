@@ -26,3 +26,12 @@ install: ./venv
 
 install-pytorch-rocr: ./venv
 	sh -c "source ./venv/bin/activate; pip uninstall pytorch torch; pip install torch torchvision==0.11.3 -f https://download.pytorch.org/whl/rocm4.2/torch_stable.html"
+
+train2:
+	python main.py play --scenario few-crates --agents q_learning_task_2 --n-rounds 20 --train 1 --no-gui
+
+train1nn:
+	python main.py play --scenario coin-hell --agents q_learning_task_2_nn --n-rounds 20 --train 1 --no-gui
+
+play2:
+	python main.py play --scenario crate-hell --agents q_learning_task_2 --n-rounds 5
