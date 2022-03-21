@@ -46,3 +46,8 @@ def update_nn(self, current_feature_state: NNFeatureVector, next_feature_state: 
     loss = self.criterion(prediction, target)
     loss.backward()
     self.optimizer.step()
+
+    prediction_new = self.model(current_feature_state.to_nn_state())
+
+    self.logger.debug(f'Old prediction: {prediction}, New prediction: {prediction_new}, Rewards: {reward}')
+

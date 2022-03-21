@@ -36,9 +36,9 @@ class FeatureVector(NNFeatureVector):
         Returns the needed size for 11 bit.
 
         in_danger, shortest success path, coin_exists, crate_exists,
-        can_move_in_direction, move_to_danger, next_to_bomb_target
+        can_move_in_direction, move_to_danger, next_to_bomb_target, shortest path to safety
         """
-        return 1 + 4 + 1 + 1 + 4 + 4 + 1 + 1
+        return 1 + 4 + 1 + 4 + 1 + 4 + 4 + 1 + 1 + 4
 
     def to_nn_state(self):
         """
@@ -61,8 +61,10 @@ class FeatureVector(NNFeatureVector):
         else:
             shortest_path = self.crate_distance
 
-        vector = np.array([self.in_danger, *shortest_path.to_one_hot_encoding(), self.coin_exists, self.crate_exists,
-                           *self.can_move_in_direction.to_nn_vector(), *self.move_to_danger.to_nn_vector(),
-                           self.next_to_bomb_target, self.good_bomb]) * 2 - 1
+        vector = np.array(
+            [self.in_danger, *self.coin_distance.to_nn_vector(), self.coin_exists, *self.crate_distance.to_nn_vector(),
+             self.crate_exists,
+             *self.can_move_in_direction.to_nn_vector(), *self.move_to_danger.to_nn_vector(),
+             self.next_to_bomb_target, self.good_bomb, *self.shortest_path_to_safety.to_nn_vector()]) * 2 - 1
 
-        return torch.tensor(vector)
+        return torch.tensor(vector).double()

@@ -9,11 +9,12 @@ import torch.nn as nn
 from torch import optim
 
 from agent_code.common.feature_extractor import convert_to_state_object
+from agent_code.common.neighborhood import Mirror
 from agent_code.common.train import update_nn
-from agent_code.q_learning_task_2_nn import rewards
-from agent_code.q_learning_task_1_nn.feature_extractor import extract_features
-from agent_code.q_learning_task_1_nn.feature_vector import FeatureVector, Mirror
-from agent_code.q_learning_task_2_nn.q_nn import QNN
+from agent_code.q_learning_task_1_nn_evolution import rewards
+from agent_code.q_learning_task_1_nn_evolution.feature_extractor import extract_features
+from agent_code.q_learning_task_1_nn_evolution.feature_vector import FeatureVector
+from agent_code.q_learning_task_1_nn_evolution.q_nn import QNN
 
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB']
 
@@ -21,7 +22,7 @@ Q_NN_FILE = os.environ.get("Q_NN_FILE", join(dirname(__file__), 'qnn.pt'))
 STATS_FILE = os.environ.get("STATS_FILE", join(dirname(__file__), 'q_learning_task_2_nn.txt'))
 
 # Hyperparameter
-gamma = 1
+gamma = 0.9
 alpha = 0.05
 
 
@@ -80,6 +81,8 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
 
             update_nn(self, rot_current_state, rot_next_state, rot_action, rot_events, reward_from_events, ACTIONS,
                       gamma)
+        # update_nn(self, current_feature_state, next_feature_state, self_action, total_events, reward_from_events,
+        #           ACTIONS, gamma)
 
 
 def end_of_round(self, last_game_state: dict, last_action: str, events: List[str]):
@@ -104,6 +107,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
         rot_events = Mirror.mirror_events(mirror, events)
 
         update_nn(self, rot_current_state, None, rot_action, rot_events, reward_from_events, ACTIONS, gamma)
+    # update_nn(self, current_feature_state, None, last_action, events, reward_from_events, ACTIONS, gamma)
 
     with open(STATS_FILE, 'a+') as f:
         f.write(f'{len(old_state.coins)}, ')
@@ -117,29 +121,29 @@ def extract_events_from_state(self, old_features: FeatureVector, new_features: F
     elif old_features.coin_exists and old_features.coin_distance.minimum() > new_features.coin_distance.minimum():
         custom_events.append(rewards.APPROACH_COIN)
 
-    # if old_features.crate_exists and old_features.crate_distance.minimum() <= new_features.crate_distance.minimum():
-    #     custom_events.append(rewards.MOVED_AWAY_FROM_CRATE)
-    # elif old_features.crate_exists and old_features.crate_distance.minimum() > new_features.crate_distance.minimum():
-    #     custom_events.append(rewards.APPROACH_CRATE)
-    #
-    # if old_features.in_danger and old_features.shortest_path_to_safety.minimum() <= new_features.shortest_path_to_safety.minimum():
-    #     custom_events.append(rewards.MOVED_AWAY_FROM_SECURITY)
-    # elif old_features.in_danger and old_features.shortest_path_to_safety.minimum() > new_features.shortest_path_to_safety.minimum():
-    #     custom_events.append(rewards.APPROACH_SECURITY)
-    #
-    # if new_features.in_danger:
-    #     # TODO is that useful?
-    #     if (action == 'BOMB' and old_features.in_danger) or action != 'BOMB':
-    #         custom_events.append(rewards.IN_DANGER)
-    #
-    # if not old_features.in_danger and new_features.in_danger and not action == "BOMB":
-    #     custom_events.append(rewards.MOVE_IN_DANGER)
-    #
-    # if action == 'BOMB':
-    #     if old_features.good_bomb:
-    #         custom_events.append(rewards.GOOD_BOMB)
-    #     else:
-    #         custom_events.append(rewards.BAD_BOMB)
+    if old_features.crate_exists and old_features.crate_distance.minimum() <= new_features.crate_distance.minimum():
+        custom_events.append(rewards.MOVED_AWAY_FROM_CRATE)
+    elif old_features.crate_exists and old_features.crate_distance.minimum() > new_features.crate_distance.minimum():
+        custom_events.append(rewards.APPROACH_CRATE)
+
+    if old_features.in_danger and old_features.shortest_path_to_safety.minimum() <= new_features.shortest_path_to_safety.minimum():
+        custom_events.append(rewards.MOVED_AWAY_FROM_SECURITY)
+    elif old_features.in_danger and old_features.shortest_path_to_safety.minimum() > new_features.shortest_path_to_safety.minimum():
+        custom_events.append(rewards.APPROACH_SECURITY)
+
+    if new_features.in_danger:
+        # TODO is that useful?
+        if (action == 'BOMB' and old_features.in_danger) or action != 'BOMB':
+            custom_events.append(rewards.IN_DANGER)
+
+    if not old_features.in_danger and new_features.in_danger and not action == "BOMB":
+        custom_events.append(rewards.MOVE_IN_DANGER)
+
+    if action == 'BOMB':
+        if old_features.good_bomb:
+            custom_events.append(rewards.GOOD_BOMB)
+        else:
+            custom_events.append(rewards.BAD_BOMB)
 
     return custom_events
 

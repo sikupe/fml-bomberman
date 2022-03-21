@@ -21,7 +21,11 @@ SCENARIOS = {
     },
     "few-crates": {
         "CRATE_DENSITY": 0.1,
-        "COIN_COUNT": 15
+        "COIN_COUNT": 25
+    },
+    "few-crates-without-coins": {
+        "CRATE_DENSITY": 0.1,
+        "COIN_COUNT": 0
     },
     "train-crates": {
         "CRATE_DENSITY": 0.25,
