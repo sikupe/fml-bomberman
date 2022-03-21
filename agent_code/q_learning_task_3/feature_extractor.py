@@ -30,7 +30,7 @@ def extract_features(state: GameState) -> FeatureVector:
 
     crate_distance = backup_shortest_path
     if crate_exists:
-        crate_distance = find_nearest_crate_approx(state.field, state.self.position, state.bombs)
+        crate_distance = find_nearest_crate_approx(state.field, state.self.position, bombs)
 
     # Bombs
     bombs = [(x, y) for ((x, y), _) in state.bombs]
@@ -52,11 +52,10 @@ def extract_features(state: GameState) -> FeatureVector:
     bomb_drop_safe = current_bomb_drop_escapes.minimum() < float('inf')
     good_bomb = useful_bomb and bomb_drop_safe and state.self.is_bomb_possible
 
+    safety = backup_shortest_path
     if in_danger:
         safety = nearest_path_to_safety(state.field, state.explosion_map, state.self.position, state.bombs,
                                         state.others)
-    else:
-        safety = Neighborhood()
 
     has_opponents = len(state.others) > 0
 
