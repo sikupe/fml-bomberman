@@ -35,3 +35,9 @@ train1nn:
 
 play2:
 	python main.py play --scenario crate-hell --agents q_learning_task_2 --n-rounds 5
+
+train3:
+	python main.py play --scenario classic --agents q_learning_task_3_extended_feature_space rule_based_agent --n-rounds 50 --train 1 --no-gui
+
+play3:
+	python main.py play --scenario classic --agents q_learning_task_3_extended_feature_space rule_based_agent --n-rounds 20
