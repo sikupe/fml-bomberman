@@ -16,7 +16,7 @@ from agent_code.q_learning_task_1_nn_evolution.feature_extractor import extract_
 from agent_code.q_learning_task_1_nn_evolution.feature_vector import FeatureVector
 from agent_code.q_learning_task_1_nn_evolution.q_nn import QNN
 
-ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT']
+ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB']
 
 Q_NN_FILE = os.environ.get("Q_NN_FILE", join(dirname(__file__), 'qnn.pt'))
 STATS_FILE = os.environ.get("STATS_FILE", join(dirname(__file__), 'q_learning_task_2_nn.txt'))
