@@ -3,11 +3,13 @@ from os.path import isfile
 import numpy as np
 import torch
 
+from agent_code.common.feature_extractor import convert_to_state_object
+from agent_code.q_learning_task_2_nn.feature_extractor import extract_features
 from agent_code.q_learning_task_2_nn.feature_vector import FeatureVector
 from agent_code.q_learning_task_2_nn.q_nn import QNN
 from agent_code.q_learning_task_2_nn.train import ACTIONS, Q_NN_FILE
-from agent_code.q_learning_task_2_nn.feature_extractor import extract_features
-from agent_code.common.feature_extractor import convert_to_state_object
+
+epsilon = 0.1
 
 
 def setup(self):
@@ -26,19 +28,18 @@ def act(self, game_state: dict):
     probabilities = self.model(feature_vector.to_nn_state()).detach().numpy()
     self.logger.debug(f'Current train probabilities: {probabilities}')
 
-    probabilities -= np.min(probabilities)
-    prob_sum = np.sum(probabilities)
+    # Smallest to highest
+    action_indices = np.argsort(probabilities)
+    # Reversing, as we are interested in the highest probability
+    action_indices = action_indices[::-1]
 
-    if prob_sum != 0:
-        probabilities = probabilities / prob_sum
+    if self.train:
+        if np.random.rand() < epsilon or np.all(probabilities == 0):
+            selected_action = np.random.choice(ACTIONS)
+        else:
+            selected_action = ACTIONS[action_indices[0]]
     else:
-        probabilities = None
+        selected_action = ACTIONS[action_indices[0]]
 
-    selected_action = np.random.choice(ACTIONS, p=probabilities)
     self.logger.info(f"Selected action: {selected_action}")
     return selected_action
-# else:
-#     # TODO Select action from q_table
-#     feature_state = feature_vector.to_state()
-#     action_index = np.argmax(q_table[feature_state])
-#     return ACTIONS[action_index]

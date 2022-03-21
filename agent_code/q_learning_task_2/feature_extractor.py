@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from agent_code.common.feature_extractor import calculate_neighborhood_distance, extract_crates, can_move, \
     calculate_neighborhood_distance_for_bombs, try_to_move_into_safety, is_in_danger, move_to_danger, \
-    next_to_bomb_target, nearest_path_to_safety
+    next_to_bomb_target, nearest_path_to_safety, find_nearest_crate_approx
 from agent_code.common.game_state import GameState
 from agent_code.q_learning_task_2.feature_vector import FeatureVector, Neighborhood
 
@@ -14,7 +14,7 @@ def extract_features(state: GameState) -> FeatureVector:
     coin_distance = Neighborhood(0, 0, 0, 0)
     if coin_exists:
         coin_distance = calculate_neighborhood_distance(
-            state.field, state.self.position, state.coins, state.bombs
+            state.field, state.self.position, state.coins, [b[0] for b in state.bombs]
         )
 
     # Crates
@@ -23,9 +23,7 @@ def extract_features(state: GameState) -> FeatureVector:
 
     crate_distance = Neighborhood(0, 0, 0, 0)
     if crate_exists:
-        crate_distance = calculate_neighborhood_distance(
-            state.field, state.self.position, crates, state.bombs, with_crates=False
-        )
+        crate_distance = find_nearest_crate_approx(state.field, state.self.position, [b[0] for b in state.bombs])
 
     # Bombs
     bombs = [(x, y) for ((x, y), _) in state.bombs]
@@ -74,5 +72,6 @@ def extract_features(state: GameState) -> FeatureVector:
         mv_to_danger,
         bomb_drop_safe,
         good_bomb,
-        safety
+        safety,
+        can_move_in_direction
     )

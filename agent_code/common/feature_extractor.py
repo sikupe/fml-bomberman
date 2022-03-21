@@ -34,7 +34,7 @@ def calculate_neighborhood_distance(
         field: np.ndarray,
         origin: Position,
         destinations: List[Position],
-        bombs: List[Bomb],
+        obstacles: List[Position],
         with_crates: bool = True,
         with_bombs: bool = True,
 ) -> Neighborhood:
@@ -47,7 +47,7 @@ def calculate_neighborhood_distance(
     field[field == 0] = 1
 
     if with_bombs:
-        for bomb_coord, time in bombs:
+        for bomb_coord in obstacles:
             field[bomb_coord] = -1
 
     neighborhood = Neighborhood()
@@ -205,19 +205,32 @@ def crate_or_wall_in_between(field: np.ndarray, i, other_i: int, origin: Positio
 
 
 def next_to_bomb_target(field: np.ndarray, position: Position, players: List[Player]):
-    for d in Direction:
-        _, coords = d.value
-        x = position[0] + coords[0]
-        y = position[1] + coords[1]
+    b = items.Bomb(position, "", 4, settings.BOMB_POWER, None)
+    blast_coords = b.get_blast_coords(field)
 
-        if field[x, y] == 1:
+    for coord in blast_coords:
+        if field[coord] == 1:
             return True
 
         for player in players:
-            if player.position == (x, y):
+            if player.position == coord:
                 return True
 
     return False
+
+    # for d in Direction:
+    #     _, coords = d.value
+    #     x = position[0] + coords[0]
+    #     y = position[1] + coords[1]
+    #
+    #     if field[x, y] == 1:
+    #         return True
+    #
+    #     for player in players:
+    #         if player.position == (x, y):
+    #             return True
+    #
+    # return False
 
 
 def move_to_danger(
@@ -249,7 +262,29 @@ def move_to_danger(
     return neighborhood
 
 
-def nearest_path_to_safety(field: np.ndarray, explosion_map: np.ndarray, position: Position, bombs: List[Bomb]):
+def find_nearest_crate_approx(field: np.ndarray, origin: Position, bombs: List[Position]):
+    crates = extract_crates(field)
+    if len(crates) > 0:
+        crates_np = np.array(crates)
+        position_np = np.array(origin)
+        distances = crates_np - position_np
+        distances = np.abs(distances)
+        distances = np.sum(distances, axis=1)
+
+        smallest_indices = np.argsort(distances)
+
+        crate_coords = crates_np[smallest_indices]
+
+        for crate_coord in crate_coords:
+            neighborhood = calculate_neighborhood_distance(field, origin, [crate_coord], bombs, with_crates=False)
+            if neighborhood.minimum() < float('inf'):
+                return neighborhood
+
+    return Neighborhood()
+
+
+def nearest_path_to_safety(field: np.ndarray, explosion_map: np.ndarray, position: Position, bombs: List[Bomb],
+                           players: List[Player]):
     field = field.copy()
     possible_safety: Set = set()
 
@@ -279,10 +314,10 @@ def nearest_path_to_safety(field: np.ndarray, explosion_map: np.ndarray, positio
         blast_coords = b.get_blast_coords(field)
 
         for blast_coord in blast_coords:
-            if blast_coord in safety:
+            if blast_coord in safety.copy():
                 safety.remove(blast_coord)
     # For actual current explosions
-    for safety_pos in safety:
+    for safety_pos in safety.copy():
         explosion_time = explosion_map[safety_pos]
         min_steps = abs(position[0] - safety_pos[0]) + abs(position[1] - safety_pos[1])
         if explosion_time >= min_steps:
@@ -293,10 +328,12 @@ def nearest_path_to_safety(field: np.ndarray, explosion_map: np.ndarray, positio
             safety.remove(safety_pos)
     # Remove safety positions which are bombs:
     for bomb_coords, _ in bombs:
-        if bomb_coords in safety:
+        if bomb_coords in safety.copy():
             safety.remove(bomb_coords)
 
-    shortest_safety_neighborhood = calculate_neighborhood_distance(field, position, list(safety), bombs)
+    obstacles = [b[0] for b in bombs] + [p.position for p in players]
+
+    shortest_safety_neighborhood = calculate_neighborhood_distance(field, position, list(safety), obstacles)
     return shortest_safety_neighborhood
 
 

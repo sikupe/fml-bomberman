@@ -9,12 +9,12 @@ from agent_code.q_learning_task_2_nn.feature_vector import FeatureVector, Neighb
 
 def extract_features(state: GameState) -> FeatureVector:
     coin_exists = len(state.coins) > 0
-    coin_distance = calculate_neighborhood_distance(state.field, state.self.position, state.coins, state.bombs)
+    coin_distance = calculate_neighborhood_distance(state.field, state.self.position, state.coins, [b[0] for b in state.bombs])
 
     crates = extract_crates(state.field)
 
     crate_exists = len(crates) > 0
-    crate_distance = calculate_neighborhood_distance(state.fiel15d, state.self.position, crates, state.bombs)
+    crate_distance = calculate_neighborhood_distance(state.field, state.self.position, crates, [b[0] for b in state.bombs])
 
     bombs = [(x, y) for ((x, y), _) in state.bombs]
 

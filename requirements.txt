@@ -12,3 +12,4 @@ pygame
 sklearn
 pytest
 pytest_mock
+torch

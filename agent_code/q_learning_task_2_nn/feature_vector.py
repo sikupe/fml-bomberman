@@ -25,7 +25,8 @@ class FeatureVector(NNFeatureVector):
     def mirror(self, mirror: Mirror) -> FeatureVector:
         return FeatureVector(self.coin_distance.mirror(mirror), self.coin_exists, self.crate_distance.mirror(mirror),
                              self.crate_exists, self.in_danger, self.can_move_in_direction.mirror(mirror),
-                             self.nearest_path_to_safety.mirror(mirror), self.bomb_exists, self.move_to_danger.mirror(mirror),
+                             self.nearest_path_to_safety.mirror(mirror), self.bomb_exists,
+                             self.move_to_danger.mirror(mirror),
                              self.next_to_bomb_target)
 
     @staticmethod
@@ -33,15 +34,15 @@ class FeatureVector(NNFeatureVector):
         """
         Returns the needed size for 11 bit.
 
-        in_danger, coin_distance, coin_exists, crate_distance, crate_exists,
-        can_move_in_direction, move_to_danger
+        in_danger, shortest success path, coin_exists, crate_exists,
+        can_move_in_direction, move_to_danger, next_to_bomb_target
         """
-        return 1 + 4 + 1 + 4 + 1 + 4 + 4 + 4 + 1
+        return 1 + 4 + 1 + 1 + 4 + 4 + 1
 
     def to_nn_state(self):
         """
-        Layout: |x|xxxx|x|xxxx|x|xxxx|xxxx|
-                | |    | |    | |    |
+        Layout: |x|xxxx|x|xxxx|x|xxxx|xxxx|x|
+                | |    | |    | |    |    |- next to bomb target
                 | |    | |    | |    |- move to danger
                 | |    | |    | |- can move in direction
                 | |    | |    |- crate exists
@@ -51,9 +52,16 @@ class FeatureVector(NNFeatureVector):
                 |- in danger
 
         """
-        vector = np.array([self.in_danger, *self.coin_distance.to_one_hot_encoding(), self.coin_exists,
-                           *self.crate_distance.to_one_hot_encoding(), self.crate_exists,
+
+        if self.in_danger:
+            shortest_path = self.nearest_path_to_safety
+        elif self.coin_exists:
+            shortest_path = self.coin_distance
+        else:
+            shortest_path = self.crate_distance
+
+        vector = np.array([self.in_danger, *shortest_path.to_one_hot_encoding(), self.coin_exists, self.crate_exists,
                            *self.can_move_in_direction.to_nn_vector(), *self.move_to_danger.to_nn_vector(),
-                           *self.nearest_path_to_safety.to_nn_vector(), self.next_to_bomb_target]) * 2 - 1
+                           self.next_to_bomb_target]) * 2 - 1
 
         return torch.tensor(vector)
