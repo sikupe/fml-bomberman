@@ -17,6 +17,8 @@ ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB']
 
 Q_TABLE_FILE = os.environ.get("Q_TABLE_FILE", join(dirname(__file__), 'q_learning_task_3_extended_feature_space.npy'))
 STATS_FILE = os.environ.get("STATS_FILE", join(dirname(__file__), 'stats_q_learning_task_3_extended_feature_space.txt'))
+with open(STATS_FILE, 'a+') as f:
+    f.write(f'SCORE, SCORE2, SCORE3, SCORE4, ENDSTATE, LAST STEP\n')
 
 # Hyperparameter
 gamma = 0.9
@@ -102,8 +104,20 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
         update_q_table(self, rot_current_state, None, rot_action, rot_events, reward_from_events, ACTIONS,
                        alpha, gamma)
 
+    # Write Stats
+    if "KILLED_SELF" in events: 
+        endstate = "Suicide"
+    elif "GOT_KILLED" in events:
+        endstate = "Killed "
+    else:
+        endstate = "Survive"
+        
+    score_others = ""
+    for opponent in old_state.others:
+        score_others += f"{opponent.score}, "
+    
     with open(STATS_FILE, 'a+') as f:
-        f.write(f'{len(old_state.coins)}, ')
+        f.write(f'{old_state.self.score}, {score_others}, {endstate}, {old_state.step}\n')
     np.save(Q_TABLE_FILE, self.q_table)
 
 
