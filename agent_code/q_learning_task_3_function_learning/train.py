@@ -9,14 +9,14 @@ import numpy as np
 from agent_code.common.feature_extractor import convert_to_state_object
 from agent_code.common.neighborhood import Mirror
 from agent_code.common.train import update_weights, detect_wiggle
-from agent_code.q_learning_task_2_function_learning import rewards
-from agent_code.q_learning_task_2_function_learning.feature_extractor import extract_features
-from agent_code.q_learning_task_2_function_learning.feature_vector import FeatureVector
-from agent_code.q_learning_task_2_function_learning.rewards import WIGGLE
+from agent_code.q_learning_task_3_function_learning import rewards
+from agent_code.q_learning_task_3_function_learning.feature_extractor import extract_features
+from agent_code.q_learning_task_3_function_learning.feature_vector import FeatureVector
+from agent_code.q_learning_task_3_function_learning.rewards import WIGGLE
 
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB']
 
-WEIGHT_FILE = join(dirname(__file__), 'q_learning_task_2_function_learning.npy')
+WEIGHT_FILE = join(dirname(__file__), 'q_learning_task_3_function_learning.npy')
 STATS_FILE = join(dirname(__file__), 'stats_q_learning_task_1.txt')
 
 TRANSITION_HISTORY_SIZE = 10
@@ -69,7 +69,6 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
         old_state = convert_to_state_object(old_game_state)
         current_feature_state = extract_features(old_state)
         next_feature_state = extract_features(new_state)
-
 
         custom_events = extract_events_from_state(self, current_feature_state, next_feature_state, self_action)
 

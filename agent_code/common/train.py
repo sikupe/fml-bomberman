@@ -3,8 +3,19 @@ from typing import List, Optional
 import numpy as np
 
 from agent_code.common.function_learning_feature_vector import FunctionLearningFeatureVector
+from agent_code.common.game_state import GameState
 from agent_code.common.nn_feature_vector import NNFeatureVector
 from agent_code.common.q_table_feature_vector import QTableFeatureVector
+
+
+def detect_wiggle(states: List[GameState]) -> int:
+    positions = list(map(lambda s: s.self.position, states))
+    without_duplicates = [positions[i] for i in range(1, len(positions)) if positions[i] != positions[i - 1]]
+    wiggles = [True for i in range(3, len(without_duplicates)) if
+               without_duplicates[i] == without_duplicates[i - 2] and without_duplicates[i - 1] == without_duplicates[
+                   i - 3]]
+
+    return len(wiggles)
 
 
 def update_weights(self, current_feature_state: FunctionLearningFeatureVector,

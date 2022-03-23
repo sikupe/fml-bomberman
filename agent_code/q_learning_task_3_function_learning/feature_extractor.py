@@ -4,7 +4,7 @@ from agent_code.common.feature_extractor import calculate_neighborhood_distance,
     calculate_neighborhood_distance_for_bombs, try_to_move_into_safety, is_in_danger, move_to_danger, \
     next_to_bomb_target, nearest_path_to_safety, find_nearest_crate_approx
 from agent_code.common.game_state import GameState
-from agent_code.q_learning_task_2_function_learning.feature_vector import FeatureVector, Neighborhood
+from agent_code.q_learning_task_3_function_learning.feature_vector import FeatureVector, Neighborhood
 
 
 def extract_features(state: GameState) -> FeatureVector:
@@ -61,9 +61,6 @@ def extract_features(state: GameState) -> FeatureVector:
                                         state.others)
     else:
         safety = Neighborhood()
-
-    opponent_distance = calculate_neighborhood_distance(state.field, state.self.position,
-                                                        [p.position for p in state.others], bombs)
 
     return FeatureVector(
         coin_distance,
