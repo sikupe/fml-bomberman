@@ -27,6 +27,8 @@ def update_weights(self, current_feature_state: FunctionLearningFeatureVector,
 
     q_current = np.max(self.weights[current_action_index, :] @ current_feature_state.to_state())
 
+    assert not np.any(self.weights == np.nan) and not np.any(current_feature_state.to_state() == np.nan)
+
     weight = self.weights[current_action_index, :]
 
     if next_feature_state:

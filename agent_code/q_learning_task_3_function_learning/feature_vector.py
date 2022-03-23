@@ -22,18 +22,21 @@ class FeatureVector(FunctionLearningFeatureVector):
     good_bomb: bool
     shortest_path_to_safety: Neighborhood
     can_move_in_direction: Neighborhood
+    opponent_distance: Neighborhood
+    opponent_exists: bool
 
     def mirror(self, mirror: Mirror) -> FeatureVector:
         return FeatureVector(self.coin_distance.mirror(mirror), self.coin_exists, self.crate_distance.mirror(mirror),
                              self.crate_exists, self.in_danger, self.bomb_distance.mirror(mirror),
                              self.bomb_exists, self.move_to_danger.mirror(mirror), self.bomb_drop_safe, self.good_bomb,
-                             self.shortest_path_to_safety.mirror(mirror), self.can_move_in_direction.mirror(mirror))
+                             self.shortest_path_to_safety.mirror(mirror), self.can_move_in_direction.mirror(mirror),
+                             self.opponent_distance.mirror(mirror), self.opponent_exists)
 
     @staticmethod
     def size():
         """
         Returns the bit size for the feature vector."""
-        return 17
+        return 22
 
     def to_state(self) -> np.ndarray:
         return np.array([
@@ -42,5 +45,6 @@ class FeatureVector(FunctionLearningFeatureVector):
             *self.coin_distance.to_one_hot_encoding(),
             *self.crate_distance.to_one_hot_encoding(),
             self.good_bomb,
-            # *self.can_move_in_direction.to_vector()
+            *self.opponent_distance.to_one_hot_encoding(),
+            self.opponent_exists
         ])
