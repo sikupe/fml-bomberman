@@ -9,7 +9,7 @@ from agent_code.q_learning_task_1_nn_evolution.train import ACTIONS, Q_NN_FILE
 from agent_code.q_learning_task_1_nn_evolution.feature_extractor import extract_features
 from agent_code.common.feature_extractor import convert_to_state_object
 
-epsilon = 0.5
+epsilon = 0.25
 
 def setup(self):
     if isfile(Q_NN_FILE):
