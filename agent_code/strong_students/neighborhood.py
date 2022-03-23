@@ -82,7 +82,6 @@ class Neighborhood:
     south: int | float | bool = field(default=0)
     east: int | float | bool = field(default=0)
     west: int | float | bool = field(default=0)
-    exists: bool = field(default=False, init=False)
 
     def __str__(self):
         return (
@@ -113,9 +112,7 @@ class Neighborhood:
             return self.to_vector() / normalize_max
         return self.to_vector().astype("float64")
 
-    def to_vector(self, with_exists=False):
-        if with_exists:
-            return np.array([self.exists, self.north, self.south, self.east, self.west])
+    def to_vector(self):
         return np.array([self.north, self.south, self.east, self.west])
 
     def to_one_hot_encoding(self):
@@ -131,11 +128,6 @@ class Neighborhood:
         if argmax:
             return np.argmax(self.to_vector())
         return np.argmin(self.to_vector())
-
-    def to_feature_encoding(self, argmax=False) -> int:
-        if argmax:
-            return int(np.argmax(self.to_vector(with_exists=True)))
-        return int(np.argmin(self.to_vector(with_exists=True)))
 
     def to_binary_encoding(self) -> int:
         """

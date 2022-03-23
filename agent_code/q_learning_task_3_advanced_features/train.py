@@ -2,22 +2,20 @@ from __future__ import annotations
 
 import os
 from os.path import join, dirname, isfile
-from typing import List, Optional
+from typing import List
 
 import numpy as np
 
-from agent_code.strong_students.feature_extractor import convert_to_state_object
-from agent_code.strong_students.neighborhood import Mirror
-from agent_code.strong_students.train import update_q_table
-from agent_code.strong_students import rewards
-from agent_code.strong_students.feature_extractor import extract_features
-from agent_code.strong_students.feature_vector import FeatureVector
-from agent_code.strong_students.q_table_feature_vector import QTableFeatureVector
-
+from agent_code.common.feature_extractor import convert_to_state_object
+from agent_code.common.neighborhood import Mirror
+from agent_code.common.train import update_q_table
+from agent_code.q_learning_task_3_advanced_features import rewards
+from agent_code.q_learning_task_3_advanced_features.feature_extractor import extract_features
+from agent_code.q_learning_task_3_advanced_features.feature_vector import FeatureVector
 
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB']
 
-Q_TABLE_FILE = os.environ.get("Q_TABLE_FILE", join(dirname(__file__), 'q_learning_task_3.npy'))
+Q_TABLE_FILE = os.environ.get("Q_TABLE_FILE", join(dirname(__file__), 'q_learning_task_3_advanced_features.npy'))
 STATS_FILE = os.environ.get("STATS_FILE", join(dirname(__file__), 'stats_q_learning_task_2.txt'))
 
 # Hyperparameter
@@ -108,24 +106,6 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
         f.write(f'{len(old_state.coins)}, ')
     np.save(Q_TABLE_FILE, self.q_table)
 
-
-def update_q_table(self, current_feature_state: QTableFeatureVector, next_feature_state: Optional[QTableFeatureVector],
-                   self_action: str, total_events: List[str], reward_from_events, possible_actions, alpha, gamma):
-    reward = reward_from_events(self, total_events)
-
-    current_action_index = possible_actions.index(self_action)
-
-    q_current = self.q_table[current_feature_state.to_state(), current_action_index]
-
-    if next_feature_state:
-        next_action_index = np.argmax(self.q_table[next_feature_state.to_state()])
-        q_next = self.q_table[next_feature_state.to_state(), next_action_index]
-    else:
-        q_next = 0
-
-    q_updated = q_current + alpha * (reward + gamma * q_next - q_current)
-
-    self.q_table[current_feature_state.to_state(), current_action_index] = q_updated
 
 def extract_events_from_state(self, old_features: FeatureVector, new_features: FeatureVector, action: ACTIONS) -> List:
     custom_events = []
