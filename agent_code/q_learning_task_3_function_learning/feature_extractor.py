@@ -62,6 +62,11 @@ def extract_features(state: GameState) -> FeatureVector:
     else:
         safety = Neighborhood()
 
+    opponent_distance = calculate_neighborhood_distance(state.field, state.self.position,
+                                                        [p.position for p in state.others], bombs)
+
+    opponent_exists = len(state.others) > 0
+
     return FeatureVector(
         coin_distance,
         coin_exists,
@@ -74,5 +79,7 @@ def extract_features(state: GameState) -> FeatureVector:
         bomb_drop_safe,
         good_bomb,
         safety,
-        can_move_in_direction
+        can_move_in_direction,
+        opponent_distance,
+        opponent_exists
     )

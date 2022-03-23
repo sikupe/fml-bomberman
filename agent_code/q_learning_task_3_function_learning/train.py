@@ -128,6 +128,11 @@ def extract_events_from_state(self, old_features: FeatureVector, new_features: F
     elif old_features.crate_exists and old_features.crate_distance.minimum() > new_features.crate_distance.minimum():
         custom_events.append(rewards.APPROACH_CRATE)
 
+    if old_features.opponent_exists and old_features.opponent_distance.minimum() <= new_features.opponent_distance.minimum():
+        custom_events.append(rewards.MOVED_AWAY_FROM_OPPONENT)
+    elif old_features.opponent_exists and old_features.opponent_distance.minimum() > new_features.opponent_distance.minimum():
+        custom_events.append(rewards.APPROACH_OPPONENT)
+
     if old_features.in_danger and old_features.shortest_path_to_safety.minimum() <= new_features.shortest_path_to_safety.minimum():
         custom_events.append(rewards.MOVED_AWAY_FROM_SECURITY)
     elif old_features.in_danger and old_features.shortest_path_to_safety.minimum() > new_features.shortest_path_to_safety.minimum():
