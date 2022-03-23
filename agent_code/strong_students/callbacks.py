@@ -1,34 +1,39 @@
-import time
+from os.path import isfile
 
 import numpy as np
 
-from agent_code.strong_students.feature_extractor import extract_features
+from agent_code.strong_students.feature_extractor import convert_to_state_object
+from agent_code.q_learning_task_3.feature_extractor import extract_features
+from agent_code.q_learning_task_3.train import ACTIONS, Q_TABLE_FILE
+
+epsilon = 0.1
 
 
 def setup(self):
-    # np.random.seed()
-    pass
-
-times = []
+    if isfile(Q_TABLE_FILE):
+        self.q_table = np.load(Q_TABLE_FILE)
 
 
-def measure_feature_extraction(game_state: dict):
-    start = time.time()
-    extract_features(game_state)
-    end = time.time()
+def act(self, game_state: dict):
+    self.logger.info('Pick action at random')
 
-    exec_time = end - start
-    times.append(exec_time)
+    game_state = convert_to_state_object(game_state)
+    feature_vector = extract_features(game_state)
 
-    mean = np.mean(times)
+    probabilities = self.q_table[feature_vector.to_state()].copy()
+    self.logger.debug(f'Current train probabilities: {probabilities}')
+    # Smallest to highest
+    action_indices = np.argsort(probabilities)
+    # Reversing, as we are interested in the highest probability
+    action_indices = action_indices[::-1]
 
-    # print(f'extract_features took: {exec_time} seconds')
-    # print(f'mean extract_features took: {mean} seconds')
+    if self.train:
+        if np.random.rand() < epsilon or np.all(probabilities == 0):
+            selected_action = np.random.choice(ACTIONS)
+        else:
+            selected_action = ACTIONS[action_indices[0]]
+    else:
+        selected_action = ACTIONS[action_indices[0]]
 
-
-def act(agent, game_state: dict):
-    agent.logger.info('Pick action at random')
-
-    measure_feature_extraction(game_state)
-
-    return np.random.choice(['RIGHT', 'LEFT', 'UP', 'DOWN', 'BOMB'], p=[.23, .23, .23, .23, .08])
+    self.logger.info(f"Selected action: {selected_action}")
+    return selected_action
