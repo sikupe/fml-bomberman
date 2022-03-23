@@ -35,7 +35,7 @@ class FeatureVector(NNFeatureVector):
 
         coin_distance, coin_exists, can_move_in_direction
         """
-        return 4 + 4 + 4 + 4 + 1
+        return 4 + 4 + 4 + 1
 
     def to_nn_state(self):
         """
@@ -47,13 +47,13 @@ class FeatureVector(NNFeatureVector):
 
         """
         vector = np.array([
-            # *self.coin_distance.to_one_hot_encoding(),
+            *self.coin_distance.to_one_hot_encoding(),
             # self.coin_exists,
-            *self.can_move_in_direction.to_nn_vector(),
+            # *self.can_move_in_direction.to_nn_vector(),
             *self.shortest_path_to_safety.to_one_hot_encoding(),
             *self.danger_neighborhood.to_nn_vector(),
             # self.in_danger,
-            *self.crate_distance.to_one_hot_encoding(),
+            # *self.crate_distance.to_one_hot_encoding(),
             self.good_bomb,
             # self.crate_exists
         ]) * 2 - 1

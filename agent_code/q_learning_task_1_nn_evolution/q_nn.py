@@ -5,7 +5,7 @@ import torch.nn.functional as F
 class QNN(nn.Module):
     def __init__(self, input_size: int, output_size: int):
         super(QNN, self).__init__()
-        intermediate_size = input_size * 10
+        intermediate_size = input_size * 1
 
         self.layer1 = nn.Linear(input_size, intermediate_size).double()
         self.layer2 = nn.Linear(intermediate_size, output_size).double()
