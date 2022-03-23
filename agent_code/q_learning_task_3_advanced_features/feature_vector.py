@@ -58,7 +58,7 @@ class FeatureVector(QTableFeatureVector):
                 5 shortest_path_to_safety -> exists:
                     -> in_danger
                 16 move_into_danger
-                1 good_bomb
+                2 good_bomb
         """
         unencoded_state = [
             self.coin_distance.to_feature_encoding(),       # 5
