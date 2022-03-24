@@ -20,4 +20,4 @@ def act(self, game_state: dict):
     game_state = convert_to_state_object(game_state)
     feature_vector = extract_features(game_state, FeatureVector)
 
-    q_table_act(self, feature_vector, ACTIONS, epsilon)
+    return q_table_act(self, feature_vector, ACTIONS, epsilon)
