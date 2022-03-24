@@ -5,20 +5,13 @@ from dataclasses import dataclass
 import numpy as np
 import torch
 
+from agent_code.common.feature_vector import BaseFeatureVector
 from agent_code.common.neighborhood import Neighborhood, Mirror
 from agent_code.common.nn_feature_vector import NNFeatureVector
 
 
 @dataclass
-class FeatureVector(NNFeatureVector):
-    coin_distance: Neighborhood
-    coin_exists: bool
-    can_move_in_direction: Neighborhood
-
-    def mirror(self, mirror: Mirror):
-        return FeatureVector(self.coin_distance.mirror(mirror), self.coin_exists,
-                             self.can_move_in_direction.mirror(mirror))
-
+class FeatureVector(NNFeatureVector, BaseFeatureVector):
     @staticmethod
     def size() -> int:
         """
@@ -37,7 +30,7 @@ class FeatureVector(NNFeatureVector):
                 |- coin distance
 
         """
-        vector = np.array([*self.coin_distance.to_one_hot_encoding(), self.coin_exists,
+        vector = np.array([*self.coin_distance.to_one_hot_encoding(), self.coin_distance.exists,
                            *self.can_move_in_direction.to_nn_vector()]) * 2 - 1
 
         return torch.tensor(vector).double()

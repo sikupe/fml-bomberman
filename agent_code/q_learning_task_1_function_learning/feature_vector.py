@@ -1,20 +1,12 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-
 import numpy as np
 
+from agent_code.common.feature_vector import BaseFeatureVector
 from agent_code.common.function_learning_feature_vector import FunctionLearningFeatureVector
-from agent_code.common.neighborhood import Neighborhood, Mirror
 
 
-@dataclass
-class FeatureVector(FunctionLearningFeatureVector):
-    coin_distance: Neighborhood
-    can_move_in_direction: Neighborhood
-
-    def mirror(self, mirror: Mirror):
-        return FeatureVector(self.coin_distance.mirror(mirror), self.can_move_in_direction.mirror(mirror))
+class FeatureVector(FunctionLearningFeatureVector, BaseFeatureVector):
 
     @staticmethod
     def size():

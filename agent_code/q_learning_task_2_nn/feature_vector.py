@@ -5,30 +5,12 @@ from dataclasses import dataclass
 import numpy as np
 import torch
 
-from agent_code.common.neighborhood import Neighborhood, Mirror
+from agent_code.common.feature_vector import BaseFeatureVector
 from agent_code.common.nn_feature_vector import NNFeatureVector
 
 
 @dataclass
-class FeatureVector(NNFeatureVector):
-    coin_distance: Neighborhood
-    coin_exists: bool
-    crate_distance: Neighborhood
-    crate_exists: bool
-    in_danger: bool
-    can_move_in_direction: Neighborhood
-    shortest_path_to_safety: Neighborhood
-    bomb_exists: bool
-    move_to_danger: Neighborhood
-    next_to_bomb_target: bool
-    good_bomb: bool
-
-    def mirror(self, mirror: Mirror) -> FeatureVector:
-        return FeatureVector(self.coin_distance.mirror(mirror), self.coin_exists, self.crate_distance.mirror(mirror),
-                             self.crate_exists, self.in_danger, self.can_move_in_direction.mirror(mirror),
-                             self.shortest_path_to_safety.mirror(mirror), self.bomb_exists,
-                             self.move_to_danger.mirror(mirror),
-                             self.next_to_bomb_target, self.good_bomb)
+class FeatureVector(NNFeatureVector, BaseFeatureVector):
 
     @staticmethod
     def size() -> int:
@@ -56,15 +38,16 @@ class FeatureVector(NNFeatureVector):
 
         if self.in_danger:
             shortest_path = self.shortest_path_to_safety
-        elif self.coin_exists:
+        elif self.coin_distance.exists:
             shortest_path = self.coin_distance
         else:
             shortest_path = self.crate_distance
 
         vector = np.array(
-            [self.in_danger, *self.coin_distance.to_nn_vector(), self.coin_exists, *self.crate_distance.to_nn_vector(),
-             self.crate_exists,
+            [self.in_danger, *self.coin_distance.to_nn_vector(), self.coin_distance.exists,
+             *self.crate_distance.to_nn_vector(),
+             self.crate_distance.exists,
              *self.can_move_in_direction.to_nn_vector(), *self.move_to_danger.to_nn_vector(),
-             self.next_to_bomb_target, self.good_bomb, *self.shortest_path_to_safety.to_nn_vector()]) * 2 - 1
+             self.good_bomb, self.good_bomb, *self.shortest_path_to_safety.to_nn_vector()]) * 2 - 1
 
         return torch.tensor(vector).double()

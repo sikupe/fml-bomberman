@@ -8,11 +8,11 @@ import torch
 import torch.nn as nn
 from torch import optim
 
-from agent_code.common.feature_extractor import convert_to_state_object
+from agent_code.common.events import extract_events_from_state
+from agent_code.common.feature_extractor import convert_to_state_object, extract_features
 from agent_code.common.neighborhood import Mirror
 from agent_code.common.train import update_nn
 from agent_code.q_learning_task_1_nn import rewards
-from agent_code.q_learning_task_1_nn.feature_extractor import extract_features
 from agent_code.q_learning_task_1_nn.feature_vector import FeatureVector
 from agent_code.q_learning_task_1_nn.q_nn import QNN
 
@@ -24,6 +24,7 @@ STATS_FILE = os.environ.get("STATS_FILE", join(dirname(__file__), 'q_learning_ta
 # Hyperparameter
 gamma = 1
 alpha = 0.05
+
 
 def setup_training(self):
     """
@@ -64,11 +65,11 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     """
     if old_game_state:
         old_state = convert_to_state_object(old_game_state)
-        current_feature_state = extract_features(old_state)
+        current_feature_state = extract_features(old_state, FeatureVector)
         new_state = convert_to_state_object(new_game_state)
-        next_feature_state = extract_features(new_state)
+        next_feature_state = extract_features(new_state, FeatureVector)
 
-        custom_events = extract_events_from_state(self, current_feature_state, next_feature_state)
+        custom_events = extract_events_from_state(self, current_feature_state, next_feature_state, self_action)
 
         total_events = custom_events + events
 
@@ -98,29 +99,11 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     :param self: The same object that is passed to all of your callbacks.
     """
     old_state = convert_to_state_object(last_game_state)
-    current_feature_state = extract_features(old_state)
-
-    # for mirror in Mirror:
-    #     rot_current_state = current_feature_state.mirror(mirror)
-    #     rot_action = Mirror.mirror_action(mirror, last_action)
-    #     rot_events = Mirror.mirror_events(mirror, events)
-    #
-    #     update_nn(self, rot_current_state, None, rot_action, rot_events, reward_from_events, ACTIONS, gamma)
-    # update_nn(self, current_feature_state, None, last_action, events, reward_from_events, ACTIONS, gamma)
+    current_feature_state = extract_features(old_state, FeatureVector)
 
     with open(STATS_FILE, 'a+') as f:
         f.write(f'{len(old_state.coins)}, ')
     torch.save(self.model.state_dict(), Q_NN_FILE)
-
-
-def extract_events_from_state(self, old_features: FeatureVector, new_features: FeatureVector) -> List:
-    custom_events = []
-    if old_features.coin_distance.minimum() <= new_features.coin_distance.minimum():
-        custom_events.append(rewards.MOVED_AWAY_FROM_COIN)
-    elif old_features.coin_distance.minimum() > new_features.coin_distance.minimum():
-        custom_events.append(rewards.APPROACH_COIN)
-
-    return custom_events
 
 
 def reward_from_events(self, events: List[str]) -> int:

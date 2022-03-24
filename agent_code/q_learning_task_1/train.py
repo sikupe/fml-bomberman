@@ -4,12 +4,13 @@ from os.path import join, dirname, isfile
 from typing import List
 
 import numpy as np
-from agent_code.common.train import update_q_table
 
+from agent_code.common.events import extract_events_from_state
 from agent_code.common.feature_extractor import convert_to_state_object
+from agent_code.common.feature_extractor import extract_features
 from agent_code.common.neighborhood import Mirror
+from agent_code.common.train import update_q_table
 from agent_code.q_learning_task_1 import rewards
-from agent_code.q_learning_task_1.feature_extractor import extract_features
 from agent_code.q_learning_task_1.feature_vector import FeatureVector
 
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT']
@@ -56,11 +57,11 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     """
     if old_game_state:
         old_state = convert_to_state_object(old_game_state)
-        current_feature_state = extract_features(old_state)
+        current_feature_state = extract_features(old_state, FeatureVector)
         new_state = convert_to_state_object(new_game_state)
-        next_feature_state = extract_features(new_state)
+        next_feature_state = extract_features(new_state, FeatureVector)
 
-        custom_events = extract_events_from_state(self, current_feature_state, next_feature_state)
+        custom_events = extract_events_from_state(self, current_feature_state, next_feature_state, self_action)
 
         total_events = custom_events + events
 
@@ -72,8 +73,6 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
 
             update_q_table(self, rot_current_state, rot_next_state, rot_action, rot_events, reward_from_events, ACTIONS,
                            alpha, gamma)
-        # update_q_table(self, current_feature_state, next_feature_state, self_action, total_events, reward_from_events,
-        #                ACTIONS, alpha, gamma)
 
 
 def end_of_round(self, last_game_state: dict, last_action: str, events: List[str]):
@@ -95,16 +94,6 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     with open(STATS_FILE, 'a+') as f:
         f.write(f'{len(old_state.coins)}, ')
     np.save(Q_TABLE_FILE, self.q_table)
-
-
-def extract_events_from_state(self, old_features: FeatureVector, new_features: FeatureVector) -> List:
-    coin_events = []
-    if old_features.coin_distance.minimum() <= new_features.coin_distance.minimum():
-        coin_events.append(rewards.MOVED_AWAY_FROM_COIN)
-    elif old_features.coin_distance.minimum() > new_features.coin_distance.minimum():
-        coin_events.append(rewards.APPROACH_COIN)
-
-    return coin_events
 
 
 def reward_from_events(self, events: List[str]) -> int:

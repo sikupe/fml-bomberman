@@ -1,8 +1,5 @@
 import events as e
-
-APPROACH_COIN = 'APPROACH_COIN'
-MOVED_AWAY_FROM_COIN = 'MOVED_AWAY_FROM_COIN'
-NO_COIN_DIFFERENCE = 'NO_COIN_DIFFERENCE'
+from agent_code.common.events import APPROACH_COIN, MOVED_AWAY_FROM_COIN
 
 rewards = {
     e.COIN_COLLECTED: 25,

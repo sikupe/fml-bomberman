@@ -8,11 +8,13 @@ import torch
 import torch.nn as nn
 from torch import optim
 
+from agent_code.common.events import extract_events_from_state
 from agent_code.common.feature_extractor import convert_to_state_object
+from agent_code.common.neighborhood import Mirror
 from agent_code.common.train import update_nn
 from agent_code.q_learning_task_2_nn import rewards
-from agent_code.q_learning_task_1_nn.feature_extractor import extract_features
-from agent_code.q_learning_task_1_nn.feature_vector import FeatureVector, Mirror
+from agent_code.common.feature_extractor import extract_features
+from agent_code.q_learning_task_2_nn.feature_vector import FeatureVector
 from agent_code.q_learning_task_2_nn.q_nn import QNN
 
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB']
@@ -64,9 +66,9 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     """
     if old_game_state:
         old_state = convert_to_state_object(old_game_state)
-        current_feature_state = extract_features(old_state)
+        current_feature_state = extract_features(old_state, FeatureVector)
         new_state = convert_to_state_object(new_game_state)
-        next_feature_state = extract_features(new_state)
+        next_feature_state = extract_features(new_state, FeatureVector)
 
         custom_events = extract_events_from_state(self, current_feature_state, next_feature_state, self_action)
 
@@ -96,7 +98,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     :param self: The same object that is passed to all of your callbacks.
     """
     old_state = convert_to_state_object(last_game_state)
-    current_feature_state = extract_features(old_state)
+    current_feature_state = extract_features(old_state, FeatureVector)
 
     for mirror in Mirror:
         rot_current_state = current_feature_state.mirror(mirror)
@@ -108,40 +110,6 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     with open(STATS_FILE, 'a+') as f:
         f.write(f'{len(old_state.coins)}, ')
     torch.save(self.model.state_dict(), Q_NN_FILE)
-
-
-def extract_events_from_state(self, old_features: FeatureVector, new_features: FeatureVector, action: ACTIONS) -> List:
-    custom_events = []
-    if old_features.coin_exists and old_features.coin_distance.minimum() <= new_features.coin_distance.minimum():
-        custom_events.append(rewards.MOVED_AWAY_FROM_COIN)
-    elif old_features.coin_exists and old_features.coin_distance.minimum() > new_features.coin_distance.minimum():
-        custom_events.append(rewards.APPROACH_COIN)
-
-    # if old_features.crate_exists and old_features.crate_distance.minimum() <= new_features.crate_distance.minimum():
-    #     custom_events.append(rewards.MOVED_AWAY_FROM_CRATE)
-    # elif old_features.crate_exists and old_features.crate_distance.minimum() > new_features.crate_distance.minimum():
-    #     custom_events.append(rewards.APPROACH_CRATE)
-    #
-    # if old_features.in_danger and old_features.shortest_path_to_safety.minimum() <= new_features.shortest_path_to_safety.minimum():
-    #     custom_events.append(rewards.MOVED_AWAY_FROM_SECURITY)
-    # elif old_features.in_danger and old_features.shortest_path_to_safety.minimum() > new_features.shortest_path_to_safety.minimum():
-    #     custom_events.append(rewards.APPROACH_SECURITY)
-    #
-    # if new_features.in_danger:
-    #     # TODO is that useful?
-    #     if (action == 'BOMB' and old_features.in_danger) or action != 'BOMB':
-    #         custom_events.append(rewards.IN_DANGER)
-    #
-    # if not old_features.in_danger and new_features.in_danger and not action == "BOMB":
-    #     custom_events.append(rewards.MOVE_IN_DANGER)
-    #
-    # if action == 'BOMB':
-    #     if old_features.good_bomb:
-    #         custom_events.append(rewards.GOOD_BOMB)
-    #     else:
-    #         custom_events.append(rewards.BAD_BOMB)
-
-    return custom_events
 
 
 def reward_from_events(self, events: List[str]) -> int:

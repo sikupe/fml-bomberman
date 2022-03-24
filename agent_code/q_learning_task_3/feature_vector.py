@@ -2,33 +2,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from agent_code.common.neighborhood import Neighborhood, Mirror
+from agent_code.common.feature_vector import BaseFeatureVector
 from agent_code.common.q_table_feature_vector import QTableFeatureVector
 
 
 @dataclass
-class FeatureVector(QTableFeatureVector):
-    coin_distance: Neighborhood
-    coin_exists: bool
-    crate_distance: Neighborhood
-    crate_exists: bool
-    in_danger: bool
-    bomb_exists: bool
-    move_to_danger: Neighborhood
-    bomb_drop_safe: bool
-    good_bomb: bool
-    shortest_path_to_safety: Neighborhood
-    can_move_in_direction: Neighborhood
-    opponent_distance: Neighborhood
-    has_opponents: bool
-
-    def mirror(self, mirror: Mirror) -> FeatureVector:
-        return FeatureVector(self.coin_distance.mirror(mirror), self.coin_exists, self.crate_distance.mirror(mirror),
-                             self.crate_exists, self.in_danger,
-                             self.bomb_exists, self.move_to_danger.mirror(mirror), self.bomb_drop_safe, self.good_bomb,
-                             self.shortest_path_to_safety.mirror(mirror), self.can_move_in_direction.mirror(mirror),
-                             self.opponent_distance.mirror(mirror), self.has_opponents)
-
+class FeatureVector(QTableFeatureVector, BaseFeatureVector):
     @staticmethod
     def bits():
         """
@@ -48,9 +27,9 @@ class FeatureVector(QTableFeatureVector):
     def shortest_useful_path(self):
         if self.in_danger:
             return self.shortest_path_to_safety
-        elif self.coin_exists:
+        elif self.coin_distance.exists:
             return self.coin_distance
-        elif self.crate_exists:
+        elif self.crate_distance.exists:
             return self.crate_distance
         else:
             return self.opponent_distance

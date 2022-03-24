@@ -6,7 +6,6 @@ from functools import reduce
 import operator
 
 from agent_code.common.feature_vector import BaseFeatureVector
-from agent_code.common.neighborhood import Neighborhood, Mirror
 from agent_code.common.q_table_feature_vector import QTableFeatureVector
 
 

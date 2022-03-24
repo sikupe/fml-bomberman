@@ -7,9 +7,9 @@ from typing import List
 
 import numpy as np
 
+from agent_code.common.events import extract_events_from_state
 from agent_code.common.feature_extractor import convert_to_state_object, extract_features
 from agent_code.common.neighborhood import Mirror
-from agent_code.common.events import extract_events_from_state
 from agent_code.common.train import update_q_table
 from agent_code.q_learning_task_3_advanced_features import rewards
 from agent_code.q_learning_task_3_advanced_features.feature_vector import FeatureVector
@@ -41,7 +41,7 @@ def setup_training(self):
 
     :param self: This object is passed to all callbacks and you can set arbitrary values.
     """
-    
+
     self.transitions = deque(maxlen=TRANSITION_HISTORY_SIZE)
 
     if isfile(Q_TABLE_FILE):
@@ -69,7 +69,7 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     """
     new_state = convert_to_state_object(new_game_state)
     self.transitions.append(new_state)
-    
+
     if old_game_state:
         old_state = convert_to_state_object(old_game_state)
         current_feature_state: FeatureVector = extract_features(old_state, FeatureVector)
@@ -103,7 +103,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     :param self: The same object that is passed to all of your callbacks.
     """
     old_state = convert_to_state_object(last_game_state)
-    current_feature_state = extract_features(old_state)
+    current_feature_state = extract_features(old_state, FeatureVector)
 
     for mirror in Mirror:
         rot_current_state = current_feature_state.mirror(mirror)
@@ -114,7 +114,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
                        alpha, gamma)
 
     # Write Stats
-    if "KILLED_SELF" in events: 
+    if "KILLED_SELF" in events:
         endstate = "Suicide"
     elif "GOT_KILLED" in events:
         endstate = "Killed "
@@ -126,23 +126,6 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     with open(STATS_FILE, 'a+') as f:
         f.write(f'{old_state.self.score}, {score_others}, {endstate}, {old_state.step}\n')
     np.save(Q_TABLE_FILE, self.q_table)
-
-
-def is_invalid_action(action: ACTIONS, game_state):
-    field = game_state.field
-    origin = game_state.self.position
-    is_bomb_possible = game_state.self.is_bomb_possible
-    if action == "UP" and field[origin[0], origin[1] - 1] != 0:
-        return True
-    if action == "DOWN" and field[origin[0], origin[1] + 1] != 0:
-        return True
-    if action == "LEFT" and field[origin[0] - 1, origin[1]] != 0:
-        return True
-    if action == "RIGHT" and field[origin[0] + 1, origin[1]] != 0:
-        return True
-    if action == "BOMB" and not is_bomb_possible:
-        return True
-    return False
 
 
 def reward_from_events(self, events: List[str]) -> int:
