@@ -20,7 +20,7 @@ class Mirror(Enum):
     ROT_CLOCKWISE_3 = 7,
 
     @staticmethod
-    def mirror_action(mirror: Mirror, action: str):
+    def mirror_action(mirror: Mirror, action: str) -> str:
         if action == 'BOMB' or action == 'WAIT':
             return action
 
@@ -45,10 +45,12 @@ class Mirror(Enum):
         elif mirrored.west:
             return 'LEFT'
 
+        raise ValueError(f"Unexpected value provided: {action}")
+
     @staticmethod
-    def mirror_events(mirror: Mirror, e: str | List[str]):
-        if type(e) == list:
-            return list(map(lambda event: Mirror.mirror_events(mirror, event), e))
+    def mirror_events(mirror: Mirror, e: str | List[str]) -> str | List[str]:
+        if isinstance(e, list):
+            return [Mirror.mirror_events(mirror, event) for event in e]
 
         mirrored_events = [events.MOVED_UP, events.MOVED_DOWN, events.MOVED_RIGHT, events.MOVED_LEFT]
         if e not in mirrored_events:
@@ -74,6 +76,8 @@ class Mirror(Enum):
             return events.MOVED_RIGHT
         elif mirrored.west:
             return events.MOVED_LEFT
+
+        raise ValueError(f"Unexpected value provided: {e}")
 
 
 @dataclass
