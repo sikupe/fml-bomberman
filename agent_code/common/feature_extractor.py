@@ -182,14 +182,14 @@ def is_in_danger(field: np.ndarray, origin: Position, bombs: List[Bomb]) -> bool
                 other_i = (i + 1) % 2
                 dist = abs(origin[other_i] - bomb_coords[other_i])
                 if dist < 4:
-                    if not crate_or_wall_in_between(field, i, other_i, origin, bomb_coords):
+                    if not wall_in_between(field, i, other_i, origin, bomb_coords):
                         in_danger = True
                         break
 
     return in_danger
 
 
-def crate_or_wall_in_between(field: np.ndarray, i, other_i: int, origin: Position, bomb: Position):
+def wall_in_between(field: np.ndarray, i, other_i: int, origin: Position, bomb: Position):
     steps = 1 if origin[other_i] < bomb[other_i] else -1
 
     for position in range(origin[other_i], bomb[other_i], steps):
@@ -199,7 +199,7 @@ def crate_or_wall_in_between(field: np.ndarray, i, other_i: int, origin: Positio
         else:
             x = position
             y = origin[i]
-        if field[x, y] != 0:
+        if field[x, y] < 0:
             return True
     return False
 

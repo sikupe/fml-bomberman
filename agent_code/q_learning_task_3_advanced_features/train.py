@@ -1,4 +1,5 @@
 from __future__ import annotations
+from collections import deque, namedtuple
 
 import os
 from os.path import join, dirname, isfile
@@ -8,7 +9,7 @@ import numpy as np
 
 from agent_code.common.feature_extractor import convert_to_state_object
 from agent_code.common.neighborhood import Mirror
-from agent_code.common.train import update_q_table
+from agent_code.common.train import detect_wiggle, update_q_table
 from agent_code.q_learning_task_3_advanced_features import rewards
 from agent_code.q_learning_task_3_advanced_features.feature_extractor import extract_features
 from agent_code.q_learning_task_3_advanced_features.feature_vector import FeatureVector
@@ -17,6 +18,12 @@ ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB']
 
 Q_TABLE_FILE = os.environ.get("Q_TABLE_FILE", join(dirname(__file__), 'q_learning_task_3_advanced_features.npy'))
 STATS_FILE = os.environ.get("STATS_FILE", join(dirname(__file__), 'stats_q_learning_task_2.txt'))
+with open(STATS_FILE, 'a+') as f:
+    f.write(f'SCORE, SCORE2, SCORE3, SCORE4, ENDSTATE, LAST STEP\n')
+
+TRANSITION_HISTORY_SIZE = 10
+Transition = namedtuple('Transition',
+                        ('state', 'action', 'next_state', 'reward'))
 
 # Hyperparameter
 gamma = 0.9
@@ -34,6 +41,8 @@ def setup_training(self):
 
     :param self: This object is passed to all callbacks and you can set arbitrary values.
     """
+    
+    self.transitions = deque(maxlen=TRANSITION_HISTORY_SIZE)
 
     if isfile(Q_TABLE_FILE):
         self.q_table = np.load(Q_TABLE_FILE)
@@ -58,10 +67,12 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     :param new_game_state: The state the agent is in now.
     :param events: The events that occurred when going from  `old_game_state` to `new_game_state`
     """
+    new_state = convert_to_state_object(new_game_state)
+    self.transitions.append(new_state)
+    
     if old_game_state:
         old_state = convert_to_state_object(old_game_state)
         current_feature_state = extract_features(old_state)
-        new_state = convert_to_state_object(new_game_state)
         next_feature_state = extract_features(new_state)
 
         custom_events = extract_events_from_state(self, current_feature_state, next_feature_state, self_action)
@@ -102,33 +113,72 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
         update_q_table(self, rot_current_state, None, rot_action, rot_events, reward_from_events, ACTIONS,
                        alpha, gamma)
 
+    # Write Stats
+    if "KILLED_SELF" in events: 
+        endstate = "Suicide"
+    elif "GOT_KILLED" in events:
+        endstate = "Killed "
+    else:
+        endstate = "Survive"
+    score_others = ""
+    for opponent in old_state.others:
+        score_others += f"{opponent.score}, "
     with open(STATS_FILE, 'a+') as f:
-        f.write(f'{len(old_state.coins)}, ')
+        f.write(f'{old_state.self.score}, {score_others}, {endstate}, {old_state.step}\n')
     np.save(Q_TABLE_FILE, self.q_table)
 
 
 def extract_events_from_state(self, old_features: FeatureVector, new_features: FeatureVector, action: ACTIONS) -> List:
     custom_events = []
-    if old_features.shortest_useful_path().minimum() <= new_features.shortest_useful_path().minimum():
-        custom_events.append(rewards.MOVED_AWAY_FROM_USEFUL)
-    elif old_features.shortest_useful_path().minimum() > new_features.shortest_useful_path().minimum():
-        custom_events.append(rewards.APPROACH_USEFUL)
-
-    if new_features.in_danger:
-        # TODO is that useful?
-        if (action == 'BOMB' and old_features.in_danger) or action != 'BOMB':
-            custom_events.append(rewards.IN_DANGER)
-
-    if not old_features.in_danger and new_features.in_danger and not action == "BOMB":
+    
+    # Coins
+    if old_features.coin_distance.exists and new_features.coin_distance.exists:
+        if old_features.coin_distance.minimum() <= new_features.coin_distance.minimum():
+            custom_events.append(rewards.MOVED_AWAY_FROM_COIN)
+        elif old_features.coin_distance.minimum() > new_features.coin_distance.minimum():
+            custom_events.append(rewards.APPROACH_COIN)
+        
+    # Crates
+    if old_features.crate_distance.exists and new_features.crate_distance.exists:
+        if old_features.crate_distance.minimum() <= new_features.crate_distance.minimum():
+            custom_events.append(rewards.MOVED_AWAY_FROM_CRATE)
+        elif old_features.crate_distance.minimum() > new_features.crate_distance.minimum():
+            custom_events.append(rewards.APPROACH_CRATE)
+    
+    # Opponents
+    if old_features.opponent_distance.exists and new_features.opponent_distance.exists:
+        if old_features.opponent_distance.minimum() <= new_features.opponent_distance.minimum():
+            custom_events.append(rewards.MOVED_AWAY_FROM_OPPONENT)
+        elif old_features.opponent_distance.minimum() > new_features.opponent_distance.minimum():
+            custom_events.append(rewards.APPROACH_OPPONENT)
+        
+    # In danger
+    in_danger_current = old_features.in_danger
+    in_danger_next = new_features.in_danger
+    if in_danger_current:
+        custom_events.append(rewards.IN_DANGER)
+    
+    if not in_danger_current and in_danger_next:
         custom_events.append(rewards.MOVE_IN_DANGER)
-
-    if action == 'BOMB':
+    
+    if in_danger_current and not in_danger_next:
+        custom_events.append(rewards.MOVE_OUT_OF_DANGER)
+        
+    # Security
+    if in_danger_current:
+        if old_features.shortest_path_to_safety.minimum() <= new_features.shortest_path_to_safety.minimum():
+            custom_events.append(rewards.MOVED_AWAY_FROM_SECURITY)
+        if old_features.shortest_path_to_safety.minimum() > new_features.shortest_path_to_safety.minimum():
+            custom_events.append(rewards.APPROACH_SECURITY)
+    
+    # Bombs
+    if action == "BOMB":
         if old_features.good_bomb:
             custom_events.append(rewards.GOOD_BOMB)
         else:
             custom_events.append(rewards.BAD_BOMB)
 
-    return custom_events
+    return custom_events + [rewards.WIGGLE for _ in range(detect_wiggle(self.transitions))]
 
 
 def is_invalid_action(action: ACTIONS, game_state):
