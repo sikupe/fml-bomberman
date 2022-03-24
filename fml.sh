@@ -54,5 +54,8 @@ for i in $( seq 0  ${COUNT} );do
     tmux send "export Q_TABLE_FILE=${TMP_DIR}_${TMP_DIR_ADDITION}/agents_blobs/${TMP_DIR_ADDITION}_${i}.npy" ENTER
     tmux send "export STATS_FILE=${TMP_DIR}_${TMP_DIR_ADDITION}/agents_blobs/stats_${TMP_DIR_ADDITION}_${i}.txt" ENTER
     tmux send "python main.py play --scenario ${SCENARIO} --agents ${AGENTS} --n-rounds ${ROUNDS} --train 1 --no-gui" ENTER
+    tmux send "exit" ENTER
     echo $i
 done
+
+echo DIR: ${TMP_DIR}_${TMP_DIR_ADDITION}
