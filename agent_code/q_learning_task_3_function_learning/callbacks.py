@@ -22,4 +22,4 @@ def act(self, game_state: dict):
     game_state = convert_to_state_object(game_state)
     feature_vector = extract_features(game_state, FeatureVector)
 
-    function_learning_act(self, feature_vector, ACTIONS, epsilon)
+    return function_learning_act(self, feature_vector, ACTIONS, epsilon)
