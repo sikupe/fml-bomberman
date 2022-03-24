@@ -30,8 +30,8 @@ else
     COUNT=20
 fi
 
-TMP_DIR=$(mktemp -d)
-mkdir -p ${TMP_DIR}/agents_blobs
+TMP_DIR=$(mktemp -d -u)
+mkdir -p ${TMP_DIR}_${AGENTS}/agents_blobs
 
 tmux ls | grep train
 if [ $? -ne 0 ];then
@@ -49,8 +49,8 @@ for i in $( seq 0  ${COUNT} );do
     tmux neww -t train
     tmux send "pushd ${REPO_DIR}" ENTER
     tmux send "source venv/bin/activate" ENTER
-    tmux send "export Q_TABLE_FILE=${TMP_DIR}/agents_blobs/${AGENTS}_${i}.npy" ENTER
-    tmux send "export STATS_FILE=${TMP_DIR}/agents_blobs/stats_${AGENTS}_${i}.txt" ENTER
+    tmux send "export Q_TABLE_FILE=${TMP_DIR}_${AGENTS}/agents_blobs/${AGENTS}_${i}.npy" ENTER
+    tmux send "export STATS_FILE=${TMP_DIR}_${AGENTS}/agents_blobs/stats_${AGENTS}_${i}.txt" ENTER
     tmux send "python main.py play --scenario ${SCENARIO} --agents ${AGENTS} --n-rounds ${ROUNDS} --train 1 --no-gui" ENTER
     tmux send "exit" ENTER
     echo $i
