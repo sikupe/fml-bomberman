@@ -425,11 +425,15 @@ def extract_features(state: GameState, feature_vector_class: Type[T]) -> T:
                                         state.others)
         safety.exists = True  # We are in danger
 
+    # Opponents
     has_opponents = len(state.others) > 0
 
     opponent_dest = [o.position for o in state.others]
     opponent_distance = calculate_neighborhood_distance(state.field, state.self.position, opponent_dest,
                                                         [b[0] for b in state.bombs])
+    opponent_distance.exists = has_opponents
+    if opponent_distance.north > 1e10 and opponent_distance.east > 1e10 and opponent_distance.south > 1e10 and opponent_distance.west > 1e10:
+        opponent_distance.exists = False # No opponent reachable == no opponent exists
 
     return feature_vector_class(
         feature_vector_class,
