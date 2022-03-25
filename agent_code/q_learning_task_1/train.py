@@ -19,6 +19,7 @@ ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT']
 
 MODEL_FILE = os.environ.get("MODEL_FILE", join(dirname(__file__), 'model.npy'))
 STATS_FILE = os.environ.get("STATS_FILE", join(dirname(__file__), 'stats.txt'))
+NOTRAIN = os.environ.get("NOTRAIN", "False")
 
 TRANSITION_HISTORY_SIZE = 10
 
@@ -29,7 +30,6 @@ Transition = namedtuple('Transition',
 gamma = 1
 alpha = 0.05
 
-
 def setup_training(self):
     """
     Initialise self for training purpose.
@@ -38,7 +38,14 @@ def setup_training(self):
 
     :param self: This object is passed to all callbacks and you can set arbitrary values.
     """
+    with open(STATS_FILE, 'a+') as f:
+        f.write('INITIAL_COINS, REMAINING_COINS, STEPS\n')
+
+
     self.transitions = deque(maxlen=TRANSITION_HISTORY_SIZE)
+
+    if NOTRAIN == "True":
+        return
 
     if isfile(MODEL_FILE):
         self.q_table = np.load(MODEL_FILE)
@@ -63,8 +70,15 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     :param new_game_state: The state the agent is in now.
     :param events: The events that occurred when going from  `old_game_state` to `new_game_state`
     """
+
     new_state = convert_to_state_object(new_game_state)
     self.transitions.append(new_state)
+
+    if not old_game_state and new_game_state:
+        self.inital_coins = len(new_state.coins)
+
+    if NOTRAIN == "True":
+        return
 
     if old_game_state:
         old_state = convert_to_state_object(old_game_state)
@@ -102,7 +116,12 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     old_state = convert_to_state_object(last_game_state)
 
     with open(STATS_FILE, 'a+') as f:
-        f.write(f'{len(old_state.coins)}, ')
+        f.write(f'{self.inital_coins}, {len(old_state.coins)}, {old_state.step}\n')
+
+    if NOTRAIN == "True":
+        print("Exit with notrain")
+        return
+
     np.save(MODEL_FILE, self.q_table)
 
 
