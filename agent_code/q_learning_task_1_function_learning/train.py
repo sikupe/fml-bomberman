@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import deque, namedtuple
 from os.path import join, dirname, isfile
 from typing import List
 
@@ -18,6 +19,11 @@ ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT']
 WEIGHT_FILE = join(dirname(__file__), 'q_learning_task_1_function_learning.npy')
 STATS_FILE = join(dirname(__file__), 'stats_q_learning_task_1.txt')
 
+TRANSITION_HISTORY_SIZE = 10
+
+Transition = namedtuple('Transition',
+                        ('state', 'action', 'next_state', 'reward'))
+
 # Hyperparameter
 gamma = 1
 alpha = 0.05
@@ -31,6 +37,7 @@ def setup_training(self):
 
     :param self: This object is passed to all callbacks and you can set arbitrary values.
     """
+    self.transitions = deque(maxlen=TRANSITION_HISTORY_SIZE)
 
     if isfile(WEIGHT_FILE):
         self.weights = np.load(WEIGHT_FILE)
@@ -55,10 +62,12 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     :param new_game_state: The state the agent is in now.
     :param events: The events that occurred when going from  `old_game_state` to `new_game_state`
     """
+    new_state = convert_to_state_object(new_game_state)
+    self.transitions.append(new_state)
+
     if old_game_state:
         old_state = convert_to_state_object(old_game_state)
         current_feature_state = extract_features(old_state, FeatureVector)
-        new_state = convert_to_state_object(new_game_state)
         next_feature_state = extract_features(new_state, FeatureVector)
 
         custom_events = extract_events_from_state(self, current_feature_state, next_feature_state, self_action)

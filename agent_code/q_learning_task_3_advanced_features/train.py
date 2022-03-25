@@ -140,6 +140,6 @@ def reward_from_events(self, events: List[str]) -> int:
         if event in rewards.rewards:
             reward_sum += rewards.rewards[event]
         else:
-            raise Exception(f"Event is not in reward list: {event}")
+            self.logger.error("Event is not in reward list: %s", event)
     self.logger.info(f"Awarded {reward_sum} for events {', '.join(events)}")
     return reward_sum

@@ -1,5 +1,5 @@
 import events as e
-from agent_code.common.events import APPROACH_COIN, MOVED_AWAY_FROM_COIN
+from agent_code.common.events import APPROACH_COIN, MOVED_AWAY_FROM_COIN, WIGGLE
 
 rewards = {
     e.COIN_COLLECTED: 25,
@@ -11,6 +11,7 @@ rewards = {
     e.WAITED: -10,
     APPROACH_COIN: 5,
     MOVED_AWAY_FROM_COIN: -5,
+    WIGGLE: 0,
     e.SURVIVED_ROUND: 5,
     # e.BOMB_DROPPED: 2,
     # e.BOMB_EXPLODED: 2,
