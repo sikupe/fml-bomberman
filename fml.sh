@@ -2,7 +2,7 @@
 REPO_DIR=$(pwd)
 
 if [ "$1" == "help" ] || [ "$1" == "-h" ] || [ "$1" == "--help" ] || [ -z "$1" ] ;then
-    echo sh fml.sh AGENTS SCENARIO ROUNDS [count]
+    echo sh fml.sh AGENTS SCENARIO ROUNDS [count] [random_dir?]
     exit
 fi
 
@@ -30,7 +30,20 @@ else
     COUNT=20
 fi
 
-TMP_DIR=$(mktemp -d -u)
+if [ ! -z "$5" ];then
+    RANDOM=false
+else
+    RANDOM=true
+fi
+
+if [ ${RANDOM} = true ];then
+    TMP_DIR=$(mktemp -d -u)
+    echo random
+else
+    TMP_DIR="/tmp/train"
+    echo not random
+fi
+
 TMP_DIR_ADDITION=$(echo ${AGENTS} | sed 's/\s.*$//')
 mkdir -p ${TMP_DIR}_${TMP_DIR_ADDITION}/agents_blobs
 
