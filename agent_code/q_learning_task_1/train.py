@@ -1,4 +1,5 @@
 from __future__ import annotations
+import os
 
 from collections import deque, namedtuple
 from os.path import join, dirname, isfile
@@ -16,8 +17,8 @@ from agent_code.q_learning_task_1.feature_vector import FeatureVector
 
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT']
 
-Q_TABLE_FILE = join(dirname(__file__), 'q_learning_task_1.npy')
-STATS_FILE = join(dirname(__file__), 'stats_q_learning_task_1.txt')
+MODEL_FILE = os.environ.get("MODEL_FILE", join(dirname(__file__), 'model.npy'))
+STATS_FILE = os.environ.get("STATS_FILE", join(dirname(__file__), 'stats.txt'))
 
 TRANSITION_HISTORY_SIZE = 10
 
@@ -39,8 +40,8 @@ def setup_training(self):
     """
     self.transitions = deque(maxlen=TRANSITION_HISTORY_SIZE)
 
-    if isfile(Q_TABLE_FILE):
-        self.q_table = np.load(Q_TABLE_FILE)
+    if isfile(MODEL_FILE):
+        self.q_table = np.load(MODEL_FILE)
     else:
         self.q_table = np.zeros((FeatureVector.size(), len(ACTIONS)))
 
@@ -102,7 +103,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
 
     with open(STATS_FILE, 'a+') as f:
         f.write(f'{len(old_state.coins)}, ')
-    np.save(Q_TABLE_FILE, self.q_table)
+    np.save(MODEL_FILE, self.q_table)
 
 
 def reward_from_events(self, events: List[str]) -> int:

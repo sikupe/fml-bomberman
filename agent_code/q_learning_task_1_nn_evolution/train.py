@@ -19,8 +19,8 @@ from agent_code.q_learning_task_1_nn_evolution.q_nn import QNN
 
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB']
 
-Q_NN_FILE = os.environ.get("Q_NN_FILE", join(dirname(__file__), 'qnn.pt'))
-STATS_FILE = os.environ.get("STATS_FILE", join(dirname(__file__), 'q_learning_task_2_nn.txt'))
+MODEL_FILE = os.environ.get("MODEL_FILE", join(dirname(__file__), 'model.pt'))
+STATS_FILE = os.environ.get("STATS_FILE", join(dirname(__file__), 'stats.txt'))
 
 TRANSITION_HISTORY_SIZE = 10
 
@@ -42,9 +42,9 @@ def setup_training(self):
     """
     self.transitions = deque(maxlen=TRANSITION_HISTORY_SIZE)
 
-    if isfile(Q_NN_FILE):
+    if isfile(MODEL_FILE):
         self.model = QNN(FeatureVector.size(), len(ACTIONS))
-        self.model.load_state_dict(torch.load(Q_NN_FILE))
+        self.model.load_state_dict(torch.load(MODEL_FILE))
         self.model.eval()
     else:
         self.model = QNN(FeatureVector.size(), len(ACTIONS))
@@ -120,7 +120,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
 
     with open(STATS_FILE, 'a+') as f:
         f.write(f'{len(old_state.coins)}, ')
-    torch.save(self.model.state_dict(), Q_NN_FILE)
+    torch.save(self.model.state_dict(), MODEL_FILE)
 
 
 def reward_from_events(self, events: List[str]) -> int:

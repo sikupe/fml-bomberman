@@ -1,4 +1,5 @@
 from __future__ import annotations
+import os
 
 from collections import deque, namedtuple
 from os.path import join, dirname, isfile
@@ -17,8 +18,8 @@ from agent_code.q_learning_task_2_function_learning.rewards import WIGGLE
 
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB']
 
-WEIGHT_FILE = join(dirname(__file__), 'q_learning_task_2_function_learning.npy')
-STATS_FILE = join(dirname(__file__), 'stats_q_learning_task_1.txt')
+MODEL_FILE = os.environ.get("MODEL_FILE", join(dirname(__file__), 'model.npy'))
+STATS_FILE = os.environ.get("STATS_FILE", join(dirname(__file__), 'stats.txt'))
 
 TRANSITION_HISTORY_SIZE = 10
 
@@ -40,8 +41,8 @@ def setup_training(self):
     """
     self.transitions = deque(maxlen=TRANSITION_HISTORY_SIZE)
 
-    if isfile(WEIGHT_FILE):
-        self.weights = np.load(WEIGHT_FILE)
+    if isfile(MODEL_FILE):
+        self.weights = np.load(MODEL_FILE)
     else:
         self.weights = np.zeros((len(ACTIONS), FeatureVector.size()))
 
@@ -115,7 +116,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
 
     with open(STATS_FILE, 'a+') as f:
         f.write(f'{len(old_state.coins)}, ')
-    np.save(WEIGHT_FILE, self.weights)
+    np.save(MODEL_FILE, self.weights)
 
 
 def reward_from_events(self, events: List[str]) -> int:
