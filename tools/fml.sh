@@ -55,7 +55,7 @@ fi
 
 pushd ${REPO_DIR}
 if [ ! -f "main.py" ];then
-    echo Seems like we are not in the right directory. Existing
+    echo Seems like we are not in the right directory. Exiting.
     exit
 fi
 
