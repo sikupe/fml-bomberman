@@ -18,8 +18,6 @@ ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB']
 
 MODEL_FILE = os.environ.get("MODEL_FILE", join(dirname(__file__), 'model.npy'))
 STATS_FILE = os.environ.get("STATS_FILE", join(dirname(__file__), 'stats.txt'))
-with open(STATS_FILE, 'a+') as f:
-    f.write(f'SCORE, SCORE2, SCORE3, SCORE4, ENDSTATE, LAST STEP\n')
 
 TRANSITION_HISTORY_SIZE = 10
 Transition = namedtuple('Transition',
@@ -44,6 +42,8 @@ def setup_training(self):
 
     self.transitions = deque(maxlen=TRANSITION_HISTORY_SIZE)
 
+    with open(STATS_FILE, 'a+') as f:
+        f.write(f'SCORE, SCORE2, SCORE3, SCORE4, ENDSTATE, LAST STEP\n')
     if isfile(MODEL_FILE):
         self.q_table = np.load(MODEL_FILE)
     else:
