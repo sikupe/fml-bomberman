@@ -59,12 +59,18 @@ if [ ! -f "main.py" ];then
     exit
 fi
 
+if [ ${TMP_DIR_ADDITION} = *"_nn" ];then
+    EXTENSION=.pt
+else
+    EXTENSION=.npy
+fi
+
 
 for i in $( seq 0  ${COUNT} );do
     tmux neww -t train
     tmux send -t train "pushd ${REPO_DIR}" ENTER
     tmux send -t train "source venv/bin/activate" ENTER
-    tmux send -t train "export Q_TABLE_FILE=${TMP_DIR}_${TMP_DIR_ADDITION}/agents_blobs/${TMP_DIR_ADDITION}_${i}.npy" ENTER
+    tmux send -t train "export MODEL_FILE=${TMP_DIR}_${TMP_DIR_ADDITION}/agents_blobs/${TMP_DIR_ADDITION}_${i}.${EXTENSION}" ENTER
     tmux send -t train "export STATS_FILE=${TMP_DIR}_${TMP_DIR_ADDITION}/agents_blobs/stats_${TMP_DIR_ADDITION}_${i}.txt" ENTER
     tmux send -t train "python main.py play --scenario ${SCENARIO} --agents ${AGENTS} --n-rounds ${ROUNDS} --train 1 --no-gui" ENTER
     tmux send -t train "exit" ENTER
