@@ -1,5 +1,6 @@
 from __future__ import annotations
 import os
+import re
 
 from collections import deque, namedtuple
 from os.path import join, dirname, isfile
@@ -19,6 +20,7 @@ ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT']
 
 MODEL_FILE = os.environ.get("MODEL_FILE", join(dirname(__file__), 'model.npy'))
 STATS_FILE = os.environ.get("STATS_FILE", join(dirname(__file__), 'stats.txt'))
+REWARDS_FILE = re.sub(r"\..*$", ".json", STATS_FILE)
 NOTRAIN = os.environ.get("NOTRAIN", "False")
 
 TRANSITION_HISTORY_SIZE = 10
@@ -114,7 +116,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
 
     old_state = convert_to_state_object(last_game_state)
 
-    teardown_training(self, join(dirname(__file__), 'rewards.json'))
+    teardown_training(self, REWARDS_FILE)
 
     with open(STATS_FILE, 'a+') as f:
         f.write(f'{self.inital_coins}, {len(old_state.coins)}, {old_state.step}\n')
