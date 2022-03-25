@@ -7,19 +7,27 @@ from concurrent.futures import ThreadPoolExecutor
 import numpy as np
 from typing import Dict, List, Tuple, Callable
 
-PROJECT_DIR = subprocess.run("git rev-parse --show-toplevel", shell=True, stdout=subprocess.PIPE).stdout.decode().replace("\n", "")
+PROJECT_DIR = (
+    subprocess.run("git rev-parse --show-toplevel", shell=True, stdout=subprocess.PIPE)
+    .stdout.decode()
+    .replace("\n", "")
+)
 sys.path.append(PROJECT_DIR)
 
 Mutation = Dict[str, float]
 MutationFitness = Tuple[Mutation, float]
 
 
-def mutation(original_state: Mutation, mutation_rate: float, mutation_count: int) -> List[Mutation]:
+def mutation(
+    original_state: Mutation, mutation_rate: float, mutation_count: int
+) -> List[Mutation]:
     mutations = []
     for i in range(mutation_count):
         mutation = original_state.copy()
         for reward in mutation:
-            mutation[reward] += np.round(np.random.uniform(-mutation_rate / 2, mutation_rate / 2), decimals=1)
+            mutation[reward] += np.round(
+                np.random.uniform(-mutation_rate / 2, mutation_rate / 2), decimals=1
+            )
 
         mutations.append(mutation)
 
@@ -38,25 +46,25 @@ def intermediate_recombination(parent_1: Mutation, parent_2: Mutation) -> Mutati
     return result
 
 
-def fitness(mutation: Mutation, agent: str, opponents: List[str], train_scenario: str, train_rounds: int,
-            test_scenario: str, test_rounds: int) -> float:
+def fitness(
+    mutation: Mutation,
+    agent: str,
+    opponents: List[str],
+    train_scenario: str,
+    train_rounds: int,
+    test_scenario: str,
+    test_rounds: int,
+) -> float:
     name = uuid.uuid4()
 
-    model_file = f'/tmp/{name}.npy'
-    stats_file = f'/tmp/{name}.txt'
+    model_file = f"/tmp/{name}.npy"
+    stats_file = f"/tmp/{name}.txt"
 
     rewards_json = json.dumps(mutation)
 
-    train_env = {
-        'MODEL_FILE': model_file,
-        'REWARDS': rewards_json
-    }
+    train_env = {"MODEL_FILE": model_file, "REWARDS": rewards_json}
 
-    test_env = {
-        'MODEL_FILE': model_file,
-        'STATS_FILE': stats_file,
-        'NO_TRAIN': 'True'
-    }
+    test_env = {"MODEL_FILE": model_file, "STATS_FILE": stats_file, "NO_TRAIN": "True"}
 
     train_command = f'pushd {PROJECT_DIR} && source venv/bin/activate && python3 main.py play --train 1 --scenario {train_scenario} --n-rounds {train_rounds} --no-gui --agents {agent} {" ".join(opponents)}'
     test_command = f'pushd {PROJECT_DIR} && source venv/bin/activate && python3 main.py play --train 1 --scenario {test_scenario} --n-rounds {test_rounds} --no-gui --agents {agent} {" ".join(opponents)}'
@@ -68,32 +76,42 @@ def fitness(mutation: Mutation, agent: str, opponents: List[str], train_scenario
     subprocess.call(test_command, shell=True, env=test_env)
 
     with open(stats_file) as csvfile:
-        rows = [row for row in csv.reader(csvfile, delimiter=',')][1:]
+        rows = [row for row in csv.reader(csvfile, delimiter=",")][1:]
 
-        score = [int(remaining_coins) + int(steps) for _, remaining_coins, steps in rows]
+        score = [
+            int(remaining_coins) + int(steps) for _, remaining_coins, steps in rows
+        ]
 
         return float(np.mean(score))
 
 
-def selection(parents: List[Mutation], children: List[Mutation], mu: int, fitness_func: Callable[[Mutation], float]) -> \
-        List[Mutation]:
+def selection(
+    parents: List[Mutation],
+    children: List[Mutation],
+    mu: int,
+    fitness_func: Callable[[Mutation], float],
+) -> List[Mutation]:
     old_population = parents + children
 
     old_population_fitness: List[MutationFitness] = []
 
     executor = ThreadPoolExecutor(max_workers=10)
 
-    futures = [executor.submit(lambda: fitness_func(mutation)) for mutation in old_population]
+    futures = [
+        executor.submit(lambda: fitness_func(mutation)) for mutation in old_population
+    ]
 
     for i, future in enumerate(futures):
         try:
             fitn = future.result()
         except Exception as exc:
-            print('%r generated an exception: %s' % (old_population[i], exc))
+            print("%r generated an exception: %s" % (old_population[i], exc))
         else:
             old_population_fitness.append((old_population[i], fitn))
 
-    old_population_fitness = sorted(old_population_fitness, key=lambda x: x[1], reverse=True)
+    old_population_fitness = sorted(
+        old_population_fitness, key=lambda x: x[1], reverse=True
+    )
 
     return [mutation for mutation, fitn in old_population_fitness[:mu]]
 
@@ -107,9 +125,17 @@ def get_initial_state() -> Mutation:
     return initial
 
 
-def evolution(mu: int, lambda_param: int, iterations: int, agent: str, opponents: List[str], train_scenario: str,
-              train_rounds: int,
-              test_scenario: str, test_rounds: int):
+def evolution(
+    mu: int,
+    lambda_param: int,
+    iterations: int,
+    agent: str,
+    opponents: List[str],
+    train_scenario: str,
+    train_rounds: int,
+    test_scenario: str,
+    test_rounds: int,
+):
     initial = get_initial_state()
 
     mutation_rates = np.linspace(100, 0, iterations)
@@ -131,10 +157,23 @@ def evolution(mu: int, lambda_param: int, iterations: int, agent: str, opponents
         children = [mutation(child, mutation_rates[i], 1)[0] for child in children]
 
         # Selection
-        parents = selection(parents, children, mu,
-                            lambda mut: fitness(mut, agent, opponents, train_scenario, train_rounds, test_scenario,
-                                                test_rounds))
+        parents = selection(
+            parents,
+            children,
+            mu,
+            lambda mut: fitness(
+                mut,
+                agent,
+                opponents,
+                train_scenario,
+                train_rounds,
+                test_scenario,
+                test_rounds,
+            ),
+        )
 
 
-if __name__ == '__main__':
-    evolution(30, 30 * 7, 10, 'q_learning_task_1', [], 'coin-hell', 10, 'coin-heaven', 10)
+if __name__ == "__main__":
+    evolution(
+        30, 30 * 7, 10, "q_learning_task_1", [], "coin-hell", 10, "coin-heaven", 10
+    )
