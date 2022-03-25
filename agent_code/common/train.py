@@ -1,11 +1,31 @@
-from typing import List, Optional
+from collections import deque
+from os.path import isfile
+from typing import List, Optional, Dict
 
+import json
 import numpy as np
 
 from agent_code.common.function_learning_feature_vector import FunctionLearningFeatureVector
 from agent_code.common.game_state import GameState
 from agent_code.common.nn_feature_vector import NNFeatureVector
 from agent_code.common.q_table_feature_vector import QTableFeatureVector
+
+
+def setup_training_global(self, transition_history_size: int):
+    self.transitions = deque(maxlen=transition_history_size)
+    self.rewards = []
+
+
+def teardown_training(self, rewards_file: str):
+    current = []
+    if isfile(rewards_file):
+        with open(rewards_file) as f:
+            current = json.load(f)
+
+    current.append(self.rewards)
+
+    with open(rewards_file, 'w+') as f:
+        json.dump(current, f)
 
 
 def detect_wiggle(states: List[GameState]) -> int:
@@ -18,10 +38,31 @@ def detect_wiggle(states: List[GameState]) -> int:
     return len(wiggles)
 
 
+def reward_from_events(self, events: List[str], rewards: Dict[str, float]) -> int:
+    """
+    *This is not a required function, but an idea to structure your code.*
+
+    Here you can modify the rewards your agent get so as to en/discourage
+    certain behavior.
+    """
+    reward_sum = 0
+    for event in events:
+        if event in rewards:
+            reward_sum += rewards[event]
+        else:
+            self.logger.error("Event is not in reward list: %s", event)
+    self.logger.info(f"Awarded {reward_sum} for events {', '.join(events)}")
+
+    self.rewards.append(reward_sum)
+    return reward_sum
+
+
 def update_weights(self, current_feature_state: FunctionLearningFeatureVector,
                    next_feature_state: Optional[FunctionLearningFeatureVector],
-                   self_action: str, total_events: List[str], reward_from_events, possible_actions, alpha, gamma):
-    reward = reward_from_events(self, total_events)
+                   self_action: str, total_events: List[str], rewards: Dict[str, float], possible_actions: List[str],
+                   alpha: float,
+                   gamma: float):
+    reward = reward_from_events(self, total_events, rewards)
 
     current_action_index = possible_actions.index(self_action)
 
@@ -42,8 +83,9 @@ def update_weights(self, current_feature_state: FunctionLearningFeatureVector,
 
 
 def update_q_table(self, current_feature_state: QTableFeatureVector, next_feature_state: Optional[QTableFeatureVector],
-                   self_action: str, total_events: List[str], reward_from_events, possible_actions, alpha, gamma):
-    reward = reward_from_events(self, total_events)
+                   self_action: str, total_events: List[str], rewards: Dict[str, float], possible_actions: List[str],
+                   alpha: float, gamma: float):
+    reward = reward_from_events(self, total_events, rewards)
 
     current_action_index = possible_actions.index(self_action)
 
@@ -61,8 +103,9 @@ def update_q_table(self, current_feature_state: QTableFeatureVector, next_featur
 
 
 def update_nn(self, current_feature_state: NNFeatureVector, next_feature_state: Optional[NNFeatureVector],
-              self_action: str, total_events: List[str], reward_from_events, possible_actions, gamma):
-    reward = reward_from_events(self, total_events)
+              self_action: str, total_events: List[str], rewards: Dict[str, float], possible_actions: List[str],
+              gamma: float):
+    reward = reward_from_events(self, total_events, rewards)
 
     current_action_index = possible_actions.index(self_action)
 
