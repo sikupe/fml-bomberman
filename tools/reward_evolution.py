@@ -1,13 +1,14 @@
+import sys
 import json
 import subprocess
 import csv
 import uuid
 from concurrent.futures import ThreadPoolExecutor
-
 import numpy as np
 from typing import Dict, List, Tuple, Callable
 
-from agent_code.q_learning_task_1.rewards import rewards
+PROJECT_DIR = subprocess.run("git rev-parse --show-toplevel", shell=True, stdout=subprocess.PIPE).stdout.decode().replace("\n", "")
+sys.path.append(PROJECT_DIR)
 
 Mutation = Dict[str, float]
 MutationFitness = Tuple[Mutation, float]
@@ -57,8 +58,8 @@ def fitness(mutation: Mutation, agent: str, opponents: List[str], train_scenario
         'NO_TRAIN': 'True'
     }
 
-    train_command = f'python3 main.py play --train 1 --scenario {train_scenario} --n-rounds {train_rounds} --no-gui --agents {agent} {" ".join(opponents)}'
-    test_command = f'python3 main.py play --train 1 --scenario {test_scenario} --n-rounds {test_rounds} --no-gui --agents {agent} {" ".join(opponents)}'
+    train_command = f'pushd {PROJECT_DIR} && source venv/bin/activate && python3 main.py play --train 1 --scenario {train_scenario} --n-rounds {train_rounds} --no-gui --agents {agent} {" ".join(opponents)}'
+    test_command = f'pushd {PROJECT_DIR} && source venv/bin/activate && python3 main.py play --train 1 --scenario {test_scenario} --n-rounds {test_rounds} --no-gui --agents {agent} {" ".join(opponents)}'
 
     # Train
     subprocess.call(train_command, shell=True, env=train_env)
@@ -66,11 +67,12 @@ def fitness(mutation: Mutation, agent: str, opponents: List[str], train_scenario
     # Test
     subprocess.call(test_command, shell=True, env=test_env)
 
-    rows = [row for row in csv.reader(stats_file)][1:]
+    with open(stats_file) as csvfile:
+        rows = [row for row in csv.reader(csvfile, delimiter=',')][1:]
 
-    score = [int(remaining_coins) + int(steps) for _, remaining_coins, steps in rows]
+        score = [int(remaining_coins) + int(steps) for _, remaining_coins, steps in rows]
 
-    return float(np.mean(score))
+        return float(np.mean(score))
 
 
 def selection(parents: List[Mutation], children: List[Mutation], mu: int, fitness_func: Callable[[Mutation], float]) -> \
@@ -97,6 +99,8 @@ def selection(parents: List[Mutation], children: List[Mutation], mu: int, fitnes
 
 
 def get_initial_state() -> Mutation:
+    from agent_code.q_learning_task_1.rewards import rewards
+
     initial = dict()
     for event in rewards:
         initial[event] = 0.0
