@@ -1,8 +1,10 @@
 import json
 import subprocess
 import csv
+import uuid
+from concurrent.futures import ThreadPoolExecutor
+
 import numpy as np
-import time
 from typing import Dict, List, Tuple, Callable
 
 from agent_code.q_learning_task_1.rewards import rewards
@@ -37,10 +39,10 @@ def intermediate_recombination(parent_1: Mutation, parent_2: Mutation) -> Mutati
 
 def fitness(mutation: Mutation, agent: str, opponents: List[str], train_scenario: str, train_rounds: int,
             test_scenario: str, test_rounds: int) -> float:
-    current_time_millis = time.time_ns()
+    name = uuid.uuid4()
 
-    model_file = f'/tmp/{current_time_millis}.npy'
-    stats_file = f'/tmp/{current_time_millis}.txt'
+    model_file = f'/tmp/{name}.npy'
+    stats_file = f'/tmp/{name}.txt'
 
     rewards_json = json.dumps(mutation)
 
@@ -77,9 +79,17 @@ def selection(parents: List[Mutation], children: List[Mutation], mu: int, fitnes
 
     old_population_fitness: List[MutationFitness] = []
 
-    for mutation in old_population:
-        fitn = fitness_func(mutation)
-        old_population_fitness.append((mutation, fitn))
+    executor = ThreadPoolExecutor(max_workers=10)
+
+    futures = [executor.submit(lambda: fitness_func(mutation)) for mutation in old_population]
+
+    for i, future in enumerate(futures):
+        try:
+            fitn = future.result()
+        except Exception as exc:
+            print('%r generated an exception: %s' % (old_population[i], exc))
+        else:
+            old_population_fitness.append((old_population[i], fitn))
 
     old_population_fitness = sorted(old_population_fitness, key=lambda x: x[1], reverse=True)
 
