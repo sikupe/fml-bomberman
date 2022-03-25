@@ -17,8 +17,8 @@ from agent_code.strong_students.q_table_feature_vector import QTableFeatureVecto
 
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB']
 
-Q_TABLE_FILE = os.environ.get("Q_TABLE_FILE", join(dirname(__file__), 'q_learning_task_3.npy'))
-STATS_FILE = os.environ.get("STATS_FILE", join(dirname(__file__), 'stats_q_learning_task_2.txt'))
+MODEL_FILE = os.environ.get("MODEL_FILE", join(dirname(__file__), 'model.npy'))
+STATS_FILE = os.environ.get("STATS_FILE", join(dirname(__file__), 'stats.txt'))
 
 # Hyperparameter
 gamma = 0.9
@@ -37,8 +37,8 @@ def setup_training(self):
     :param self: This object is passed to all callbacks and you can set arbitrary values.
     """
 
-    if isfile(Q_TABLE_FILE):
-        self.q_table = np.load(Q_TABLE_FILE)
+    if isfile(MODEL_FILE):
+        self.q_table = np.load(MODEL_FILE)
     else:
         self.q_table = np.zeros((FeatureVector.size(), len(ACTIONS)))
 
@@ -106,7 +106,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
 
     with open(STATS_FILE, 'a+') as f:
         f.write(f'{len(old_state.coins)}, ')
-    np.save(Q_TABLE_FILE, self.q_table)
+    np.save(MODEL_FILE, self.q_table)
 
 
 def update_q_table(self, current_feature_state: QTableFeatureVector, next_feature_state: Optional[QTableFeatureVector],

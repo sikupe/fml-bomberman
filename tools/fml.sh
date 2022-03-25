@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-REPO_DIR=$(pwd)
+REPO_DIR=$(git rev-parse --show-toplevel)
 
 if [ "$1" == "help" ] || [ "$1" == "-h" ] || [ "$1" == "--help" ] || [ -z "$1" ] ;then
     echo sh fml.sh AGENTS SCENARIO ROUNDS [count] [random_dir?]
@@ -55,19 +55,25 @@ fi
 
 pushd ${REPO_DIR}
 if [ ! -f "main.py" ];then
-    echo Seems like we are not in the right directory. Existing
+    echo Seems like we are not in the right directory. Exiting.
     exit
+fi
+
+if [ ${TMP_DIR_ADDITION} = *"_nn" ];then
+    EXTENSION=.pt
+else
+    EXTENSION=.npy
 fi
 
 
 for i in $( seq 0  ${COUNT} );do
     tmux neww -t train
-    tmux send "pushd ${REPO_DIR}" ENTER
-    tmux send "source venv/bin/activate" ENTER
-    tmux send "export Q_TABLE_FILE=${TMP_DIR}_${TMP_DIR_ADDITION}/agents_blobs/${TMP_DIR_ADDITION}_${i}.npy" ENTER
-    tmux send "export STATS_FILE=${TMP_DIR}_${TMP_DIR_ADDITION}/agents_blobs/stats_${TMP_DIR_ADDITION}_${i}.txt" ENTER
-    tmux send "python main.py play --scenario ${SCENARIO} --agents ${AGENTS} --n-rounds ${ROUNDS} --train 1 --no-gui" ENTER
-    tmux send "exit" ENTER
+    tmux send -t train "pushd ${REPO_DIR}" ENTER
+    tmux send -t train "source venv/bin/activate" ENTER
+    tmux send -t train "export MODEL_FILE=${TMP_DIR}_${TMP_DIR_ADDITION}/agents_blobs/${TMP_DIR_ADDITION}_${i}.${EXTENSION}" ENTER
+    tmux send -t train "export STATS_FILE=${TMP_DIR}_${TMP_DIR_ADDITION}/agents_blobs/stats_${TMP_DIR_ADDITION}_${i}.txt" ENTER
+    tmux send -t train "python main.py play --scenario ${SCENARIO} --agents ${AGENTS} --n-rounds ${ROUNDS} --train 1 --no-gui" ENTER
+    tmux send -t train "exit" ENTER
     echo $i
 done
 

@@ -16,10 +16,8 @@ from agent_code.q_learning_task_3_advanced_features.feature_vector import Featur
 
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB']
 
-Q_TABLE_FILE = os.environ.get("Q_TABLE_FILE", join(dirname(__file__), 'q_learning_task_3_advanced_features.npy'))
-STATS_FILE = os.environ.get("STATS_FILE", join(dirname(__file__), 'stats_q_learning_task_2.txt'))
-with open(STATS_FILE, 'a+') as f:
-    f.write(f'SCORE, SCORE2, SCORE3, SCORE4, ENDSTATE, LAST STEP\n')
+MODEL_FILE = os.environ.get("MODEL_FILE", join(dirname(__file__), 'model.npy'))
+STATS_FILE = os.environ.get("STATS_FILE", join(dirname(__file__), 'stats.txt'))
 
 TRANSITION_HISTORY_SIZE = 10
 Transition = namedtuple('Transition',
@@ -44,8 +42,10 @@ def setup_training(self):
 
     setup_training_global(self, TRANSITION_HISTORY_SIZE)
 
-    if isfile(Q_TABLE_FILE):
-        self.q_table = np.load(Q_TABLE_FILE)
+    with open(STATS_FILE, 'a+') as f:
+        f.write(f'SCORE, SCORE2, SCORE3, SCORE4, ENDSTATE, LAST STEP\n')
+    if isfile(MODEL_FILE):
+        self.q_table = np.load(MODEL_FILE)
     else:
         self.q_table = np.zeros((FeatureVector.size(), len(ACTIONS)))
 
@@ -126,4 +126,4 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     with open(STATS_FILE, 'a+') as f:
         f.write(f'{old_state.self.score}, {score_others}, {endstate}, {old_state.step}\n')
     teardown_training(self, join(dirname(__file__), 'rewards.json'))
-    np.save(Q_TABLE_FILE, self.q_table)
+    np.save(MODEL_FILE, self.q_table)

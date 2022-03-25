@@ -19,8 +19,8 @@ from agent_code.q_learning_task_1_nn.q_nn import QNN
 
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT']
 
-Q_NN_FILE = os.environ.get("Q_NN_FILE", join(dirname(__file__), 'qnn.pt'))
-STATS_FILE = os.environ.get("STATS_FILE", join(dirname(__file__), 'q_learning_task_2_nn.txt'))
+MODEL_FILE = os.environ.get("MODEL_FILE", join(dirname(__file__), 'model.pt'))
+STATS_FILE = os.environ.get("STATS_FILE", join(dirname(__file__), 'stats.txt'))
 
 TRANSITION_HISTORY_SIZE = 10
 
@@ -42,9 +42,9 @@ def setup_training(self):
     """
     setup_training_global(self, TRANSITION_HISTORY_SIZE)
 
-    if isfile(Q_NN_FILE):
+    if isfile(MODEL_FILE):
         self.model = QNN(FeatureVector.size(), len(ACTIONS))
-        self.model.load_state_dict(torch.load(Q_NN_FILE))
+        self.model.load_state_dict(torch.load(MODEL_FILE))
         self.model.eval()
     else:
         self.model = QNN(FeatureVector.size(), len(ACTIONS))
@@ -108,6 +108,11 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     :param self: The same object that is passed to all of your callbacks.
     """
 
-    teardown_training(self, join(dirname(__file__), 'rewards.json'))
+    old_state = convert_to_state_object(last_game_state)
+    current_feature_state = extract_features(old_state, FeatureVector)
 
-    torch.save(self.model.state_dict(), Q_NN_FILE)
+    with open(STATS_FILE, 'a+') as f:
+        f.write(f'{len(old_state.coins)}, ')
+    torch.save(self.model.state_dict(), MODEL_FILE)
+
+    teardown_training(self, join(dirname(__file__), 'rewards.json'))

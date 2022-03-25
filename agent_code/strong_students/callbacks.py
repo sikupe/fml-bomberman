@@ -3,15 +3,15 @@ from os.path import isfile
 import numpy as np
 
 from agent_code.strong_students.feature_extractor import convert_to_state_object
-from agent_code.q_learning_task_3.feature_extractor import extract_features
-from agent_code.q_learning_task_3.train import ACTIONS, Q_TABLE_FILE
+from agent_code.strong_students.feature_extractor import extract_features
+from agent_code.strong_students.train import ACTIONS, MODEL_FILE
 
 epsilon = 0.1
 
 
 def setup(self):
-    if isfile(Q_TABLE_FILE):
-        self.q_table = np.load(Q_TABLE_FILE)
+    if isfile(MODEL_FILE):
+        self.q_table = np.load(MODEL_FILE)
 
 
 def act(self, game_state: dict):
