@@ -12,7 +12,7 @@ from agent_code.common.feature_extractor import extract_features
 
 from agent_code.common.feature_extractor import convert_to_state_object
 from agent_code.common.neighborhood import Mirror
-from agent_code.common.train import update_q_table
+from agent_code.common.train import update_q_table, teardown_training, setup_training_global
 from agent_code.q_learning_task_3 import rewards
 from agent_code.q_learning_task_3.feature_vector import FeatureVector
 
@@ -42,7 +42,7 @@ def setup_training(self):
 
     :param self: This object is passed to all callbacks and you can set arbitrary values.
     """
-    self.transitions = deque(maxlen=TRANSITION_HISTORY_SIZE)
+    setup_training_global(self, TRANSITION_HISTORY_SIZE)
 
     if isfile(MODEL_FILE):
         self.q_table = np.load(MODEL_FILE)
@@ -85,7 +85,7 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
             rot_action = Mirror.mirror_action(mirror, self_action)
             rot_events = Mirror.mirror_events(mirror, total_events)
 
-            update_q_table(self, rot_current_state, rot_next_state, rot_action, rot_events, reward_from_events, ACTIONS,
+            update_q_table(self, rot_current_state, rot_next_state, rot_action, rot_events, rewards.rewards, ACTIONS,
                            alpha, gamma)
 
 
@@ -110,26 +110,10 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
         rot_action = Mirror.mirror_action(mirror, last_action)
         rot_events = Mirror.mirror_events(mirror, events)
 
-        update_q_table(self, rot_current_state, None, rot_action, rot_events, reward_from_events, ACTIONS,
+        update_q_table(self, rot_current_state, None, rot_action, rot_events, rewards.rewards, ACTIONS,
                        alpha, gamma)
 
+    teardown_training(self, join(dirname(__file__), 'rewards.json'))
     with open(STATS_FILE, 'a+') as f:
         f.write(f'{len(old_state.coins)}, ')
     np.save(MODEL_FILE, self.q_table)
-
-
-def reward_from_events(self, events: List[str]) -> int:
-    """
-    *This is not a required function, but an idea to structure your code.*
-
-    Here you can modify the rewards your agent get so as to en/discourage
-    certain behavior.
-    """
-    reward_sum = 0
-    for event in events:
-        if event in rewards.rewards:
-            reward_sum += rewards.rewards[event]
-        else:
-            self.logger.error("Event is not in reward list: %s", event)
-    self.logger.info(f"Awarded {reward_sum} for events {', '.join(events)}")
-    return reward_sum

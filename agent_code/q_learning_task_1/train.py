@@ -1,5 +1,6 @@
 from __future__ import annotations
 import os
+import re
 
 from collections import deque, namedtuple
 from os.path import join, dirname, isfile
@@ -11,7 +12,7 @@ from agent_code.common.events import extract_events_from_state
 from agent_code.common.feature_extractor import convert_to_state_object
 from agent_code.common.feature_extractor import extract_features
 from agent_code.common.neighborhood import Mirror
-from agent_code.common.train import update_q_table
+from agent_code.common.train import update_q_table, setup_training_global, teardown_training
 from agent_code.q_learning_task_1 import rewards
 from agent_code.q_learning_task_1.feature_vector import FeatureVector
 
@@ -19,6 +20,8 @@ ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT']
 
 MODEL_FILE = os.environ.get("MODEL_FILE", join(dirname(__file__), 'model.npy'))
 STATS_FILE = os.environ.get("STATS_FILE", join(dirname(__file__), 'stats.txt'))
+REWARDS_FILE = re.sub(r"\..*$", ".json", STATS_FILE)
+NOTRAIN = os.environ.get("NOTRAIN", "False")
 
 TRANSITION_HISTORY_SIZE = 10
 
@@ -29,7 +32,6 @@ Transition = namedtuple('Transition',
 gamma = 1
 alpha = 0.05
 
-
 def setup_training(self):
     """
     Initialise self for training purpose.
@@ -38,7 +40,13 @@ def setup_training(self):
 
     :param self: This object is passed to all callbacks and you can set arbitrary values.
     """
-    self.transitions = deque(maxlen=TRANSITION_HISTORY_SIZE)
+    setup_training_global(self, TRANSITION_HISTORY_SIZE)
+
+    with open(STATS_FILE, 'a+') as f:
+        f.write('INITIAL_COINS, REMAINING_COINS, STEPS\n')
+
+    if NOTRAIN == "True":
+        return
 
     if isfile(MODEL_FILE):
         self.q_table = np.load(MODEL_FILE)
@@ -63,8 +71,15 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     :param new_game_state: The state the agent is in now.
     :param events: The events that occurred when going from  `old_game_state` to `new_game_state`
     """
+
     new_state = convert_to_state_object(new_game_state)
     self.transitions.append(new_state)
+
+    if not old_game_state and new_game_state:
+        self.inital_coins = len(new_state.coins)
+
+    if NOTRAIN == "True":
+        return
 
     if old_game_state:
         old_state = convert_to_state_object(old_game_state)
@@ -81,7 +96,7 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
             rot_action = Mirror.mirror_action(mirror, self_action)
             rot_events = Mirror.mirror_events(mirror, total_events)
 
-            update_q_table(self, rot_current_state, rot_next_state, rot_action, rot_events, reward_from_events, ACTIONS,
+            update_q_table(self, rot_current_state, rot_next_state, rot_action, rot_events, rewards.rewards, ACTIONS,
                            alpha, gamma)
 
 
@@ -101,21 +116,13 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
 
     old_state = convert_to_state_object(last_game_state)
 
+    teardown_training(self, REWARDS_FILE)
+
     with open(STATS_FILE, 'a+') as f:
-        f.write(f'{len(old_state.coins)}, ')
+        f.write(f'{self.inital_coins}, {len(old_state.coins)}, {old_state.step}\n')
+
+    if NOTRAIN == "True":
+        print("Exit with notrain")
+        return
+
     np.save(MODEL_FILE, self.q_table)
-
-
-def reward_from_events(self, events: List[str]) -> int:
-    """
-    *This is not a required function, but an idea to structure your code.*
-
-    Here you can modify the rewards your agent get so as to en/discourage
-    certain behavior.
-    """
-    reward_sum = 0
-    for event in events:
-        if event in rewards.rewards:
-            reward_sum += rewards.rewards[event]
-    self.logger.info(f"Awarded {reward_sum} for events {', '.join(events)}")
-    return reward_sum
