@@ -1,4 +1,5 @@
 from collections import deque
+import contextlib
 from os.path import isfile
 from typing import List, Optional, Dict
 
@@ -100,7 +101,8 @@ def update_q_table(self, current_feature_state: QTableFeatureVector, next_featur
     q_updated = q_current + alpha * (reward + gamma * q_next - q_current)
 
     self.q_table[current_feature_state.to_state(), current_action_index] = q_updated
-    self.q_table_counter[current_feature_state.to_state(), current_action_index] += 1
+    with contextlib.suppress(AttributeError):
+        self.q_table_counter[current_feature_state.to_state(), current_action_index] += 1
 
 
 def update_nn(self, current_feature_state: NNFeatureVector, next_feature_state: Optional[NNFeatureVector],
