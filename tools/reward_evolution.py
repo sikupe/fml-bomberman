@@ -4,12 +4,10 @@ import subprocess
 import sys
 import uuid
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple, Callable
+from typing import Dict, List, Tuple, Callable
+from genealogy import Genealogy
 
-import graphviz
 import numpy as np
-from colour import Color
 
 PROJECT_DIR = (
     subprocess.run("git rev-parse --show-toplevel", shell=True, stdout=subprocess.PIPE)
@@ -27,97 +25,11 @@ MutationFitness = Tuple[Mutation, float, str]
 MOVED = 'MOVED'
 
 
-@dataclass
-class Parents:
-    left: Optional[int] = None
-    right: Optional[int] = None
-
-
-@dataclass
-class GenealogyNode:
-    parents: Optional[Parents] = None
-    child: Optional[int] = None
-    winner: int = 0
-
-
-class Genealogy:
-    def __init__(self, mu: int):
-        self.count: int = mu
-        self.data: List[GenealogyNode] = list()
-        self.children: List[int] = list()
-        self.parents: np.ndarray = np.arange(mu, dtype=int)
-
-        for i in range(mu):
-            self.data.append(GenealogyNode(Parents(None, None), i))
-
-    def process_winners(self, winner_indicies: List[int], iteration: int):
-        np_all = np.append(self.parents, np.array(self.children, dtype=np.int32))
-        self.parents = np_all[winner_indicies]
-        # Mark winners
-        for i in self.parents:
-            self.data[i].winner = iteration + 1
-        self.children.clear()
-
-    def add_child(self, parent_1_index: int, parent_2_index: int):
-        self.data.append(
-            GenealogyNode(
-                Parents(self.parents[parent_1_index], self.parents[parent_2_index]),
-                self.count,
-            )
-        )
-        self.children.append(self.count)
-        self.count += 1
-
-
-def generate_dot(
-        genealogy_data: List[GenealogyNode], mu: int, lambda_param: int, iterations: int
-):
-    dot = graphviz.Digraph(comment="Genealogy")
-    dot.attr(ranksep="1.0")
-    dot.attr("node", odering="out")
-
-    colors = list(Color("red").range_to(Color("green"), iterations + 1))
-
-    # First get the inital parents
-    with dot.subgraph() as s:
-        for genealogy_node in genealogy_data[:mu]:
-            i = genealogy_node.winner
-            s.attr(rank="same")
-            s.node(
-                str(genealogy_node.child),
-                **{"style": "filled", "fillcolor": colors[i].get_web()}
-                if i != 0
-                else {},
-            )
-
-    for i in range(iterations):
-        with dot.subgraph() as s:
-            for genealogy_node in genealogy_data[
-                                  (mu + i * lambda_param): (mu + (i + 1) * lambda_param)
-                                  ]:
-                i = genealogy_node.winner
-                s.attr(rank="same")
-                s.node(
-                    str(genealogy_node.child),
-                    **{"style": "filled", "fillcolor": colors[i].get_web()}
-                    if i != 0
-                    else {},
-                )
-                assert genealogy_node.parents
-                left = str(genealogy_node.parents.left)
-                right = str(genealogy_node.parents.right)
-                child = str(genealogy_node.child)
-                dot.edges([(left, child), (right, child)])
-
-    with open("genealogy.svg", "wb+") as dot_file:
-        dot_file.write(dot.pipe(format="svg"))
-
-
 def mutation(
         original_state: Mutation, mutation_rate: float, mutation_count: int
 ) -> List[Mutation]:
     mutations = []
-    for i in range(mutation_count):
+    for _ in range(mutation_count):
         mutation = original_state.copy()
         for reward in mutation:
             mutation[reward] += np.round(
@@ -318,7 +230,7 @@ def evolution(
         model_names = names
         genealogy.process_winners(winner_indicies, i)
 
-    generate_dot(genealogy.data, mu, lambda_param, iterations)
+    genealogy.generate_dot(mu, lambda_param, iterations)
 
     for name, parent in zip(model_names, parents):
         print(f"Model: {name}")
