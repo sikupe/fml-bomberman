@@ -18,7 +18,7 @@ PROJECT_DIR = (
 sys.path.append(PROJECT_DIR)
 
 Mutation = Dict[str, float]
-MutationFitness = Tuple[Mutation, float]
+MutationFitness = Tuple[Mutation, float, str]
 
 
 @dataclass
@@ -143,8 +143,8 @@ def fitness_mock(
     _train_rounds: int,
     _test_scenario: str,
     _test_rounds: int,
-) -> float:
-    return np.random.rand()
+) -> Tuple[float, str]:
+    return np.random.rand(), str(uuid.uuid4())
 
 
 def fitness(
@@ -155,8 +155,8 @@ def fitness(
     train_rounds: int,
     test_scenario: str,
     test_rounds: int,
-) -> float:
-    name = uuid.uuid4()
+) -> Tuple[float, str]:
+    name = str(uuid.uuid4())
 
     model_file = f"/tmp/{name}.npy"
     stats_file = f"/tmp/{name}.txt"
@@ -183,15 +183,15 @@ def fitness(
             int(remaining_coins) + int(steps) for _, remaining_coins, steps in rows
         ]
 
-        return float(np.mean(score))
+        return float(np.mean(score)), name
 
 
 def selection(
     parents: List[Mutation],
     children: List[Mutation],
     mu: int,
-    fitness_func: Callable[[Mutation], float],
-) -> Tuple[List[int], List[Mutation]]:
+    fitness_func: Callable[[Mutation], Tuple[float, str]],
+) -> Tuple[List[int], List[Mutation], List[str]]:
     old_population = parents + children
 
     old_population_fitness: List[MutationFitness] = []
@@ -204,21 +204,25 @@ def selection(
 
     for i, future in enumerate(futures):
         try:
-            fitn = future.result()
+            fitn, name = future.result()
         except Exception as exc:
             print("%r generated an exception: %s" % (old_population[i], exc))
         else:
-            old_population_fitness.append((old_population[i], fitn))
+            old_population_fitness.append((old_population[i], fitn, name))
 
     winner_indicies: List[int] = np.argsort(
-        np.array([fitn for _, fitn in old_population_fitness])
+        np.array([fitn for _, fitn, _ in old_population_fitness])
     )[::-1].tolist()[:mu]
 
     old_population_fitness = sorted(
-        old_population_fitness, key=lambda x: x[1], reverse=True
+        old_population_fitness, key=lambda x: x[1], reverse=False
     )
 
-    return (winner_indicies, [mutation for mutation, _ in old_population_fitness[:mu]])
+    return (
+        winner_indicies,
+        [mutation for mutation, _, _ in old_population_fitness[:mu]],
+        [name for _, _, name in old_population_fitness[:mu]]
+    )
 
 
 def get_initial_state() -> Mutation:
@@ -250,6 +254,8 @@ def evolution(
 
     parents = mutation(initial, mutation_rates[0], mu)
 
+    model_names = ""
+
     for i in range(iterations):
         children = []
         # Recombination
@@ -268,7 +274,7 @@ def evolution(
         children = [mutation(child, mutation_rates[i], 1)[0] for child in children]
 
         # Selection
-        winner_indicies, parents = selection(
+        winner_indicies, parents, names = selection(
             parents,
             children,
             mu,
@@ -283,15 +289,17 @@ def evolution(
             ),
         )
 
+        model_names = names
         genealogy.process_winners(winner_indicies, i)
 
     generate_dot(genealogy.data, mu, lambda_param, iterations)
 
-    for parent in parents:
+    for name, parent in zip(model_names, parents):
+        print(f"Model: {name}")
         print(json.dumps(parent, indent=4))
 
 
 if __name__ == "__main__":
     evolution(
-        30, 30 * 7, 10, "q_learning_task_1", [], "coin-hell", 10, "coin-heaven", 10
+        4, 4 * 3, 10, "q_learning_task_1", [], "coin-hell", 10, "coin-heaven", 10
     )
