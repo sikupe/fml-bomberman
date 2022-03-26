@@ -1,3 +1,4 @@
+import contextlib
 import csv
 import json
 import subprocess
@@ -206,7 +207,8 @@ def evolution(
             child = intermediate_recombination(parent_1, parent_2)
 
             children.append(child)
-            genealogy.add_child(parent_1_index, parent_2_index)
+            with contextlib.suppress(Exception):
+                genealogy.add_child(parent_1_index, parent_2_index)
 
         # Mutation
         children = [mutation(child, mutation_rates[i], 1)[0] for child in children]
@@ -228,13 +230,15 @@ def evolution(
         )
 
         model_names = names
-        genealogy.process_winners(winner_indicies, i)
+        with contextlib.suppress(Exception):
+            genealogy.process_winners(winner_indicies, i)
 
-    genealogy.generate_dot(mu, lambda_param, iterations)
         for name, parent in zip(model_names, parents):
             print(f"Model: {name}")
             print(json.dumps(parent, indent=4))
 
+    with contextlib.suppress(Exception):
+        genealogy.generate_dot(mu, lambda_param, iterations)
     print("FINAL EVOLUTION RESULT")
 
 
