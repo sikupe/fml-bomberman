@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 from collections import deque, namedtuple
 from os.path import join, dirname, isfile
 from typing import List
@@ -19,6 +20,7 @@ ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB']
 MODEL_FILE = os.environ.get("MODEL_FILE", join(dirname(__file__), 'model.npy'))
 MODEL_FILE_COUNTER = os.environ.get("MODEL_FILE_COUNTER", join(dirname(__file__), 'model_counter.npy'))
 STATS_FILE = os.environ.get("STATS_FILE", join(dirname(__file__), 'stats.txt'))
+REWARDS_FILE = re.sub(r"\..*$", ".json", STATS_FILE)
 
 TRANSITION_HISTORY_SIZE = 10
 Transition = namedtuple('Transition',
@@ -128,7 +130,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
         score_others += f"{opponent.score}, "
     with open(STATS_FILE, 'a+') as f:
         f.write(f'{old_state.self.score}, {score_others}, {endstate}, {old_state.step}\n')
-    teardown_training(self, join(dirname(__file__), 'rewards.json'))
+    teardown_training(self, REWARDS_FILE)
     np.save(MODEL_FILE, self.q_table)
     np.save(MODEL_FILE_COUNTER, self.q_table_counter)
     #np.savetxt("q_table_counter.csv", self.q_table_counter, delimiter=";")
