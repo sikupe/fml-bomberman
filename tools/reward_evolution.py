@@ -1,11 +1,14 @@
+from dataclasses import dataclass, field
 import sys
 import json
+import graphviz
 import subprocess
 import csv
 import uuid
+from colour import Color
 from concurrent.futures import ThreadPoolExecutor
 import numpy as np
-from typing import Dict, List, Tuple, Callable
+from typing import Dict, List, Optional, Tuple, Callable
 
 PROJECT_DIR = (
     subprocess.run("git rev-parse --show-toplevel", shell=True, stdout=subprocess.PIPE)
@@ -16,6 +19,92 @@ sys.path.append(PROJECT_DIR)
 
 Mutation = Dict[str, float]
 MutationFitness = Tuple[Mutation, float]
+
+
+@dataclass
+class Parents:
+    left: Optional[int] = None
+    right: Optional[int] = None
+
+
+@dataclass
+class GenealogyNode:
+    parents: Optional[Parents] = None
+    child: Optional[int] = None
+    winner: int = 0
+
+
+class Genealogy:
+    def __init__(self, mu: int):
+        self.count: int = mu
+        self.data: List[GenealogyNode] = list()
+        self.children: list[int] = list()
+        self.parents: np.ndarray = np.arange(mu, dtype=int)
+
+        for i in range(mu):
+            self.data.append(GenealogyNode(Parents(None, None), i))
+
+    def process_winners(self, winner_indicies: list[int], iteration: int):
+        np_all = np.append(self.parents, np.array(self.children, dtype=np.int32))
+        self.parents = np_all[winner_indicies]
+        # Mark winners
+        for i in self.parents:
+            self.data[i].winner = iteration + 1
+        self.children.clear()
+
+    def add_child(self, parent_1_index: int, parent_2_index: int):
+        self.data.append(
+            GenealogyNode(
+                Parents(self.parents[parent_1_index], self.parents[parent_2_index]),
+                self.count,
+            )
+        )
+        self.children.append(self.count)
+        self.count += 1
+
+
+def generate_dot(
+    genealogy_data: list[GenealogyNode], mu: int, lambda_param: int, iterations: int
+):
+    dot = graphviz.Digraph(comment="Genealogy")
+    dot.attr(ranksep="1.0")
+    dot.attr("node", odering="out")
+
+    colors = list(Color("red").range_to(Color("green"), iterations + 1))
+
+    # First get the inital parents
+    with dot.subgraph() as s:
+        for genealogy_node in genealogy_data[:mu]:
+            i = genealogy_node.winner
+            s.attr(rank="same")
+            s.node(
+                str(genealogy_node.child),
+                **{"style": "filled", "fillcolor": colors[i].get_web()}
+                if i != 0
+                else {},
+            )
+
+    for i in range(iterations):
+        with dot.subgraph() as s:
+            for genealogy_node in genealogy_data[
+                (mu + i * lambda_param) : (mu + (i + 1) * lambda_param)
+            ]:
+                i = genealogy_node.winner
+                s.attr(rank="same")
+                s.node(
+                    str(genealogy_node.child),
+                    **{"style": "filled", "fillcolor": colors[i].get_web()}
+                    if i != 0
+                    else {},
+                )
+                assert genealogy_node.parents
+                left = str(genealogy_node.parents.left)
+                right = str(genealogy_node.parents.right)
+                child = str(genealogy_node.child)
+                dot.edges([(left, child), (right, child)])
+
+    with open("genealogy.svg", "wb+") as dot_file:
+        dot_file.write(dot.pipe(format="svg"))
 
 
 def mutation(
@@ -44,6 +133,18 @@ def intermediate_recombination(parent_1: Mutation, parent_2: Mutation) -> Mutati
         result[event] = parent_1[event] * beta + parent_2[event] * (1 - beta)
 
     return result
+
+
+def fitness_mock(
+    _mutation: Mutation,
+    _agent: str,
+    _opponents: List[str],
+    _train_scenario: str,
+    _train_rounds: int,
+    _test_scenario: str,
+    _test_rounds: int,
+) -> float:
+    return np.random.rand()
 
 
 def fitness(
@@ -90,7 +191,7 @@ def selection(
     children: List[Mutation],
     mu: int,
     fitness_func: Callable[[Mutation], float],
-) -> List[Mutation]:
+) -> Tuple[List[int], List[Mutation]]:
     old_population = parents + children
 
     old_population_fitness: List[MutationFitness] = []
@@ -109,11 +210,15 @@ def selection(
         else:
             old_population_fitness.append((old_population[i], fitn))
 
+    winner_indicies: List[int] = np.argsort(
+        np.array([fitn for _, fitn in old_population_fitness])
+    )[::-1].tolist()[:mu]
+
     old_population_fitness = sorted(
         old_population_fitness, key=lambda x: x[1], reverse=True
     )
 
-    return [mutation for mutation, fitn in old_population_fitness[:mu]]
+    return (winner_indicies, [mutation for mutation, _ in old_population_fitness[:mu]])
 
 
 def get_initial_state() -> Mutation:
@@ -136,6 +241,9 @@ def evolution(
     test_scenario: str,
     test_rounds: int,
 ):
+    # Generate a genealogy
+    genealogy = Genealogy(mu)
+
     initial = get_initial_state()
 
     mutation_rates = np.linspace(100, 0, iterations)
@@ -146,18 +254,21 @@ def evolution(
         children = []
         # Recombination
         for _ in range(lambda_param):
-            parent_1 = parents[np.random.randint(0, mu)]
-            parent_2 = parents[np.random.randint(0, mu)]
+            parent_1_index = np.random.randint(0, mu)
+            parent_2_index = np.random.randint(0, mu)
+            parent_1 = parents[parent_1_index]
+            parent_2 = parents[parent_2_index]
 
             child = intermediate_recombination(parent_1, parent_2)
 
             children.append(child)
+            genealogy.add_child(parent_1_index, parent_2_index)
 
         # Mutation
         children = [mutation(child, mutation_rates[i], 1)[0] for child in children]
 
         # Selection
-        parents = selection(
+        winner_indicies, parents = selection(
             parents,
             children,
             mu,
@@ -171,6 +282,13 @@ def evolution(
                 test_rounds,
             ),
         )
+
+        genealogy.process_winners(winner_indicies, i)
+
+    generate_dot(genealogy.data, mu, lambda_param, iterations)
+
+    for parent in parents:
+        print(json.dumps(parent, indent=4))
 
 
 if __name__ == "__main__":
