@@ -231,10 +231,11 @@ def evolution(
         genealogy.process_winners(winner_indicies, i)
 
     genealogy.generate_dot(mu, lambda_param, iterations)
+        for name, parent in zip(model_names, parents):
+            print(f"Model: {name}")
+            print(json.dumps(parent, indent=4))
 
-    for name, parent in zip(model_names, parents):
-        print(f"Model: {name}")
-        print(json.dumps(parent, indent=4))
+    print("FINAL EVOLUTION RESULT")
 
 
 if __name__ == "__main__":
