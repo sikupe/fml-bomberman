@@ -17,6 +17,7 @@ from agent_code.q_learning_task_3_advanced_features.feature_vector import Featur
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB']
 
 MODEL_FILE = os.environ.get("MODEL_FILE", join(dirname(__file__), 'model.npy'))
+MODEL_FILE_COUNTER = os.environ.get("MODEL_FILE_COUNTER", join(dirname(__file__), 'model_counter.npy'))
 STATS_FILE = os.environ.get("STATS_FILE", join(dirname(__file__), 'stats.txt'))
 
 TRANSITION_HISTORY_SIZE = 10
@@ -46,8 +47,10 @@ def setup_training(self):
         f.write(f'SCORE, SCORE2, SCORE3, SCORE4, ENDSTATE, LAST STEP\n')
     if isfile(MODEL_FILE):
         self.q_table = np.load(MODEL_FILE)
+        self.q_table_counter = np.load(MODEL_FILE_COUNTER)
     else:
         self.q_table = np.zeros((FeatureVector.size(), len(ACTIONS)))
+        self.q_table_counter = np.zeros((FeatureVector.size(), len(ACTIONS)))
 
 
 def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_state: dict, events: List[str]):
@@ -126,6 +129,8 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     with open(STATS_FILE, 'a+') as f:
         f.write(f'{old_state.self.score}, {score_others}, {endstate}, {old_state.step}\n')
     np.save(MODEL_FILE, self.q_table)
+    np.save(MODEL_FILE_COUNTER, self.q_table_counter)
+    #np.savetxt("q_table_counter.csv", self.q_table_counter, delimiter=";")
 
 
 def reward_from_events(self, events: List[str]) -> int:
