@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+import events as e
 import sys
 import json
 import graphviz
@@ -10,15 +11,19 @@ from concurrent.futures import ThreadPoolExecutor
 import numpy as np
 from typing import Dict, List, Optional, Tuple, Callable
 
+from agent_code.common.events import APPROACH_COIN, MOVED_AWAY_FROM_COIN, WIGGLE
+
 PROJECT_DIR = (
     subprocess.run("git rev-parse --show-toplevel", shell=True, stdout=subprocess.PIPE)
-    .stdout.decode()
-    .replace("\n", "")
+        .stdout.decode()
+        .replace("\n", "")
 )
 sys.path.append(PROJECT_DIR)
 
 Mutation = Dict[str, float]
 MutationFitness = Tuple[Mutation, float]
+
+MOVED = 'MOVED'
 
 
 @dataclass
@@ -38,13 +43,13 @@ class Genealogy:
     def __init__(self, mu: int):
         self.count: int = mu
         self.data: List[GenealogyNode] = list()
-        self.children: list[int] = list()
+        self.children: List[int] = list()
         self.parents: np.ndarray = np.arange(mu, dtype=int)
 
         for i in range(mu):
             self.data.append(GenealogyNode(Parents(None, None), i))
 
-    def process_winners(self, winner_indicies: list[int], iteration: int):
+    def process_winners(self, winner_indicies: List[int], iteration: int):
         np_all = np.append(self.parents, np.array(self.children, dtype=np.int32))
         self.parents = np_all[winner_indicies]
         # Mark winners
@@ -64,7 +69,7 @@ class Genealogy:
 
 
 def generate_dot(
-    genealogy_data: list[GenealogyNode], mu: int, lambda_param: int, iterations: int
+        genealogy_data: List[GenealogyNode], mu: int, lambda_param: int, iterations: int
 ):
     dot = graphviz.Digraph(comment="Genealogy")
     dot.attr(ranksep="1.0")
@@ -87,8 +92,8 @@ def generate_dot(
     for i in range(iterations):
         with dot.subgraph() as s:
             for genealogy_node in genealogy_data[
-                (mu + i * lambda_param) : (mu + (i + 1) * lambda_param)
-            ]:
+                                  (mu + i * lambda_param): (mu + (i + 1) * lambda_param)
+                                  ]:
                 i = genealogy_node.winner
                 s.attr(rank="same")
                 s.node(
@@ -108,7 +113,7 @@ def generate_dot(
 
 
 def mutation(
-    original_state: Mutation, mutation_rate: float, mutation_count: int
+        original_state: Mutation, mutation_rate: float, mutation_count: int
 ) -> List[Mutation]:
     mutations = []
     for i in range(mutation_count):
@@ -136,25 +141,25 @@ def intermediate_recombination(parent_1: Mutation, parent_2: Mutation) -> Mutati
 
 
 def fitness_mock(
-    _mutation: Mutation,
-    _agent: str,
-    _opponents: List[str],
-    _train_scenario: str,
-    _train_rounds: int,
-    _test_scenario: str,
-    _test_rounds: int,
+        _mutation: Mutation,
+        _agent: str,
+        _opponents: List[str],
+        _train_scenario: str,
+        _train_rounds: int,
+        _test_scenario: str,
+        _test_rounds: int,
 ) -> float:
     return np.random.rand()
 
 
 def fitness(
-    mutation: Mutation,
-    agent: str,
-    opponents: List[str],
-    train_scenario: str,
-    train_rounds: int,
-    test_scenario: str,
-    test_rounds: int,
+        mutation: Mutation,
+        agent: str,
+        opponents: List[str],
+        train_scenario: str,
+        train_rounds: int,
+        test_scenario: str,
+        test_rounds: int,
 ) -> float:
     name = uuid.uuid4()
 
@@ -187,10 +192,10 @@ def fitness(
 
 
 def selection(
-    parents: List[Mutation],
-    children: List[Mutation],
-    mu: int,
-    fitness_func: Callable[[Mutation], float],
+        parents: List[Mutation],
+        children: List[Mutation],
+        mu: int,
+        fitness_func: Callable[[Mutation], float],
 ) -> Tuple[List[int], List[Mutation]]:
     old_population = parents + children
 
@@ -198,8 +203,10 @@ def selection(
 
     executor = ThreadPoolExecutor(max_workers=10)
 
+    old_phenotypes = [to_phenotype(mut) for mut in old_population]
+
     futures = [
-        executor.submit(lambda: fitness_func(mutation)) for mutation in old_population
+        executor.submit(lambda: fitness_func(mut)) for mut in old_phenotypes
     ]
 
     for i, future in enumerate(futures):
@@ -221,36 +228,54 @@ def selection(
     return (winner_indicies, [mutation for mutation, _ in old_population_fitness[:mu]])
 
 
-def get_initial_state() -> Mutation:
-    from agent_code.q_learning_task_1.rewards import rewards
+def to_phenotype(genotype: Mutation) -> Mutation:
+    phenotype = genotype.copy()
 
-    initial = dict()
-    for event in rewards:
-        initial[event] = 0.0
-    return initial
+    phenotype[e.MOVED_UP] = phenotype[MOVED]
+    phenotype[e.MOVED_DOWN] = phenotype[MOVED]
+    phenotype[e.MOVED_LEFT] = phenotype[MOVED]
+    phenotype[e.MOVED_RIGHT] = phenotype[MOVED]
+
+    del phenotype[MOVED]
+
+    return phenotype
+
+
+def get_initial_state() -> Mutation:
+    return {
+        e.COIN_COLLECTED: 0,
+        MOVED: 0,
+        e.WAITED: 0,
+        APPROACH_COIN: 0,
+        MOVED_AWAY_FROM_COIN: 0,
+        WIGGLE: 0,
+        e.SURVIVED_ROUND: 0,
+    }
 
 
 def evolution(
-    mu: int,
-    lambda_param: int,
-    iterations: int,
-    agent: str,
-    opponents: List[str],
-    train_scenario: str,
-    train_rounds: int,
-    test_scenario: str,
-    test_rounds: int,
+        mu: int,
+        lambda_param: int,
+        iterations: int,
+        agent: str,
+        opponents: List[str],
+        train_scenario: str,
+        train_rounds: int,
+        test_scenario: str,
+        test_rounds: int,
 ):
     # Generate a genealogy
     genealogy = Genealogy(mu)
 
     initial = get_initial_state()
 
-    mutation_rates = np.linspace(100, 0, iterations)
+    mutation_rates = np.concatenate([100 * np.exp(- np.linspace(0, int(iterations / 3), int(iterations / 3))),
+                                     np.linspace(100 * np.exp(- int(iterations / 3)), 0,
+                                                 iterations - int(iterations / 3))])
 
     parents = mutation(initial, mutation_rates[0], mu)
 
-    for i in range(iterations):
+    for i in range(1, iterations):
         children = []
         # Recombination
         for _ in range(lambda_param):
