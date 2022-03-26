@@ -18,15 +18,8 @@ def setup_training_global(self, transition_history_size: int):
 
 
 def teardown_training(self, rewards_file: str):
-    current = []
-    if isfile(rewards_file):
-        with open(rewards_file) as f:
-            current = json.load(f)
-
-    current.append(self.rewards)
-
-    with open(rewards_file, 'w+') as f:
-        json.dump(current, f)
+    with open(rewards_file, 'a+') as f:
+        f.write(",".join([str(r) for r in self.rewards]))
 
 
 def detect_wiggle(states: List[GameState]) -> int:

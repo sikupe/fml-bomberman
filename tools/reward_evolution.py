@@ -1,24 +1,25 @@
-from dataclasses import dataclass, field
-import events as e
-import sys
-import json
-import graphviz
-import subprocess
 import csv
+import json
+import subprocess
+import sys
 import uuid
-from colour import Color
 from concurrent.futures import ThreadPoolExecutor
-import numpy as np
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple, Callable
 
-from agent_code.common.events import APPROACH_COIN, MOVED_AWAY_FROM_COIN, WIGGLE
+import graphviz
+import numpy as np
+from colour import Color
 
 PROJECT_DIR = (
     subprocess.run("git rev-parse --show-toplevel", shell=True, stdout=subprocess.PIPE)
-    .stdout.decode()
-    .replace("\n", "")
+        .stdout.decode()
+        .replace("\n", "")
 )
 sys.path.append(PROJECT_DIR)
+
+from agent_code.common.events import APPROACH_COIN, MOVED_AWAY_FROM_COIN, WIGGLE
+import events as e
 
 Mutation = Dict[str, float]
 MutationFitness = Tuple[Mutation, float, str]
@@ -141,25 +142,25 @@ def intermediate_recombination(parent_1: Mutation, parent_2: Mutation) -> Mutati
 
 
 def fitness_mock(
-    _mutation: Mutation,
-    _agent: str,
-    _opponents: List[str],
-    _train_scenario: str,
-    _train_rounds: int,
-    _test_scenario: str,
-    _test_rounds: int,
+        _mutation: Mutation,
+        _agent: str,
+        _opponents: List[str],
+        _train_scenario: str,
+        _train_rounds: int,
+        _test_scenario: str,
+        _test_rounds: int,
 ) -> Tuple[float, str]:
     return np.random.rand(), str(uuid.uuid4())
 
 
 def fitness(
-    mutation: Mutation,
-    agent: str,
-    opponents: List[str],
-    train_scenario: str,
-    train_rounds: int,
-    test_scenario: str,
-    test_rounds: int,
+        mutation: Mutation,
+        agent: str,
+        opponents: List[str],
+        train_scenario: str,
+        train_rounds: int,
+        test_scenario: str,
+        test_rounds: int,
 ) -> Tuple[float, str]:
     name = str(uuid.uuid4())
 
@@ -172,8 +173,8 @@ def fitness(
 
     test_env = {"MODEL_FILE": model_file, "STATS_FILE": stats_file, "NO_TRAIN": "True"}
 
-    train_command = f'pushd {PROJECT_DIR} && source venv/bin/activate && python3 main.py play --train 1 --scenario {train_scenario} --n-rounds {train_rounds} --no-gui --agents {agent} {" ".join(opponents)}'
-    test_command = f'pushd {PROJECT_DIR} && source venv/bin/activate && python3 main.py play --train 1 --scenario {test_scenario} --n-rounds {test_rounds} --no-gui --agents {agent} {" ".join(opponents)}'
+    train_command = f'/bin/bash -c "source venv/bin/activate && python3 main.py play --train 1 --scenario {train_scenario} --n-rounds {train_rounds} --no-gui --agents {agent} {" ".join(opponents)}"'
+    test_command = f'/bin/bash -c "source venv/bin/activate && python3 main.py play --train 1 --scenario {test_scenario} --n-rounds {test_rounds} --no-gui --agents {agent} {" ".join(opponents)}"'
 
     # Train
     subprocess.call(train_command, shell=True, env=train_env)
@@ -192,10 +193,10 @@ def fitness(
 
 
 def selection(
-    parents: List[Mutation],
-    children: List[Mutation],
-    mu: int,
-    fitness_func: Callable[[Mutation], Tuple[float, str]],
+        parents: List[Mutation],
+        children: List[Mutation],
+        mu: int,
+        fitness_func: Callable[[Mutation], Tuple[float, str]],
 ) -> Tuple[List[int], List[Mutation], List[str]]:
     old_population = parents + children
 
