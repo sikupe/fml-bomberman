@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/bash
 podman ps
 if [ $? -eq 0 ];then
     CONTAINER_CMD=podman
@@ -65,7 +65,8 @@ sed -i 's/common/strong_students\.common/g' *.py
 # sed in strong_students/common
 pushd common
 sed -i 's/common/strong_students\.common/g' *.py
-popd
+
+pushd /tmp/final_bomberman/
 
 $CONTAINER_CMD build -t test_strong_students .
 
