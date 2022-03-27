@@ -17,7 +17,7 @@ from agent_code.q_learning_task_3_advanced_features.feature_vector import Featur
 
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB']
 
-MODEL_FILE, STATS_FILE, REWARDS_FILE, MODEL_FILE_COUNTER, NOTRAIN = parse_train_env(__name__)
+MODEL_FILE, STATS_FILE, REWARDS_FILE, MODEL_FILE_COUNTER, NO_TRAIN = parse_train_env(__name__)
 
 TRANSITION_HISTORY_SIZE = 10
 Transition = namedtuple('Transition',
@@ -42,16 +42,17 @@ def setup_training(self):
 
     setup_training_global(self, TRANSITION_HISTORY_SIZE)
 
-    if NOTRAIN:
+    if NO_TRAIN:
         with open(STATS_FILE, 'a+') as f:
             f.write(f'SCORE, ENDSTATE, LAST STEP\n')
         return
 
     if isfile(MODEL_FILE):
         self.q_table = np.load(MODEL_FILE)
-        self.q_table_counter = np.load(MODEL_FILE_COUNTER)
+        #self.q_table_counter = np.load(MODEL_FILE_COUNTER)
     else:
         self.q_table = np.zeros((FeatureVector.size(), len(ACTIONS)))
+        #self.q_table_counter = np.zeros((FeatureVector.size(), len(ACTIONS)))
 
 
 def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_state: dict, events: List[str]):
@@ -74,7 +75,7 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     new_state = convert_to_state_object(new_game_state)
     self.transitions.append(new_state)
 
-    if NOTRAIN:
+    if NO_TRAIN:
         return
 
     if old_game_state:
@@ -120,7 +121,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
         update_q_table(self, rot_current_state, None, rot_action, rot_events, rewards.rewards, ACTIONS,
                        alpha, gamma)
 
-    if NOTRAIN:
+    if NO_TRAIN:
         # Write Stats
         if "KILLED_SELF" in events:
             # endstate = "Suicide"
@@ -138,5 +139,5 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
 
     teardown_training(self, REWARDS_FILE)
     np.save(MODEL_FILE, self.q_table)
-    np.save(MODEL_FILE_COUNTER, self.q_table_counter)
+    #np.save(MODEL_FILE_COUNTER, self.q_table_counter)
     #np.savetxt("q_table_counter.csv", self.q_table_counter, delimiter=";")

@@ -19,8 +19,8 @@ Transition = namedtuple('Transition',
 def parse_notrain() -> bool:
     """Convert string of env var to bool."""
     bool_dict = {"true": True, "false": False}
-    NOTRAIN = bool_dict[os.environ.get("NOTRAIN", "False").lower()]
-    return NOTRAIN
+    NO_TRAIN = bool_dict[os.environ.get("NO_TRAIN", "False").lower()]
+    return NO_TRAIN
 
 
 def parse_train_env(module_name: str) -> Tuple[str, str, str, str, bool]:
@@ -28,7 +28,7 @@ def parse_train_env(module_name: str) -> Tuple[str, str, str, str, bool]:
     MODEL_FILE = os.environ.get("MODEL_FILE", join(dirname(module_name), 'model.npy'))
     STATS_FILE = os.environ.get("STATS_FILE", join(dirname(module_name), 'stats.txt'))
     REWARDS_FILE = re.sub(r"\..*$", ".json", STATS_FILE)
-    MODEL_FILE_COUNTER = os.environ.get("MODEL_FILE_COUNTER", join(dirname(__file__), 'model_counter.npy'))
+    MODEL_FILE_COUNTER = os.environ.get("MODEL_FILE_COUNTER", join(dirname(module_name), 'model_counter.npy'))
     return MODEL_FILE, STATS_FILE, REWARDS_FILE, MODEL_FILE_COUNTER, parse_notrain()
 
 

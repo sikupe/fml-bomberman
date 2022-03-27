@@ -7,13 +7,13 @@ from agent_code.common.nn_feature_vector import NNFeatureVector
 from agent_code.common.q_table_feature_vector import QTableFeatureVector
 from agent_code.common.train import parse_notrain
 
-NOTRAIN = parse_notrain()
+NO_TRAIN = parse_notrain()
 
 def act(self, probabilities: np.ndarray, actions: List[str], epsilon: float):
     self.logger.debug(f'Current train probabilities: {probabilities}')
     selected_action = actions[np.argmax(probabilities)]
 
-    if not NOTRAIN:
+    if not NO_TRAIN:
         if self.train and (np.random.rand() < epsilon or np.all(probabilities == 0)):
             selected_action = np.random.choice(actions)
 

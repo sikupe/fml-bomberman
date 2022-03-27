@@ -16,7 +16,7 @@ from agent_code.q_learning_task_1.feature_vector import FeatureVector
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT']
 
 
-MODEL_FILE, STATS_FILE, REWARDS_FILE, _, NOTRAIN = parse_train_env(__name__)
+MODEL_FILE, STATS_FILE, REWARDS_FILE, _, NO_TRAIN = parse_train_env(__name__)
 
 TRANSITION_HISTORY_SIZE = 10
 
@@ -34,7 +34,7 @@ def setup_training(self):
     """
     setup_training_global(self, TRANSITION_HISTORY_SIZE)
 
-    if NOTRAIN:
+    if NO_TRAIN:
         with open(STATS_FILE, 'a+') as f:
             f.write('INITIAL_COINS, REMAINING_COINS, STEPS\n')
         return
@@ -69,7 +69,7 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     if not old_game_state and new_game_state:
         self.inital_coins = len(new_state.coins)
 
-    if NOTRAIN:
+    if NO_TRAIN:
         return
 
     if old_game_state:
@@ -109,7 +109,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
 
     teardown_training(self, REWARDS_FILE)
 
-    if NOTRAIN:
+    if NO_TRAIN:
         with open(STATS_FILE, 'a+') as f:
             f.write(f'{self.inital_coins}, {len(old_state.coins)}, {old_state.step}\n')
             return
