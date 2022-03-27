@@ -1,15 +1,35 @@
-from collections import deque
+from collections import deque, namedtuple
 import contextlib
-from os.path import isfile
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Tuple
+import os
+import re
+from os.path import join, dirname
 
-import json
 import numpy as np
 
 from agent_code.common.function_learning_feature_vector import FunctionLearningFeatureVector
 from agent_code.common.game_state import GameState
 from agent_code.common.nn_feature_vector import NNFeatureVector
 from agent_code.common.q_table_feature_vector import QTableFeatureVector
+
+
+Transition = namedtuple('Transition',
+                        ('state', 'action', 'next_state', 'reward'))
+
+def parse_notrain() -> bool:
+    """Convert string of env var to bool."""
+    bool_dict = {"true": True, "false": False}
+    NOTRAIN = bool_dict[os.environ.get("NOTRAIN", "False").lower()]
+    return NOTRAIN
+
+
+def parse_train_env(module_name: str) -> Tuple[str, str, str, str, bool]:
+    """Parse env var and return values."""
+    MODEL_FILE = os.environ.get("MODEL_FILE", join(dirname(module_name), 'model.npy'))
+    STATS_FILE = os.environ.get("STATS_FILE", join(dirname(module_name), 'stats.txt'))
+    REWARDS_FILE = re.sub(r"\..*$", ".json", STATS_FILE)
+    MODEL_FILE_COUNTER = os.environ.get("MODEL_FILE_COUNTER", join(dirname(__file__), 'model_counter.npy'))
+    return MODEL_FILE, STATS_FILE, REWARDS_FILE, MODEL_FILE_COUNTER, parse_notrain()
 
 
 def setup_training_global(self, transition_history_size: int):
