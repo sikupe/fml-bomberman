@@ -6,9 +6,11 @@ else
     CONTAINER_CMD=docker
 fi
 
-MODEL_FILE=/home/mulc/repos/bomberman/fml-bomberman/agent_code/q_learning_task_3_advanced_features/blobs/5000x8merged_model.npy
+dir="$(dirname -- "$(which -- "$0" 2>/dev/null || realpath -- "./$0")")"
 
-REPO_DIR=/home/mulc/repos/bomberman/save-bomb/
+MODEL_FILE=$dir/../agent_code/q_learning_task_3_advanced_features/blobs/5000x8merged_model.npy
+
+REPO_DIR=$dir/..
 AGENT_NAME=q_learning_task_3_advanced_features
 
 COMMON_DIR=$REPO_DIR/agent_code/common/
@@ -63,9 +65,6 @@ sed -i 's/common/strong_students\.common/g' *.py
 # sed in strong_students/common
 pushd common
 sed -i 's/common/strong_students\.common/g' *.py
-popd
-
-popd
 popd
 
 $CONTAINER_CMD build -t test_strong_students .

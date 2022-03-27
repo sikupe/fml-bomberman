@@ -66,8 +66,8 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     new_state = convert_to_state_object(new_game_state)
     self.transitions.append(new_state)
 
-    if not old_game_state and new_game_state:
-        self.inital_coins = len(new_state.coins)
+    if not hasattr(self, 'initial_coins'):
+        self.initial_coins = len(new_state.coins)
 
     if NO_TRAIN:
         return
@@ -111,7 +111,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
 
     if NO_TRAIN:
         with open(STATS_FILE, 'a+') as f:
-            f.write(f'{self.inital_coins}, {len(old_state.coins)}, {old_state.step}\n')
+            f.write(f'{self.initial_coins}, {len(old_state.coins)}, {old_state.step}\n')
             return
 
     np.save(MODEL_FILE, self.q_table)

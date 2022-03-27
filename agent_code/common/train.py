@@ -27,7 +27,7 @@ def parse_train_env(module_name: str) -> Tuple[str, str, str, str, bool]:
     """Parse env var and return values."""
     MODEL_FILE = os.environ.get("MODEL_FILE", join(dirname(module_name), 'model.npy'))
     STATS_FILE = os.environ.get("STATS_FILE", join(dirname(module_name), 'stats.txt'))
-    REWARDS_FILE = re.sub(r"\..*$", ".json", STATS_FILE)
+    REWARDS_FILE = re.sub(r"\..*$", ".list", STATS_FILE)
     MODEL_FILE_COUNTER = os.environ.get("MODEL_FILE_COUNTER", join(dirname(module_name), 'model_counter.npy'))
     return MODEL_FILE, STATS_FILE, REWARDS_FILE, MODEL_FILE_COUNTER, parse_notrain()
 
@@ -40,6 +40,7 @@ def setup_training_global(self, transition_history_size: int):
 def teardown_training(self, rewards_file: str):
     with open(rewards_file, 'a+') as f:
         f.write(",".join([str(r) for r in self.rewards]))
+        f.write("\n")
 
 
 def detect_wiggle(states: List[GameState]) -> int:

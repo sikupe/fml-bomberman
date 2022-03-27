@@ -1,9 +1,12 @@
 import contextlib
 import csv
 import json
+import os
+import signal
 import subprocess
 import sys
 import uuid
+from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor
 from typing import Dict, List, Tuple, Callable
 from genealogy import Genealogy
@@ -115,10 +118,10 @@ def fitness(
     test_command = f'/bin/bash -c "source venv/bin/activate && python3 main.py play --train 1 --scenario {test_scenario} --n-rounds {test_rounds} --no-gui --agents {agent} {" ".join(opponents)}"'
 
     # Train
-    subprocess.call(train_command, shell=True, env=train_env)
+    subprocess.call(train_command, shell=True, env=train_env, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
 
     # Test
-    subprocess.call(test_command, shell=True, env=test_env)
+    subprocess.call(test_command, shell=True, env=test_env, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
 
     return extract_score(stats_file), name
 
@@ -142,7 +145,7 @@ def selection(
         executor.submit(lambda: fitness_func(mut)) for mut in old_phenotypes
     ]
 
-    for i, future in enumerate(futures):
+    for i, future in enumerate(tqdm(futures, position=1, desc="Selection")):
         try:
             fitn, name = future.result()
         except Exception as exc:
@@ -178,7 +181,7 @@ def to_phenotype(genotype: Mutation) -> Mutation:
     return phenotype
 
 
-def get_initial_state() -> Mutation:
+def get_initial_state_task_1() -> Mutation:
     return {
         e.COIN_COLLECTED: 0,
         MOVED: 0,
@@ -192,13 +195,10 @@ def get_initial_state() -> Mutation:
 
 def get_initial_state_for_task_3() -> Mutation:
     return {
-        e.COIN_COLLECTED: 0,
         MOVED: 0,
-        e.WAITED: 0,
         APPROACH_COIN: 0,
         MOVED_AWAY_FROM_COIN: 0,
         WIGGLE: 0,
-        e.SURVIVED_ROUND: 0,
         IN_DANGER: 0,
         MOVE_IN_DANGER: 0,
         MOVE_OUT_OF_DANGER: 0,
@@ -235,11 +235,13 @@ def evolution(
         train_rounds: int,
         test_scenario: str,
         test_rounds: int,
+        extract_score: Callable[[str], float],
+        get_initial_state: Callable[[], Mutation]
 ):
     # Generate a genealogy
     genealogy = Genealogy(mu)
 
-    initial = get_initial_state_for_task_3()
+    initial = get_initial_state()
 
     mutation_rates = np.concatenate([100 * np.exp(- np.linspace(0, int(iterations / 3), int(iterations / 3))),
                                      np.linspace(100 * np.exp(- int(iterations / 3)), 0,
@@ -249,7 +251,7 @@ def evolution(
 
     model_names = ""
 
-    for i in range(1, iterations):
+    for i in tqdm(range(1, iterations), position=0, desc="Iteration"):
         children = []
         # Recombination
         for _ in range(lambda_param):
@@ -268,7 +270,7 @@ def evolution(
         children = [mutation(child, mutation_rates[i], 1)[0] for child in children]
 
         # Selection
-        winner_indicies, parents, names = selection(
+        winner_indices, parents, names = selection(
             parents,
             children,
             mu,
@@ -281,13 +283,13 @@ def evolution(
                 train_rounds,
                 test_scenario,
                 test_rounds,
-                extract_score_task_3,
+                extract_score,
             ),
         )
 
         model_names = names
         with contextlib.suppress(Exception):
-            genealogy.process_winners(winner_indicies, i)
+            genealogy.process_winners(winner_indices, i)
 
         print(f"ITERATION {i}")
         for name, parent in zip(model_names, parents):
@@ -300,6 +302,11 @@ def evolution(
 
 
 if __name__ == "__main__":
-    evolution(
-        5, 5 * 4, 20, "q_learning_task_3_advanced_features", ["rule_based_agent", "rule_based_agent", "coin_collector_agent"], "classic", 750, "classic", 50
-    )
+    os.setpgrp()
+    try:
+        evolution(
+            10, 10 * 4, 10, "q_learning_task_1", [], "coin-hell", 10, "coin-heaven", 10, extract_score_task_1,
+            get_initial_state_task_1
+        )
+    finally:
+        os.killpg(os.getpgid(os.getpid()), signal.SIGKILL)

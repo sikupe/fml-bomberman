@@ -1,9 +1,9 @@
+numpy
 scikit-learn
 tqdm
 xgboost
 lightgbm
 scipy
-numpy
 matplotlib
 numba
 pathfinding
