@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 podman ps
 if [ $? -eq 0 ];then
     CONTAINER_CMD=podman
@@ -43,13 +43,25 @@ pushd agent_code
 cp -r $AGENT_DIR strong_students
 pushd strong_students
 
+# Remove temp and bin files of dev repos
+rm *.npy
+rm *.txt
+rm -rf blobs
+rm rewards.json
+
 cp $MODEL_FILE ./model.npy
 
 sed -i "s/\.$AGENT_NAME/\.strong_students/g" *.py
 
 cp -r $COMMON_DIR common
 
-sed -i 's/common/strong_students\.common/g' **/*.py
+# sed in strong_students
+sed -i 's/common/strong_students\.common/g' *.py
+
+# sed in strong_students/common
+pushd common
+sed -i 's/common/strong_students\.common/g' *.py
+popd
 
 popd
 popd
