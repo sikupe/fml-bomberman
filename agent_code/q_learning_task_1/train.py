@@ -1,9 +1,6 @@
 from __future__ import annotations
-import os
-import re
 
-from collections import deque, namedtuple
-from os.path import join, dirname, isfile
+from os.path import isfile
 from typing import List
 
 import numpy as np
@@ -12,21 +9,16 @@ from agent_code.common.events import extract_events_from_state
 from agent_code.common.feature_extractor import convert_to_state_object
 from agent_code.common.feature_extractor import extract_features
 from agent_code.common.neighborhood import Mirror
-from agent_code.common.train import update_q_table, setup_training_global, teardown_training
+from agent_code.common.train import update_q_table, setup_training_global, teardown_training, parse_train_env
 from agent_code.q_learning_task_1 import rewards
 from agent_code.q_learning_task_1.feature_vector import FeatureVector
 
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT']
 
-MODEL_FILE = os.environ.get("MODEL_FILE", join(dirname(__file__), 'model.npy'))
-STATS_FILE = os.environ.get("STATS_FILE", join(dirname(__file__), 'stats.txt'))
-REWARDS_FILE = re.sub(r"\..*$", ".json", STATS_FILE)
-NOTRAIN = os.environ.get("NOTRAIN", "False")
+
+MODEL_FILE, STATS_FILE, REWARDS_FILE, _, NOTRAIN = parse_train_env(__name__)
 
 TRANSITION_HISTORY_SIZE = 10
-
-Transition = namedtuple('Transition',
-                        ('state', 'action', 'next_state', 'reward'))
 
 # Hyperparameter
 gamma = 1
@@ -42,10 +34,9 @@ def setup_training(self):
     """
     setup_training_global(self, TRANSITION_HISTORY_SIZE)
 
-    with open(STATS_FILE, 'a+') as f:
-        f.write('INITIAL_COINS, REMAINING_COINS, STEPS\n')
-
-    if NOTRAIN == "True":
+    if NOTRAIN:
+        with open(STATS_FILE, 'a+') as f:
+            f.write('INITIAL_COINS, REMAINING_COINS, STEPS\n')
         return
 
     if isfile(MODEL_FILE):
@@ -78,7 +69,7 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     if not old_game_state and new_game_state:
         self.inital_coins = len(new_state.coins)
 
-    if NOTRAIN == "True":
+    if NOTRAIN:
         return
 
     if old_game_state:
@@ -118,11 +109,9 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
 
     teardown_training(self, REWARDS_FILE)
 
-    with open(STATS_FILE, 'a+') as f:
-        f.write(f'{self.inital_coins}, {len(old_state.coins)}, {old_state.step}\n')
-
-    if NOTRAIN == "True":
-        print("Exit with notrain")
-        return
+    if NOTRAIN:
+        with open(STATS_FILE, 'a+') as f:
+            f.write(f'{self.inital_coins}, {len(old_state.coins)}, {old_state.step}\n')
+            return
 
     np.save(MODEL_FILE, self.q_table)
