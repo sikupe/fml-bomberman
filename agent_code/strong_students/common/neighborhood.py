@@ -9,6 +9,12 @@ import numpy as np
 import events
 
 
+def add_exists(neighborhood: Neighborhood, exists: bool):
+    """Add exists to Neighborhood."""
+    neighborhood.exists = exists
+    return neighborhood
+
+
 class Mirror(Enum):
     NO_MIRROR = 0,
     X_AXIS = 1,
@@ -20,7 +26,7 @@ class Mirror(Enum):
     ROT_CLOCKWISE_3 = 7,
 
     @staticmethod
-    def mirror_action(mirror: Mirror, action: str):
+    def mirror_action(mirror: Mirror, action: str) -> str:
         if action == 'BOMB' or action == 'WAIT':
             return action
 
@@ -45,10 +51,12 @@ class Mirror(Enum):
         elif mirrored.west:
             return 'LEFT'
 
+        raise ValueError(f"Unexpected value provided: {action}")
+
     @staticmethod
-    def mirror_events(mirror: Mirror, e: str | List[str]):
-        if type(e) == list:
-            return list(map(lambda event: Mirror.mirror_events(mirror, event), e))
+    def mirror_events(mirror: Mirror, e: str | List[str]) -> str | List[str]:
+        if isinstance(e, list):
+            return [Mirror.mirror_events(mirror, event) for event in e]
 
         mirrored_events = [events.MOVED_UP, events.MOVED_DOWN, events.MOVED_RIGHT, events.MOVED_LEFT]
         if e not in mirrored_events:
@@ -75,6 +83,8 @@ class Mirror(Enum):
         elif mirrored.west:
             return events.MOVED_LEFT
 
+        raise ValueError(f"Unexpected value provided: {e}")
+
 
 @dataclass
 class Neighborhood:
@@ -82,6 +92,7 @@ class Neighborhood:
     south: int | float | bool = field(default=0)
     east: int | float | bool = field(default=0)
     west: int | float | bool = field(default=0)
+    exists: bool = field(default=False, init=False)
 
     def __str__(self):
         return (
@@ -129,6 +140,13 @@ class Neighborhood:
             return np.argmax(self.to_vector())
         return np.argmin(self.to_vector())
 
+    def to_feature_encoding(self, argmax=False) -> int:
+        if not self.exists:
+            return 4
+        if argmax:
+            return int(np.argmax(self.to_vector()))
+        return int(np.argmin(self.to_vector()))
+
     def to_binary_encoding(self) -> int:
         """
         Returns: Returns 4 bits
@@ -151,18 +169,18 @@ class Neighborhood:
 
     def mirror(self, mirror_state: Mirror):
         if mirror_state == Mirror.X_AXIS:
-            return Neighborhood(self.south, self.north, self.east, self.west)
+            return add_exists(Neighborhood(self.south, self.north, self.east, self.west), self.exists)
         elif mirror_state == Mirror.Y_AXIS:
-            return Neighborhood(self.north, self.south, self.west, self.east)
+            return add_exists(Neighborhood(self.north, self.south, self.west, self.east), self.exists)
         elif mirror_state == Mirror.DIAGONAL_LEFT_DOWN_RIGHT_TOP:
-            return Neighborhood(self.east, self.west, self.north, self.south)
+            return add_exists(Neighborhood(self.east, self.west, self.north, self.south), self.exists)
         elif mirror_state == Mirror.DIAGONAL_LEFT_TOP_RIGHT_DOWN:
-            return Neighborhood(self.west, self.east, self.south, self.north)
+            return add_exists(Neighborhood(self.west, self.east, self.south, self.north), self.exists)
         elif mirror_state == Mirror.ROT_CLOCKWISE_1:
-            return Neighborhood(self.west, self.east, self.north, self.south)
+            return add_exists(Neighborhood(self.west, self.east, self.north, self.south), self.exists)
         elif mirror_state == Mirror.ROT_CLOCKWISE_2:
-            return Neighborhood(self.south, self.north, self.west, self.east)
+            return add_exists(Neighborhood(self.south, self.north, self.west, self.east), self.exists)
         elif mirror_state == Mirror.ROT_CLOCKWISE_3:
-            return Neighborhood(self.east, self.west, self.south, self.north)
+            return add_exists(Neighborhood(self.east, self.west, self.south, self.north), self.exists)
         elif mirror_state == Mirror.NO_MIRROR:
             return self

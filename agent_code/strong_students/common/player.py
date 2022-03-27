@@ -1,6 +1,6 @@
 from typing import Tuple
 
-from agent_code.strong_students.types import Position
+from agent_code.strong_students.common.types import Position
 
 
 class Player:

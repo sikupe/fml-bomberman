@@ -1,13 +1,6 @@
 from __future__ import annotations
 
-from agent_code.strong_students.feature_vector import FeatureVector, Neighborhood
-from agent_code.strong_students.direction import Direction
-from agent_code.strong_students.game_state import GameState
-from agent_code.strong_students.neighborhood import Neighborhood
-from agent_code.strong_students.player import Player
-from agent_code.strong_students.types import Position, Bomb
-
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Type, TypeVar
 
 import numpy as np
 from pathfinding.core.grid import Grid
@@ -15,7 +8,11 @@ from pathfinding.finder.a_star import AStarFinder
 
 import items
 import settings
-
+from agent_code.strong_students.common.direction import Direction
+from agent_code.strong_students.common.feature_vector import BaseFeatureVector, Neighborhood
+from agent_code.strong_students.common.game_state import GameState
+from agent_code.strong_students.common.player import Player
+from agent_code.strong_students.common.types import Position, Bomb
 
 
 def convert_to_state_object(state: Dict) -> GameState:
@@ -185,14 +182,14 @@ def is_in_danger(field: np.ndarray, origin: Position, bombs: List[Bomb]) -> bool
                 other_i = (i + 1) % 2
                 dist = abs(origin[other_i] - bomb_coords[other_i])
                 if dist < 4:
-                    if not crate_or_wall_in_between(field, i, other_i, origin, bomb_coords):
+                    if not wall_in_between(field, i, other_i, origin, bomb_coords):
                         in_danger = True
                         break
 
     return in_danger
 
 
-def crate_or_wall_in_between(field: np.ndarray, i, other_i: int, origin: Position, bomb: Position):
+def wall_in_between(field: np.ndarray, i, other_i: int, origin: Position, bomb: Position):
     steps = 1 if origin[other_i] < bomb[other_i] else -1
 
     for position in range(origin[other_i], bomb[other_i], steps):
@@ -202,7 +199,7 @@ def crate_or_wall_in_between(field: np.ndarray, i, other_i: int, origin: Positio
         else:
             x = position
             y = origin[i]
-        if field[x, y] != 0:
+        if field[x, y] < 0:
             return True
     return False
 
@@ -368,14 +365,21 @@ def next_to_bomb(origin: Position, bombs: List[Position]):
                 pass
 
 
-def extract_features(state: GameState) -> FeatureVector:
+T = TypeVar("T", bound=BaseFeatureVector)
+
+
+def extract_features(state: GameState, feature_vector_class: Type[T]) -> T:
+    # Bombs
     bombs = [(x, y) for ((x, y), _) in state.bombs]
+    bomb_exists = len(bombs) > 0
+
     can_move_in_direction = can_move(state.field, state.self.position, bombs)
 
     backup_shortest_path = Neighborhood(1 if can_move_in_direction.north else float('inf'),
                                         1 if can_move_in_direction.south else float('inf'),
                                         1 if can_move_in_direction.east else float('inf'),
                                         1 if can_move_in_direction.west else float('inf'))
+    backup_shortest_path.exists = False
 
     # Coins
     coin_exists = len(state.coins) > 0
@@ -383,8 +387,9 @@ def extract_features(state: GameState) -> FeatureVector:
     coin_distance = backup_shortest_path
     if coin_exists:
         coin_distance = calculate_neighborhood_distance(
-            state.field, state.self.position, state.coins, state.bombs
+            state.field, state.self.position, state.coins, bombs
         )
+        coin_distance.exists = True
 
     # Crates
     crates = extract_crates(state.field)
@@ -393,10 +398,7 @@ def extract_features(state: GameState) -> FeatureVector:
     crate_distance = backup_shortest_path
     if crate_exists:
         crate_distance = find_nearest_crate_approx(state.field, state.self.position, bombs)
-
-    # Bombs
-    bombs = [(x, y) for ((x, y), _) in state.bombs]
-    bomb_exists = len(bombs) > 0
+        crate_distance.exists = True
 
     # Danger
     in_danger = is_in_danger(state.field, state.self.position, state.bombs)
@@ -405,6 +407,9 @@ def extract_features(state: GameState) -> FeatureVector:
         mv_to_danger = move_to_danger(
             state.field, state.self.position, state.bombs, state.explosion_map
         )
+        # We do not set mv_to_danger.exists because it is encoded with 16
+        # states [0, 0, 0, 0] already contains the information that there is no
+        # move to danger
     else:
         mv_to_danger = Neighborhood(False, False, False, False)
 
@@ -418,20 +423,23 @@ def extract_features(state: GameState) -> FeatureVector:
     if in_danger:
         safety = nearest_path_to_safety(state.field, state.explosion_map, state.self.position, state.bombs,
                                         state.others)
+        safety.exists = True  # We are in danger
 
+    # Opponents
     has_opponents = len(state.others) > 0
 
     opponent_dest = [o.position for o in state.others]
     opponent_distance = calculate_neighborhood_distance(state.field, state.self.position, opponent_dest,
                                                         [b[0] for b in state.bombs])
+    opponent_distance.exists = has_opponents
+    if opponent_distance.north > 1e10 and opponent_distance.east > 1e10 and opponent_distance.south > 1e10 and opponent_distance.west > 1e10:
+        opponent_distance.exists = False # No opponent reachable == no opponent exists
 
-    return FeatureVector(
+    return feature_vector_class(
+        feature_vector_class,
         coin_distance,
-        coin_exists,
         crate_distance,
-        crate_exists,
         in_danger,
-        bomb_exists,
         mv_to_danger,
         bomb_drop_safe,
         good_bomb,
