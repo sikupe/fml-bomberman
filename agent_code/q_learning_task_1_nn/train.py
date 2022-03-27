@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from collections import deque, namedtuple
 from os.path import join, dirname, isfile
 from typing import List
@@ -12,15 +11,14 @@ from torch import optim
 from agent_code.common.events import extract_events_from_state
 from agent_code.common.feature_extractor import convert_to_state_object, extract_features
 from agent_code.common.neighborhood import Mirror
-from agent_code.common.train import update_nn, setup_training_global, teardown_training
+from agent_code.common.train import update_nn, setup_training_global, teardown_training, parse_train_env
 from agent_code.q_learning_task_1_nn import rewards
 from agent_code.q_learning_task_1_nn.feature_vector import FeatureVector
 from agent_code.q_learning_task_1_nn.q_nn import QNN
 
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT']
 
-MODEL_FILE = os.environ.get("MODEL_FILE", join(dirname(__file__), 'model.pt'))
-STATS_FILE = os.environ.get("STATS_FILE", join(dirname(__file__), 'stats.txt'))
+MODEL_FILE, STATS_FILE, REWARDS_FILE, _, NO_TRAIN = parse_train_env(__name__)
 
 TRANSITION_HISTORY_SIZE = 10
 

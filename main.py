@@ -30,7 +30,7 @@ class Timekeeper:
 
 
 def world_controller(world, n_rounds, *,
-                     gui, every_step, turn_based, make_video, update_interval):
+                     gui, every_step, turn_based, batch_mode, make_video, update_interval):
     if make_video and not gui.screenshot_dir.exists():
         gui.screenshot_dir.mkdir()
 
@@ -79,17 +79,18 @@ def world_controller(world, n_rounds, *,
             gui.make_video()
 
         # Render end screen until next round is queried
-        if gui is not None:
-            do_continue = False
-            while not do_continue:
-                render(True)
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        return
-                    elif event.type == pygame.KEYDOWN:
-                        key_pressed = event.key
-                        if key_pressed in s.INPUT_MAP or key_pressed in ESCAPE_KEYS:
-                            do_continue = True
+        if not batch_mode:
+            if gui is not None:
+                do_continue = False
+                while not do_continue:
+                    render(True)
+                    for event in pygame.event.get():
+                        if event.type == pygame.QUIT:
+                            return
+                        elif event.type == pygame.KEYDOWN:
+                            key_pressed = event.key
+                            if key_pressed in s.INPUT_MAP or key_pressed in ESCAPE_KEYS:
+                                do_continue = True
 
     world.end()
 
@@ -131,6 +132,8 @@ def main(argv = None):
     for sub in [play_parser, replay_parser]:
         sub.add_argument("--turn-based", default=False, action="store_true",
                          help="Wait for key press until next movement")
+        sub.add_argument("--batch-mode", default=False, action="store_true",
+                         help="Do not wait for user input at the end of the round instead just continue.")
         sub.add_argument("--update-interval", type=float, default=0.1,
                          help="How often agents take steps (ignored without GUI)")
         sub.add_argument("--log-dir", default=os.path.dirname(os.path.abspath(__file__)) + "/logs")
@@ -176,7 +179,7 @@ def main(argv = None):
     else:
         gui = None
     world_controller(world, args.n_rounds,
-                     gui=gui, every_step=every_step, turn_based=args.turn_based,
+                     gui=gui, every_step=every_step, turn_based=args.turn_based, batch_mode=args.batch_mode,
                      make_video=args.make_video, update_interval=args.update_interval)
 
 

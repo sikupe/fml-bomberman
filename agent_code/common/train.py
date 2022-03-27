@@ -1,8 +1,10 @@
-from collections import deque
-from os.path import isfile
-from typing import List, Optional, Dict
+from collections import deque, namedtuple
+import contextlib
+from typing import List, Optional, Dict, Tuple
+import os
+import re
+from os.path import join, dirname
 
-import json
 import numpy as np
 
 from agent_code.common.function_learning_feature_vector import FunctionLearningFeatureVector
@@ -11,21 +13,34 @@ from agent_code.common.nn_feature_vector import NNFeatureVector
 from agent_code.common.q_table_feature_vector import QTableFeatureVector
 
 
+Transition = namedtuple('Transition',
+                        ('state', 'action', 'next_state', 'reward'))
+
+def parse_notrain() -> bool:
+    """Convert string of env var to bool."""
+    bool_dict = {"true": True, "false": False}
+    NO_TRAIN = bool_dict[os.environ.get("NO_TRAIN", "False").lower()]
+    return NO_TRAIN
+
+
+def parse_train_env(module_name: str) -> Tuple[str, str, str, str, bool]:
+    """Parse env var and return values."""
+    MODEL_FILE = os.environ.get("MODEL_FILE", join(dirname(module_name), 'model.npy'))
+    STATS_FILE = os.environ.get("STATS_FILE", join(dirname(module_name), 'stats.txt'))
+    REWARDS_FILE = re.sub(r"\..*$", ".list", STATS_FILE)
+    MODEL_FILE_COUNTER = os.environ.get("MODEL_FILE_COUNTER", join(dirname(module_name), 'model_counter.npy'))
+    return MODEL_FILE, STATS_FILE, REWARDS_FILE, MODEL_FILE_COUNTER, parse_notrain()
+
+
 def setup_training_global(self, transition_history_size: int):
     self.transitions = deque(maxlen=transition_history_size)
     self.rewards = []
 
 
 def teardown_training(self, rewards_file: str):
-    current = []
-    if isfile(rewards_file):
-        with open(rewards_file) as f:
-            current = json.load(f)
-
-    current.append(self.rewards)
-
-    with open(rewards_file, 'w+') as f:
-        json.dump(current, f)
+    with open(rewards_file, 'a+') as f:
+        f.write(",".join([str(r) for r in self.rewards]))
+        f.write("\n")
 
 
 def detect_wiggle(states: List[GameState]) -> int:
@@ -100,7 +115,8 @@ def update_q_table(self, current_feature_state: QTableFeatureVector, next_featur
     q_updated = q_current + alpha * (reward + gamma * q_next - q_current)
 
     self.q_table[current_feature_state.to_state(), current_action_index] = q_updated
-    self.q_table_counter[current_feature_state.to_state(), current_action_index] += 1
+    with contextlib.suppress(AttributeError):
+        self.q_table_counter[current_feature_state.to_state(), current_action_index] += 1
 
 
 def update_nn(self, current_feature_state: NNFeatureVector, next_feature_state: Optional[NNFeatureVector],

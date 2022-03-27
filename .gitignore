@@ -113,3 +113,5 @@ replays/
 results/
 .vscode/launch.json
 .vscode/settings.json
+
+venv-pypy

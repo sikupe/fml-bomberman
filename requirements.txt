@@ -1,9 +1,9 @@
+numpy
 scikit-learn
 tqdm
 xgboost
 lightgbm
 scipy
-numpy
 matplotlib
 numba
 pathfinding
@@ -13,3 +13,5 @@ sklearn
 pytest
 pytest_mock
 torch
+graphviz
+colour
