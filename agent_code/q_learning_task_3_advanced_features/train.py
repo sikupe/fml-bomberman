@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-import os
-import re
 from collections import deque, namedtuple
-from os.path import join, dirname, isfile
+from os.path import isfile
 from typing import List
 
 import numpy as np
