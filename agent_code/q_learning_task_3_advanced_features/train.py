@@ -11,16 +11,13 @@ import numpy as np
 from agent_code.common.events import extract_events_from_state
 from agent_code.common.feature_extractor import convert_to_state_object, extract_features
 from agent_code.common.neighborhood import Mirror
-from agent_code.common.train import update_q_table, teardown_training, setup_training_global
+from agent_code.common.train import update_q_table, teardown_training, setup_training_global, parse_train_env
 from agent_code.q_learning_task_3_advanced_features import rewards
 from agent_code.q_learning_task_3_advanced_features.feature_vector import FeatureVector
 
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB']
 
-MODEL_FILE = os.environ.get("MODEL_FILE", join(dirname(__file__), 'model.npy'))
-MODEL_FILE_COUNTER = os.environ.get("MODEL_FILE_COUNTER", join(dirname(__file__), 'model_counter.npy'))
-STATS_FILE = os.environ.get("STATS_FILE", join(dirname(__file__), 'stats.txt'))
-REWARDS_FILE = re.sub(r"\..*$", ".json", STATS_FILE)
+MODEL_FILE, STATS_FILE, REWARDS_FILE, MODEL_FILE_COUNTER, NOTRAIN = parse_train_env(__name__)
 
 TRANSITION_HISTORY_SIZE = 10
 Transition = namedtuple('Transition',
@@ -45,14 +42,16 @@ def setup_training(self):
 
     setup_training_global(self, TRANSITION_HISTORY_SIZE)
 
-    with open(STATS_FILE, 'a+') as f:
-        f.write(f'SCORE, SCORE2, SCORE3, SCORE4, ENDSTATE, LAST STEP\n')
+    if NOTRAIN:
+        with open(STATS_FILE, 'a+') as f:
+            f.write(f'SCORE, ENDSTATE, LAST STEP\n')
+        return
+
     if isfile(MODEL_FILE):
         self.q_table = np.load(MODEL_FILE)
         self.q_table_counter = np.load(MODEL_FILE_COUNTER)
     else:
         self.q_table = np.zeros((FeatureVector.size(), len(ACTIONS)))
-        self.q_table_counter = np.zeros((FeatureVector.size(), len(ACTIONS)))
 
 
 def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_state: dict, events: List[str]):
@@ -74,6 +73,9 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     """
     new_state = convert_to_state_object(new_game_state)
     self.transitions.append(new_state)
+
+    if NOTRAIN:
+        return
 
     if old_game_state:
         old_state = convert_to_state_object(old_game_state)
@@ -118,18 +120,22 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
         update_q_table(self, rot_current_state, None, rot_action, rot_events, rewards.rewards, ACTIONS,
                        alpha, gamma)
 
-    # Write Stats
-    if "KILLED_SELF" in events:
-        endstate = "Suicide"
-    elif "GOT_KILLED" in events:
-        endstate = "Killed "
-    else:
-        endstate = "Survive"
-    score_others = ""
-    for opponent in old_state.others:
-        score_others += f"{opponent.score}, "
-    with open(STATS_FILE, 'a+') as f:
-        f.write(f'{old_state.self.score}, {score_others}, {endstate}, {old_state.step}\n')
+    if NOTRAIN:
+        # Write Stats
+        if "KILLED_SELF" in events:
+            # endstate = "Suicide"
+            endstate = 0.75
+        elif "GOT_KILLED" in events:
+            endstate = 0.85
+            # endstate = "Killed "
+        else:
+            # endstate = "Survive"
+            endstate = 1.25
+
+        with open(STATS_FILE, 'a+') as f:
+            f.write(f'{old_state.self.score}, {endstate}, {old_state.step}\n')
+        return
+
     teardown_training(self, REWARDS_FILE)
     np.save(MODEL_FILE, self.q_table)
     np.save(MODEL_FILE_COUNTER, self.q_table_counter)
