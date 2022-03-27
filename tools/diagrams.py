@@ -1,4 +1,3 @@
-import json
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -13,14 +12,16 @@ def get_rewards() -> Dict[str, List[List[float]]]:
     rewards = dict()
 
     for agent in agents:
-        path = join('agent_code', agent, 'rewards.json')
-        if isfile(path):
-            with open(path) as f:
-                try:
-                    agent_rewards = json.load(f)
-                    rewards[agent] = agent_rewards
-                except:
-                    pass
+        path = join('agent_code', agent, 'stats.list')
+        if not isfile(path):
+            path = join('agent_code', agent, 'rewards.json')
+
+        if not isfile(path):
+            continue
+
+        with open(path) as f:
+            agent_rewards = [[float(reward) for reward in line.split(',')] for line in f.readlines()]
+            rewards[agent] = agent_rewards
 
     return rewards
 
