@@ -17,7 +17,9 @@ PROJECT_DIR = (
 )
 sys.path.append(PROJECT_DIR)
 
-from agent_code.common.events import APPROACH_COIN, MOVED_AWAY_FROM_COIN, WIGGLE
+from agent_code.common.events import MOVE_IN_DANGER, MOVE_OUT_OF_DANGER, GOOD_BOMB, BAD_BOMB, IN_DANGER, \
+    APPROACH_SECURITY, MOVED_AWAY_FROM_SECURITY, APPROACH_COIN, MOVED_AWAY_FROM_COIN, APPROACH_CRATE, \
+    MOVED_AWAY_FROM_CRATE, APPROACH_OPPONENT, MOVED_AWAY_FROM_OPPONENT, WIGGLE
 import events as e
 
 Mutation = Dict[str, float]
@@ -66,6 +68,28 @@ def fitness_mock(
     return np.random.rand(), str(uuid.uuid4())
 
 
+def extract_score_task_1(stats_file: str):
+    with open(stats_file) as csvfile:
+        rows = [row for row in csv.reader(csvfile, delimiter=",")][1:]
+
+        score = [
+            int(remaining_coins) + int(steps) for _, remaining_coins, steps, _ in rows
+        ]
+
+        return float(np.mean(score))
+
+
+def extract_score_task_3(stats_file: str):
+    with open(stats_file) as csvfile:
+        rows = [row for row in csv.reader(csvfile, delimiter=",")][1:]
+
+        score = [
+            float(points) * float(endstate) for points, endstate, _ in rows
+        ]
+
+        return float(np.mean(score))
+
+
 def fitness(
         mutation: Mutation,
         agent: str,
@@ -74,6 +98,7 @@ def fitness(
         train_rounds: int,
         test_scenario: str,
         test_rounds: int,
+        extract_score: Callable[[str], float]
 ) -> Tuple[float, str]:
     name = str(uuid.uuid4())
 
@@ -95,20 +120,14 @@ def fitness(
     # Test
     subprocess.call(test_command, shell=True, env=test_env)
 
-    with open(stats_file) as csvfile:
-        rows = [row for row in csv.reader(csvfile, delimiter=",")][1:]
-
-        score = [
-            int(remaining_coins) + int(steps) for _, remaining_coins, steps in rows
-        ]
-
-        return float(np.mean(score)), name
+    return extract_score(stats_file), name
 
 
 def selection(
         parents: List[Mutation],
         children: List[Mutation],
         mu: int,
+        reverse: bool,
         fitness_func: Callable[[Mutation], Tuple[float, str]],
 ) -> Tuple[List[int], List[Mutation], List[str]]:
     old_population = parents + children
@@ -136,7 +155,7 @@ def selection(
     )[::-1].tolist()[:mu]
 
     old_population_fitness = sorted(
-        old_population_fitness, key=lambda x: x[1], reverse=False
+        old_population_fitness, key=lambda x: x[1], reverse=reverse
     )
 
     return (
@@ -171,6 +190,41 @@ def get_initial_state() -> Mutation:
     }
 
 
+def get_initial_state_for_task_3() -> Mutation:
+    return {
+        e.COIN_COLLECTED: 0,
+        MOVED: 0,
+        e.WAITED: 0,
+        APPROACH_COIN: 0,
+        MOVED_AWAY_FROM_COIN: 0,
+        WIGGLE: 0,
+        e.SURVIVED_ROUND: 0,
+        IN_DANGER: 0,
+        MOVE_IN_DANGER: 0,
+        MOVE_OUT_OF_DANGER: 0,
+        GOOD_BOMB: 0,
+        BAD_BOMB: 0,
+        APPROACH_SECURITY: 0,
+        MOVED_AWAY_FROM_SECURITY: 0,
+        APPROACH_CRATE: 0,
+        MOVED_AWAY_FROM_CRATE: 0,
+        APPROACH_OPPONENT: 0,
+        MOVED_AWAY_FROM_OPPONENT: 0,
+        e.COIN_COLLECTED: 0,
+        e.INVALID_ACTION: 0,
+        e.WAITED: 0,
+        e.SURVIVED_ROUND: 0,
+        e.BOMB_DROPPED: 0,
+        e.BOMB_EXPLODED: 0,
+        e.COIN_FOUND: 0,
+        e.CRATE_DESTROYED: 0,
+        e.GOT_KILLED: 0,
+        e.KILLED_SELF: 0,
+        e.KILLED_OPPONENT: 0,
+        e.OPPONENT_ELIMINATED: 0,
+    }
+
+
 def evolution(
         mu: int,
         lambda_param: int,
@@ -185,7 +239,7 @@ def evolution(
     # Generate a genealogy
     genealogy = Genealogy(mu)
 
-    initial = get_initial_state()
+    initial = get_initial_state_for_task_3()
 
     mutation_rates = np.concatenate([100 * np.exp(- np.linspace(0, int(iterations / 3), int(iterations / 3))),
                                      np.linspace(100 * np.exp(- int(iterations / 3)), 0,
@@ -218,6 +272,7 @@ def evolution(
             parents,
             children,
             mu,
+            True,
             lambda mut: fitness(
                 mut,
                 agent,
@@ -226,6 +281,7 @@ def evolution(
                 train_rounds,
                 test_scenario,
                 test_rounds,
+                extract_score_task_3,
             ),
         )
 
@@ -233,6 +289,7 @@ def evolution(
         with contextlib.suppress(Exception):
             genealogy.process_winners(winner_indicies, i)
 
+        print(f"ITERATION {i}")
         for name, parent in zip(model_names, parents):
             print(f"Model: {name}")
             print(json.dumps(parent, indent=4))
@@ -244,5 +301,5 @@ def evolution(
 
 if __name__ == "__main__":
     evolution(
-        4, 4 * 3, 10, "q_learning_task_1", [], "coin-hell", 10, "coin-heaven", 10
+        5, 5 * 4, 20, "q_learning_task_3_advanced_features", ["rule_based_agent", "rule_based_agent", "coin_collector_agent"], "classic", 750, "classic", 50
     )
