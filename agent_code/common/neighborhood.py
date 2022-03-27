@@ -163,18 +163,18 @@ class Neighborhood:
 
     def mirror(self, mirror_state: Mirror):
         if mirror_state == Mirror.X_AXIS:
-            return Neighborhood(self.south, self.north, self.east, self.west)
+            return Neighborhood(self.south, self.north, self.east, self.west, self.exists)
         elif mirror_state == Mirror.Y_AXIS:
-            return Neighborhood(self.north, self.south, self.west, self.east)
+            return Neighborhood(self.north, self.south, self.west, self.east, self.exists)
         elif mirror_state == Mirror.DIAGONAL_LEFT_DOWN_RIGHT_TOP:
-            return Neighborhood(self.east, self.west, self.north, self.south)
+            return Neighborhood(self.east, self.west, self.north, self.south, self.exists)
         elif mirror_state == Mirror.DIAGONAL_LEFT_TOP_RIGHT_DOWN:
-            return Neighborhood(self.west, self.east, self.south, self.north)
+            return Neighborhood(self.west, self.east, self.south, self.north, self.exists)
         elif mirror_state == Mirror.ROT_CLOCKWISE_1:
-            return Neighborhood(self.west, self.east, self.north, self.south)
+            return Neighborhood(self.west, self.east, self.north, self.south, self.exists)
         elif mirror_state == Mirror.ROT_CLOCKWISE_2:
-            return Neighborhood(self.south, self.north, self.west, self.east)
+            return Neighborhood(self.south, self.north, self.west, self.east, self.exists)
         elif mirror_state == Mirror.ROT_CLOCKWISE_3:
-            return Neighborhood(self.east, self.west, self.south, self.north)
+            return Neighborhood(self.east, self.west, self.south, self.north, self.exists)
         elif mirror_state == Mirror.NO_MIRROR:
             return self
