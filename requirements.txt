@@ -13,3 +13,5 @@ sklearn
 pytest
 pytest_mock
 torch
+graphviz
+colour
