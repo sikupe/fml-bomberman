@@ -1,4 +1,11 @@
 #!/usr/bin/env sh
+podman ps
+if [ $? -eq 0 ];then
+    CONTAINER_CMD=podman
+else
+    CONTAINER_CMD=docker
+fi
+
 MODEL_FILE=/home/mulc/repos/bomberman/fml-bomberman/agent_code/q_learning_task_3_advanced_features/blobs/5000x8merged_model.npy
 
 REPO_DIR=/home/mulc/repos/bomberman/save-bomb/
@@ -47,6 +54,6 @@ sed -i 's/common/strong_students\.common/g' **/*.py
 popd
 popd
 
-podman build -t test_strong_students .
+$CONTAINER_CMD build -t test_strong_students .
 
-podman run -i test_strong_students bash -c 'python3 main.py play --agents strong_students --no-gui'
+$CONTAINER_CMD run -i test_strong_students bash -c 'python3 main.py play --agents strong_students --no-gui'
