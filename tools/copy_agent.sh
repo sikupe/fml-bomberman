@@ -1,9 +1,11 @@
 #!/usr/bin/env sh
 MODEL_FILE=/home/mulc/repos/bomberman/fml-bomberman/agent_code/q_learning_task_3_advanced_features/blobs/5000x8merged_model.npy
-COMMON_DIR=/home/mulc/repos/bomberman/save-bomb/agent_code/common/
-AGENT_DIR=/home/mulc/repos/bomberman/save-bomb/agent_code/q_learning_task_3_advanced_features/
 
+REPO_DIR=/home/mulc/repos/bomberman/save-bomb/
 AGENT_NAME=q_learning_task_3_advanced_features
+
+COMMON_DIR=$REPO_DIR/agent_code/common/
+AGENT_DIR=$REPO_DIR/agent_code/$AGENT_NAME
 
 pushd /tmp
 # If the repo exists reclone it
