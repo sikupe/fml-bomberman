@@ -6,12 +6,14 @@ else
     CONTAINER_CMD=docker
 fi
 
-dir="$(dirname -- "$(which -- "$0" 2>/dev/null || realpath -- "./$0")")"
+REPO_DIR=$(git rev-parse --show-toplevel)
+if [ ! $? -eq 0 ];then
+    echo Not in git dir. Exit.
+    exit
+fi
 
-MODEL_FILE=$dir/../agent_code/q_learning_task_3_advanced_features/blobs/5000x8merged_model.npy
-
-REPO_DIR=$dir/..
 AGENT_NAME=q_learning_task_3_advanced_features
+MODEL_FILE=$REPO_DIR/agent_code/q_learning_task_3_advanced_features/blobs/5000x8merged_model.npy
 
 COMMON_DIR=$REPO_DIR/agent_code/common/
 AGENT_DIR=$REPO_DIR/agent_code/$AGENT_NAME
@@ -52,6 +54,7 @@ rm -rf blobs
 rm rewards.json
 rm logs/*.log
 rm *.csv
+rm *.list
 
 cp $MODEL_FILE ./model.npy
 
