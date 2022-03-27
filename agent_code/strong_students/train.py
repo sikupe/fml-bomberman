@@ -1,24 +1,25 @@
 from __future__ import annotations
 
-import os
-from os.path import join, dirname, isfile
-from typing import List, Optional
+from collections import deque, namedtuple
+from os.path import isfile
+from typing import List
 
 import numpy as np
 
-from agent_code.strong_students.feature_extractor import convert_to_state_object
-from agent_code.strong_students.neighborhood import Mirror
-from agent_code.strong_students.train import update_q_table
+from agent_code.strong_students.common.events import extract_events_from_state
+from agent_code.strong_students.common.feature_extractor import convert_to_state_object, extract_features
+from agent_code.strong_students.common.neighborhood import Mirror
+from agent_code.strong_students.common.train import update_q_table, teardown_training, setup_training_global, parse_train_env
 from agent_code.strong_students import rewards
-from agent_code.strong_students.feature_extractor import extract_features
 from agent_code.strong_students.feature_vector import FeatureVector
-from agent_code.strong_students.q_table_feature_vector import QTableFeatureVector
-
 
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB']
 
-MODEL_FILE = os.environ.get("MODEL_FILE", join(dirname(__file__), 'model.npy'))
-STATS_FILE = os.environ.get("STATS_FILE", join(dirname(__file__), 'stats.txt'))
+MODEL_FILE, STATS_FILE, REWARDS_FILE, MODEL_FILE_COUNTER, NO_TRAIN = parse_train_env(__name__)
+
+TRANSITION_HISTORY_SIZE = 10
+Transition = namedtuple('Transition',
+                        ('state', 'action', 'next_state', 'reward'))
 
 # Hyperparameter
 gamma = 0.9
@@ -37,10 +38,19 @@ def setup_training(self):
     :param self: This object is passed to all callbacks and you can set arbitrary values.
     """
 
+    setup_training_global(self, TRANSITION_HISTORY_SIZE)
+
+    if NO_TRAIN:
+        with open(STATS_FILE, 'a+') as f:
+            f.write(f'SCORE, ENDSTATE, LAST STEP\n')
+        return
+
     if isfile(MODEL_FILE):
         self.q_table = np.load(MODEL_FILE)
+        #self.q_table_counter = np.load(MODEL_FILE_COUNTER)
     else:
         self.q_table = np.zeros((FeatureVector.size(), len(ACTIONS)))
+        #self.q_table_counter = np.zeros((FeatureVector.size(), len(ACTIONS)))
 
 
 def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_state: dict, events: List[str]):
@@ -60,11 +70,16 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     :param new_game_state: The state the agent is in now.
     :param events: The events that occurred when going from  `old_game_state` to `new_game_state`
     """
+    new_state = convert_to_state_object(new_game_state)
+    self.transitions.append(new_state)
+
+    if NO_TRAIN:
+        return
+
     if old_game_state:
         old_state = convert_to_state_object(old_game_state)
-        current_feature_state = extract_features(old_state)
-        new_state = convert_to_state_object(new_game_state)
-        next_feature_state = extract_features(new_state)
+        current_feature_state: FeatureVector = extract_features(old_state, FeatureVector)
+        next_feature_state: FeatureVector = extract_features(new_state, FeatureVector)
 
         custom_events = extract_events_from_state(self, current_feature_state, next_feature_state, self_action)
 
@@ -76,7 +91,7 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
             rot_action = Mirror.mirror_action(mirror, self_action)
             rot_events = Mirror.mirror_events(mirror, total_events)
 
-            update_q_table(self, rot_current_state, rot_next_state, rot_action, rot_events, reward_from_events, ACTIONS,
+            update_q_table(self, rot_current_state, rot_next_state, rot_action, rot_events, rewards.rewards, ACTIONS,
                            alpha, gamma)
 
 
@@ -94,92 +109,33 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     :param self: The same object that is passed to all of your callbacks.
     """
     old_state = convert_to_state_object(last_game_state)
-    current_feature_state = extract_features(old_state)
+    current_feature_state = extract_features(old_state, FeatureVector)
 
     for mirror in Mirror:
         rot_current_state = current_feature_state.mirror(mirror)
         rot_action = Mirror.mirror_action(mirror, last_action)
         rot_events = Mirror.mirror_events(mirror, events)
 
-        update_q_table(self, rot_current_state, None, rot_action, rot_events, reward_from_events, ACTIONS,
+        update_q_table(self, rot_current_state, None, rot_action, rot_events, rewards.rewards, ACTIONS,
                        alpha, gamma)
 
-    with open(STATS_FILE, 'a+') as f:
-        f.write(f'{len(old_state.coins)}, ')
+    if NO_TRAIN:
+        # Write Stats
+        if "KILLED_SELF" in events:
+            # endstate = "Suicide"
+            endstate = 0.75
+        elif "GOT_KILLED" in events:
+            endstate = 0.85
+            # endstate = "Killed "
+        else:
+            # endstate = "Survive"
+            endstate = 1.25
+
+        with open(STATS_FILE, 'a+') as f:
+            f.write(f'{old_state.self.score}, {endstate}, {old_state.step}\n')
+        return
+
+    teardown_training(self, REWARDS_FILE)
     np.save(MODEL_FILE, self.q_table)
-
-
-def update_q_table(self, current_feature_state: QTableFeatureVector, next_feature_state: Optional[QTableFeatureVector],
-                   self_action: str, total_events: List[str], reward_from_events, possible_actions, alpha, gamma):
-    reward = reward_from_events(self, total_events)
-
-    current_action_index = possible_actions.index(self_action)
-
-    q_current = self.q_table[current_feature_state.to_state(), current_action_index]
-
-    if next_feature_state:
-        next_action_index = np.argmax(self.q_table[next_feature_state.to_state()])
-        q_next = self.q_table[next_feature_state.to_state(), next_action_index]
-    else:
-        q_next = 0
-
-    q_updated = q_current + alpha * (reward + gamma * q_next - q_current)
-
-    self.q_table[current_feature_state.to_state(), current_action_index] = q_updated
-
-def extract_events_from_state(self, old_features: FeatureVector, new_features: FeatureVector, action: ACTIONS) -> List:
-    custom_events = []
-    if old_features.shortest_useful_path().minimum() <= new_features.shortest_useful_path().minimum():
-        custom_events.append(rewards.MOVED_AWAY_FROM_USEFUL)
-    elif old_features.shortest_useful_path().minimum() > new_features.shortest_useful_path().minimum():
-        custom_events.append(rewards.APPROACH_USEFUL)
-
-    if new_features.in_danger:
-        # TODO is that useful?
-        if (action == 'BOMB' and old_features.in_danger) or action != 'BOMB':
-            custom_events.append(rewards.IN_DANGER)
-
-    if not old_features.in_danger and new_features.in_danger and not action == "BOMB":
-        custom_events.append(rewards.MOVE_IN_DANGER)
-
-    if action == 'BOMB':
-        if old_features.good_bomb:
-            custom_events.append(rewards.GOOD_BOMB)
-        else:
-            custom_events.append(rewards.BAD_BOMB)
-
-    return custom_events
-
-
-def is_invalid_action(action: ACTIONS, game_state):
-    field = game_state.field
-    origin = game_state.self.position
-    is_bomb_possible = game_state.self.is_bomb_possible
-    if action == "UP" and field[origin[0], origin[1] - 1] != 0:
-        return True
-    if action == "DOWN" and field[origin[0], origin[1] + 1] != 0:
-        return True
-    if action == "LEFT" and field[origin[0] - 1, origin[1]] != 0:
-        return True
-    if action == "RIGHT" and field[origin[0] + 1, origin[1]] != 0:
-        return True
-    if action == "BOMB" and not is_bomb_possible:
-        return True
-    return False
-
-
-def reward_from_events(self, events: List[str]) -> int:
-    """
-    *This is not a required function, but an idea to structure your code.*
-
-    Here you can modify the rewards your agent get so as to en/discourage
-    certain behavior.
-    """
-    reward_sum = 0
-    for event in events:
-        if event in rewards.rewards:
-            reward_sum += rewards.rewards[event]
-        else:
-            raise Exception(f"Event is not in reward list: {event}")
-    self.logger.info(f"Awarded {reward_sum} for events {', '.join(events)}")
-    return reward_sum
+    #np.save(MODEL_FILE_COUNTER, self.q_table_counter)
+    #np.savetxt("q_table_counter.csv", self.q_table_counter, delimiter=";")
