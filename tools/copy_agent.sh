@@ -48,6 +48,8 @@ rm *.npy
 rm *.txt
 rm -rf blobs
 rm rewards.json
+rm logs/*.log
+rm *.csv
 
 cp $MODEL_FILE ./model.npy
 
