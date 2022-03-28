@@ -15,7 +15,7 @@ from agent_code.strong_students.feature_vector import FeatureVector
 
 ACTIONS = ['UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB']
 
-MODEL_FILE, STATS_FILE, REWARDS_FILE, MODEL_FILE_COUNTER, NO_TRAIN = parse_train_env(__name__)
+MODEL_FILE, STATS_FILE, REWARDS_FILE, MODEL_FILE_COUNTER = parse_train_env(__name__)
 
 TRANSITION_HISTORY_SIZE = 10
 Transition = namedtuple('Transition',
@@ -39,11 +39,6 @@ def setup_training(self):
     """
 
     setup_training_global(self, TRANSITION_HISTORY_SIZE)
-
-    if NO_TRAIN:
-        with open(STATS_FILE, 'a+') as f:
-            f.write(f'SCORE, ENDSTATE, LAST STEP\n')
-        return
 
     if isfile(MODEL_FILE):
         self.q_table = np.load(MODEL_FILE)
@@ -72,9 +67,6 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
     """
     new_state = convert_to_state_object(new_game_state)
     self.transitions.append(new_state)
-
-    if NO_TRAIN:
-        return
 
     if old_game_state:
         old_state = convert_to_state_object(old_game_state)
@@ -118,22 +110,6 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
 
         update_q_table(self, rot_current_state, None, rot_action, rot_events, rewards.rewards, ACTIONS,
                        alpha, gamma)
-
-    if NO_TRAIN:
-        # Write Stats
-        if "KILLED_SELF" in events:
-            # endstate = "Suicide"
-            endstate = 0.75
-        elif "GOT_KILLED" in events:
-            endstate = 0.85
-            # endstate = "Killed "
-        else:
-            # endstate = "Survive"
-            endstate = 1.25
-
-        with open(STATS_FILE, 'a+') as f:
-            f.write(f'{old_state.self.score}, {endstate}, {old_state.step}\n')
-        return
 
     teardown_training(self, REWARDS_FILE)
     np.save(MODEL_FILE, self.q_table)

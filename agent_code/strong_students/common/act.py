@@ -5,17 +5,10 @@ import numpy as np
 from agent_code.strong_students.common.function_learning_feature_vector import FunctionLearningFeatureVector
 from agent_code.strong_students.common.nn_feature_vector import NNFeatureVector
 from agent_code.strong_students.common.q_table_feature_vector import QTableFeatureVector
-from agent_code.strong_students.common.train import parse_notrain
-
-NO_TRAIN = parse_notrain()
 
 def act(self, probabilities: np.ndarray, actions: List[str], epsilon: float):
     self.logger.debug(f'Current train probabilities: {probabilities}')
     selected_action = actions[np.argmax(probabilities)]
-
-    if not NO_TRAIN:
-        if self.train and (np.random.rand() < epsilon or np.all(probabilities == 0)):
-            selected_action = np.random.choice(actions)
 
     self.logger.info(f"Selected action: {selected_action}")
     return selected_action

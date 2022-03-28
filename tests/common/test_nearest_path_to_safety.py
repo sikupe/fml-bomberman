@@ -1,9 +1,12 @@
+from typing import List
+
 import numpy as np
 
 from agent_code.common.feature_extractor import nearest_path_to_safety
 import pytest
 
 from agent_code.common.neighborhood import Neighborhood
+from agent_code.common.player import Player
 
 
 @pytest.fixture
@@ -160,6 +163,48 @@ def test_nearest_path_to_safety_with_other_bomb():
     assert nearest.west == float('inf')
 
 
+def test_nearest_path_to_safety_with_other_bomb_and_players():
+    arena = np.array(
+        [
+            [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
+            [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1],
+            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
+            [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1],
+            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
+            [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1],
+            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
+            [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1],
+            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
+            [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1],
+            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
+            [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1],
+            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
+            [-1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1],
+            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1],
+            [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+        ]
+    )
+
+    explosion_map = np.zeros_like(arena)
+
+    player = (1, 1)
+    bombs = [
+        ((1, 1), 4),
+    ]
+
+    other_players: List[Player] = [
+        Player(("", 0, False, (3, 1)))
+    ]
+
+    nearest = nearest_path_to_safety(arena, explosion_map, player, bombs, other_players)
+
+    assert nearest.north == float('inf')
+    assert nearest.south == 3
+    assert nearest.east == float('inf')
+    assert nearest.west == float('inf')
+
+
 def test_nearest_path_to_safety_with_other_bomb_and_crates():
     arena = np.array(
         [
@@ -216,4 +261,3 @@ def test_no_nearest_path_to_safety(arena_array: np.ndarray):
         float("inf"),
         float("inf"),
     )
-

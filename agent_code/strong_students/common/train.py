@@ -12,24 +12,17 @@ from agent_code.strong_students.common.game_state import GameState
 from agent_code.strong_students.common.nn_feature_vector import NNFeatureVector
 from agent_code.strong_students.common.q_table_feature_vector import QTableFeatureVector
 
-
 Transition = namedtuple('Transition',
                         ('state', 'action', 'next_state', 'reward'))
 
-def parse_notrain() -> bool:
-    """Convert string of env var to bool."""
-    bool_dict = {"true": True, "false": False}
-    NO_TRAIN = bool_dict[os.environ.get("NO_TRAIN", "False").lower()]
-    return NO_TRAIN
 
-
-def parse_train_env(module_name: str) -> Tuple[str, str, str, str, bool]:
+def parse_train_env(module_name: str) -> Tuple[str, str, str, str]:
     """Parse env var and return values."""
     MODEL_FILE = os.environ.get("MODEL_FILE", join(dirname(module_name), 'model.npy'))
     STATS_FILE = os.environ.get("STATS_FILE", join(dirname(module_name), 'stats.txt'))
     REWARDS_FILE = re.sub(r"\..*$", ".list", STATS_FILE)
     MODEL_FILE_COUNTER = os.environ.get("MODEL_FILE_COUNTER", join(dirname(module_name), 'model_counter.npy'))
-    return MODEL_FILE, STATS_FILE, REWARDS_FILE, MODEL_FILE_COUNTER, parse_notrain()
+    return MODEL_FILE, STATS_FILE, REWARDS_FILE, MODEL_FILE_COUNTER
 
 
 def setup_training_global(self, transition_history_size: int):
