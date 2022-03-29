@@ -8,7 +8,7 @@ from time import sleep
 from tqdm import tqdm
 
 count = 18
-training_rounds = 20
+training_rounds = 1000
 
 res = subprocess.run(
     "git rev-parse --show-toplevel", shell=True, stdout=subprocess.PIPE
@@ -29,7 +29,13 @@ while True:
         "tmux ls | rg train | awk '{print$2}'", shell=True, stdout=subprocess.PIPE
     )
     assert res.returncode == 0
-    if int(res.stdout.decode()) != 1:
+    res = res.stdout.decode()
+
+    # No running train session, we are good to go
+    if res == "":
+        break
+
+    if int(res) != 1:
         print("train might still be running, window count is not 1")
         sleep(2)
         continue
@@ -80,4 +86,4 @@ for i in tqdm(range(1, 11)):
             assert res.returncode == 0
             print(res.stdout.decode())
             break
-        sleep(2)
+        sleep(30)
