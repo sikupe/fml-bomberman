@@ -14,7 +14,7 @@ parser.add_argument('-n', '--names-list', nargs='+', default=[])
 
 def parse_line(line: str, name: str) -> int:
     prev, last = line.split(":")
-    assert name in prev
+    assert (name in prev) or ("strong_students" in prev)
     return int(last.strip())
 
 
