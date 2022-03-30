@@ -13,6 +13,10 @@ parser = argparse.ArgumentParser(description="Extract number per line and drop a
 parser.add_argument("input", type=str, help="input list file")
 
 parser.add_argument(
+    "lines", type=int, help="line count of the file"
+)
+
+parser.add_argument(
     "destination", type=str, help="output file"
 )
 
@@ -30,10 +34,13 @@ if __name__ == "__main__":
         logger.error("Destination already exists")
         sys.exit(1)
 
-    with open("./data.list", "r") as f:
-        res = np.zeros((10000))
-        with open("combined-python.list", "w+") as w:
-            for i, line in tqdm(enumerate(f)):
-                res[i] = sum([int(e) for e in line.split(",")])
-            np.save("./arr.npy", res)
-
+    with open(input_file, "r") as f:
+        res = np.zeros((args.lines))
+        for i, line in tqdm(enumerate(f)):
+            count = 0
+            num = 0
+            for e in line.split(","):
+                count += int(e)
+                num += 1
+            res[i] = count/num
+        np.save(destination, res)
