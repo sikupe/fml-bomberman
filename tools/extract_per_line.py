@@ -26,7 +26,7 @@ if __name__ == "__main__":
         logger.error("Input file is no file")
         sys.exit(1)
 
-    if not os.path.isfile(destination):
+    if os.path.isfile(destination):
         logger.error("Destination already exists")
         sys.exit(1)
 
