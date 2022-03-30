@@ -41,6 +41,7 @@ def teardown_training(self, rewards_file: str):
     with open(rewards_file, 'a+') as f:
         f.write(",".join([str(r) for r in self.rewards[0::8]]))
         f.write("\n")
+        self.rewards.clear()
 
 
 def detect_wiggle(states: List[GameState]) -> int:
