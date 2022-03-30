@@ -22,7 +22,7 @@ struct Args {
 fn main() {
     let args = Args::parse();
     let input = canonicalize(args.input).expect("Could not canonicalize");
-    let destination = canonicalize(args.destination).expect("Could not canonicalize");
+    let destination = args.destination;
     if !Path::new(&input).exists() {
         eprintln!("Input path does not exist");
         return
