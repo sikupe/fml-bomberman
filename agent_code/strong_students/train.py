@@ -26,9 +26,6 @@ gamma = 0.9
 alpha = 0.05
 
 
-# def is_action_allowed(self, action: ACTIONS, ):
-
-
 def setup_training(self):
     """
     Initialise self for training purpose.
@@ -42,10 +39,8 @@ def setup_training(self):
 
     if isfile(MODEL_FILE):
         self.q_table = np.load(MODEL_FILE)
-        #self.q_table_counter = np.load(MODEL_FILE_COUNTER)
     else:
         self.q_table = np.zeros((FeatureVector.size(), len(ACTIONS)))
-        #self.q_table_counter = np.zeros((FeatureVector.size(), len(ACTIONS)))
 
 
 def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_state: dict, events: List[str]):
@@ -113,5 +108,3 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
 
     teardown_training(self, REWARDS_FILE)
     np.save(MODEL_FILE, self.q_table)
-    #np.save(MODEL_FILE_COUNTER, self.q_table_counter)
-    #np.savetxt("q_table_counter.csv", self.q_table_counter, delimiter=";")
