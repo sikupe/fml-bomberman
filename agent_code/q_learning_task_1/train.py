@@ -9,7 +9,8 @@ from agent_code.common.events import extract_events_from_state
 from agent_code.common.feature_extractor import convert_to_state_object
 from agent_code.common.feature_extractor import extract_features
 from agent_code.common.neighborhood import Mirror
-from agent_code.common.train import update_q_table, setup_training_global, teardown_training, parse_train_env
+from agent_code.common.train import update_q_table, setup_training_global, teardown_training, parse_train_env, \
+    reward_from_events
 from agent_code.q_learning_task_1 import rewards
 from agent_code.q_learning_task_1.feature_vector import FeatureVector
 
@@ -81,13 +82,14 @@ def game_events_occurred(self, old_game_state: dict, self_action: str, new_game_
 
         total_events = custom_events + events
 
+        reward = reward_from_events(self, total_events, rewards.rewards)
+
         for mirror in Mirror:
             rot_current_state = current_feature_state.mirror(mirror)
             rot_next_state = next_feature_state.mirror(mirror)
             rot_action = Mirror.mirror_action(mirror, self_action)
-            rot_events = Mirror.mirror_events(mirror, total_events)
 
-            update_q_table(self, rot_current_state, rot_next_state, rot_action, rot_events, rewards.rewards, ACTIONS,
+            update_q_table(self, rot_current_state, rot_next_state, rot_action, reward, ACTIONS,
                            alpha, gamma)
 
 

@@ -6,10 +6,11 @@ import signal
 import subprocess
 import sys
 import uuid
+from os.path import isfile
+
 from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor
 from typing import Dict, List, Tuple, Callable
-from genealogy import Genealogy
 
 import numpy as np
 
@@ -76,7 +77,7 @@ def extract_score_task_1(stats_file: str):
         rows = [row for row in csv.reader(csvfile, delimiter=",")][1:]
 
         score = [
-            int(remaining_coins) + int(steps) for _, remaining_coins, steps, _ in rows
+            int(remaining_coins) + int(steps) for _, remaining_coins, steps in rows
         ]
 
         return float(np.mean(score))
@@ -126,7 +127,24 @@ def fitness(
     return extract_score(stats_file), name
 
 
+def dump_mutations(iteration: int, mutation_fitnesses: List[MutationFitness]):
+    result_file = 'reward_evolution-result.json'
+    result = []
+    if isfile(result_file):
+        with open(result_file) as f:
+            result = json.load(f)
+
+    result.append({
+        iteration: iteration,
+        'mutations': [{'mutation': mutation, 'fitness': fitness} for mutation, fitness, _ in mutation_fitnesses]
+    })
+
+    with open(result_file, 'w+') as f:
+        json.dump(result, f)
+
+
 def selection(
+        iteration: int,
         parents: List[Mutation],
         children: List[Mutation],
         mu: int,
@@ -161,6 +179,8 @@ def selection(
         old_population_fitness, key=lambda x: x[1], reverse=reverse
     )
 
+    dump_mutations(iteration, old_population_fitness)
+
     return (
         winner_indicies,
         [mutation for mutation, _, _ in old_population_fitness[:mu]],
@@ -183,13 +203,14 @@ def to_phenotype(genotype: Mutation) -> Mutation:
 
 def get_initial_state_task_1() -> Mutation:
     return {
-        e.COIN_COLLECTED: 0,
-        MOVED: 0,
-        e.WAITED: 0,
-        APPROACH_COIN: 0,
-        MOVED_AWAY_FROM_COIN: 0,
+        e.COIN_COLLECTED: 25,
+        MOVED: -2,
+        e.INVALID_ACTION: -7,
+        e.WAITED: -10,
+        APPROACH_COIN: 5,
+        MOVED_AWAY_FROM_COIN: -5,
         WIGGLE: 0,
-        e.SURVIVED_ROUND: 0,
+        e.SURVIVED_ROUND: 5,
     }
 
 
@@ -239,11 +260,11 @@ def evolution(
         get_initial_state: Callable[[], Mutation]
 ):
     # Generate a genealogy
-    genealogy = Genealogy(mu)
+    # genealogy = Genealogy(mu)
 
     initial = get_initial_state()
 
-    mutation_rates = np.concatenate([100 * np.exp(- np.linspace(0, int(iterations / 3), int(iterations / 3))),
+    mutation_rates = np.concatenate([0.5 * np.exp(- np.linspace(0, int(iterations / 3), int(iterations / 3))),
                                      np.linspace(100 * np.exp(- int(iterations / 3)), 0,
                                                  iterations - int(iterations / 3))])
 
@@ -263,14 +284,15 @@ def evolution(
             child = intermediate_recombination(parent_1, parent_2)
 
             children.append(child)
-            with contextlib.suppress(Exception):
-                genealogy.add_child(parent_1_index, parent_2_index)
+            # with contextlib.suppress(Exception):
+            #     genealogy.add_child(parent_1_index, parent_2_index)
 
         # Mutation
         children = [mutation(child, mutation_rates[i], 1)[0] for child in children]
 
         # Selection
         winner_indices, parents, names = selection(
+            i,
             parents,
             children,
             mu,
@@ -288,16 +310,16 @@ def evolution(
         )
 
         model_names = names
-        with contextlib.suppress(Exception):
-            genealogy.process_winners(winner_indices, i)
+        # with contextlib.suppress(Exception):
+        #     genealogy.process_winners(winner_indices, i)
 
         print(f"ITERATION {i}")
         for name, parent in zip(model_names, parents):
             print(f"Model: {name}")
             print(json.dumps(parent, indent=4))
 
-    with contextlib.suppress(Exception):
-        genealogy.generate_dot(mu, lambda_param, iterations)
+    # with contextlib.suppress(Exception):
+    #     genealogy.generate_dot(mu, lambda_param, iterations)
     print("FINAL EVOLUTION RESULT")
 
 
@@ -305,8 +327,10 @@ if __name__ == "__main__":
     os.setpgrp()
     try:
         evolution(
-            10, 10 * 4, 10, "q_learning_task_1", [], "coin-hell", 10, "coin-heaven", 10, extract_score_task_1,
+            30, 30 * 7, 10, "q_learning_task_1", [], "coin-hell", 10, "coin-heaven", 10, extract_score_task_1,
             get_initial_state_task_1
         )
+    except Exception as err:
+        print(err)
     finally:
         os.killpg(os.getpgid(os.getpid()), signal.SIGKILL)

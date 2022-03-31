@@ -53,7 +53,7 @@ def detect_wiggle(states: List[GameState]) -> int:
     return len(wiggles)
 
 
-def reward_from_events(self, events: List[str], rewards: Dict[str, float]) -> int:
+def reward_from_events(self, events: List[str], rewards: Dict[str, float]) -> float:
     """
     *This is not a required function, but an idea to structure your code.*
 
@@ -98,10 +98,8 @@ def update_weights(self, current_feature_state: FunctionLearningFeatureVector,
 
 
 def update_q_table(self, current_feature_state: QTableFeatureVector, next_feature_state: Optional[QTableFeatureVector],
-                   self_action: str, total_events: List[str], rewards: Dict[str, float], possible_actions: List[str],
+                   self_action: str, reward: float, possible_actions: List[str],
                    alpha: float, gamma: float):
-    reward = reward_from_events(self, total_events, rewards)
-
     current_action_index = possible_actions.index(self_action)
 
     q_current = self.q_table[current_feature_state.to_state(), current_action_index]
