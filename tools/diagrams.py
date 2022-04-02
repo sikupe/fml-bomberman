@@ -39,9 +39,12 @@ def get_rewards() -> Dict[str, List[float]]:
 def create_plot(agent: str, rewards: List[float]):
     x = np.linspace(0, len(rewards), len(rewards))
 
+    mean = np.repeat(np.mean(np.array(rewards).reshape(-1, 20), axis=1), 20)
+
     fig, ax = plt.subplots()
 
     ax.plot(x, rewards)
+    ax.plot(x, mean)
     ax.set_title(agent)
     ax.set_xlabel('Epochs')
     ax.set_ylabel('Total rewards per round')
