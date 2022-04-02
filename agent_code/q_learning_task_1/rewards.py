@@ -9,15 +9,15 @@ if REWARDS != "UNSET":
     rewards = json.loads(REWARDS)
 else:
     rewards = {
-        e.COIN_COLLECTED: 14.786507478912561,
-        e.MOVED_UP: -5.22809128194179,
-        e.MOVED_DOWN: -5.22809128194179,
-        e.MOVED_LEFT: -5.22809128194179,
-        e.MOVED_RIGHT: -5.22809128194179,
-        e.INVALID_ACTION: 15.275397823690872,
-        e.WAITED: 7.182559363727686,
-        APPROACH_COIN: 12.249747952367589,
-        MOVED_AWAY_FROM_COIN: -33.29863531670572,
-        WIGGLE: 18.08862030741046,
-        e.SURVIVED_ROUND: 16.037451123275886
+        e.COIN_COLLECTED: 25,
+        e.MOVED_UP: -2,
+        e.MOVED_DOWN: -2,
+        e.MOVED_LEFT: -2,
+        e.MOVED_RIGHT: -2,
+        e.INVALID_ACTION: -7,
+        e.WAITED: -10,
+        APPROACH_COIN: 5,
+        MOVED_AWAY_FROM_COIN: -5,
+        WIGGLE: 0,
+        e.SURVIVED_ROUND: 5,
     }
