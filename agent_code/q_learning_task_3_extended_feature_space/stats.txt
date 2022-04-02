@@ -1,250 +1,250 @@
-0, 0, 0, 0, , Suicide, 12
+0, 0, 0, 1, , Suicide, 16
+0, 0, 0, 0, , Suicide, 6
 0, 0, 0, 0, , Suicide, 9
-0, 1, 0, 0, , Suicide, 14
-0, 0, 0, 0, , Suicide, 14
-0, 0, 0, 0, , Suicide, 7
-0, 0, 0, 0, , Suicide, 8
 0, 0, 0, 0, , Suicide, 21
-0, 0, 0, 0, , Suicide, 9
-0, 0, 0, 0, , Suicide, 38
-0, 0, 0, 0, , Suicide, 15
-0, 1, 2, 0, , Suicide, 18
-0, 0, 0, 0, , Suicide, 9
-0, 1, 2, 2, , Killed , 74
-0, 1, 1, 0, , Suicide, 41
-0, 0, 0, 0, , Suicide, 10
-0, 0, 0, 0, , Suicide, 5
-0, 0, 0, 0, , Suicide, 46
-0, 0, 1, 0, , Suicide, 25
-0, 0, 0, 2, , Suicide, 38
-0, 1, 0, 0, , Suicide, 43
-0, 2, 0, 2, , Suicide, 54
-2, 0, 2, 2, , Suicide, 80
-0, 1, 1, 0, , Suicide, 48
-0, 0, 0, 0, , Suicide, 13
-0, 0, 0, 0, , Suicide, 31
-0, 1, 0, 1, , Suicide, 59
-0, 1, 0, 0, , Suicide, 25
-0, 0, 1, 0, , Suicide, 18
-0, 0, 2, 0, , Suicide, 32
-0, 1, 2, 2, , Suicide, 58
-0, 1, 1, 2, , Suicide, 63
-0, 1, 0, 1, , Suicide, 35
-0, 0, 0, 0, , Suicide, 5
-0, 0, 1, 0, , Suicide, 36
-0, 1, 1, 2, , Suicide, 68
-0, 2, 0, 0, , Suicide, 76
-0, 0, 2, 0, , Suicide, 28
-0, 2, 0, 2, , Killed , 68
-1, 1, 1, 3, , Suicide, 61
-0, 0, 0, 1, , Suicide, 26
-0, 1, 1, 0, , Suicide, 55
-1, 0, 1, 3, , Suicide, 64
-0, 1, 2, , Suicide, 54
-1, 2, 2, , Killed , 108
-0, 2, 3, 0, , Suicide, 44
-0, 2, 0, 1, , Suicide, 34
-1, 2, 2, 1, , Suicide, 60
-0, 0, 0, 0, , Suicide, 10
-0, 1, 2, 3, , Suicide, 67
-0, 0, 0, 0, , Suicide, 62
-0, 0, 0, 0, , Suicide, 36
-0, 0, 2, 0, , Suicide, 32
-0, 0, 0, 1, , Suicide, 32
-0, 0, 1, 0, , Suicide, 46
-0, 1, 1, 3, , Suicide, 85
-0, 2, 1, 1, , Suicide, 65
-0, 3, 1, 0, , Suicide, 56
-0, 0, 0, 0, , Suicide, 7
-0, 0, 0, 0, , Suicide, 18
-0, 0, 0, 0, , Suicide, 23
-0, 1, 1, 1, , Suicide, 45
-0, 1, 2, 0, , Suicide, 54
-0, 1, 3, 2, , Suicide, 78
-0, 0, 0, 0, , Suicide, 27
-0, 0, 0, 0, , Suicide, 25
-0, 0, 0, 0, , Suicide, 24
-2, 1, 1, 2, , Suicide, 78
-0, 1, 2, 2, , Suicide, 61
-0, 1, 0, 1, , Suicide, 63
-1, 1, 0, 0, , Suicide, 63
 0, 0, 0, 0, , Suicide, 19
-1, 1, 1, 0, , Suicide, 74
-1, 0, 2, 0, , Suicide, 27
-0, 4, 0, 0, , Killed , 46
-0, 1, 1, 0, , Suicide, 21
-0, 2, 3, , Killed , 143
-0, 1, 1, 0, , Suicide, 32
-1, 1, 2, 1, , Suicide, 102
-0, 3, 1, , Killed , 79
-0, 3, 3, , Suicide, 127
-0, 0, 0, 0, , Suicide, 8
-0, 2, 2, 2, , Suicide, 88
-0, 0, 0, 0, , Suicide, 47
-0, 0, 0, 1, , Suicide, 32
-0, 1, 1, 2, , Killed , 80
-0, 2, 2, 0, , Suicide, 94
-0, 2, 1, 1, , Killed , 63
-0, 1, 2, 2, , Killed , 83
-0, 1, 0, 1, , Suicide, 32
-0, 3, 3, , Suicide, 71
-0, 1, 3, 4, , Suicide, 97
-0, 0, 0, 0, , Suicide, 12
-2, 3, 1, 0, , Suicide, 90
-0, 1, 2, 0, , Killed , 41
-0, 4, 2, , Killed , 83
-0, 0, 0, 0, , Suicide, 22
-0, 1, 1, 1, , Suicide, 49
-0, 1, 2, 0, , Suicide, 33
-0, 0, 0, 1, , Suicide, 47
-0, 3, , Suicide, 104
-0, 0, 1, 0, , Suicide, 33
-1, 0, 2, 2, , Killed , 117
-0, 1, , Suicide, 136
-0, 1, 2, 2, , Suicide, 86
-0, 8, 1, , Suicide, 113
-0, 1, 1, 1, , Suicide, 49
-1, 3, 1, , Suicide, 145
-0, 1, 2, 2, , Suicide, 80
-1, 2, 1, 2, , Suicide, 84
-0, 1, 1, 0, , Suicide, 55
-0, 0, 0, 0, , Suicide, 7
-1, 3, 1, , Suicide, 108
-0, 0, 1, 0, , Suicide, 22
-0, 2, 1, , Suicide, 116
-0, 1, 1, 0, , Suicide, 18
-0, 0, 1, 1, , Suicide, 63
-0, 0, 0, 0, , Suicide, 9
-0, 0, 0, 0, , Suicide, 7
-0, 2, 3, 3, , Killed , 112
-0, 3, , Killed , 126
-0, 3, 1, , Suicide, 120
-0, 1, 1, , Suicide, 82
-0, 1, 2, 0, , Suicide, 49
-0, 0, 0, 0, , Suicide, 18
-1, 4, , Killed , 181
-0, 2, 2, , Killed , 89
-0, 2, 2, 0, , Suicide, 43
-0, 0, 1, 2, , Killed , 67
-0, 0, 0, 0, , Suicide, 10
-0, 0, 0, 0, , Suicide, 12
-0, 1, 3, 2, , Suicide, 85
-0, 0, 0, 0, , Suicide, 44
-0, 1, 2, 0, , Suicide, 30
-0, 3, 2, , Suicide, 106
-0, 1, 5, , Suicide, 145
-0, 0, 0, 0, , Suicide, 34
-0, 0, 0, 0, , Suicide, 34
-0, 0, 0, 2, , Killed , 54
-1, 3, 1, , Suicide, 118
-1, 2, 2, , Suicide, 77
-0, 0, 0, 1, , Suicide, 45
-0, 0, 1, 0, , Suicide, 66
-0, 1, 2, , Killed , 93
-0, 0, 3, 0, , Suicide, 69
-0, 1, 1, 0, , Suicide, 39
-0, 1, 2, 3, , Suicide, 89
-0, 3, 5, , Killed , 167
-0, 0, 0, 0, , Suicide, 7
-0, 0, 0, 0, , Suicide, 30
-0, 4, , Suicide, 159
-1, 1, , Killed , 145
-0, 3, 1, 5, , Suicide, 179
-0, 0, 1, 0, , Suicide, 32
-0, 1, 1, 1, , Suicide, 77
-0, 3, 2, , Suicide, 78
-0, 1, 1, 1, , Suicide, 57
-0, 0, 0, 0, , Suicide, 34
-0, 1, 1, 0, , Suicide, 58
-0, 2, , Killed , 128
-2, 3, 0, 0, , Killed , 87
-1, , Suicide, 165
-0, 4, 1, 1, , Suicide, 93
-2, 2, 1, 2, , Killed , 100
-1, 0, 2, , Killed , 108
-0, 0, 0, 1, , Suicide, 46
-0, 1, 1, 0, , Suicide, 19
-0, 0, 1, 2, , Suicide, 51
-0, 4, , Suicide, 156
-0, 1, 1, 2, , Suicide, 79
-0, 1, 2, 3, , Suicide, 74
-0, 4, , Suicide, 94
-0, 3, , Killed , 125
-0, 0, 3, , Suicide, 61
-0, 1, 0, 0, , Suicide, 17
-0, 1, 0, , Suicide, 82
-1, 2, 2, 1, , Killed , 77
-0, 2, 2, 2, , Suicide, 75
-0, 0, 1, 0, , Suicide, 17
-0, 4, 3, 2, , Killed , 100
-0, 1, 0, 3, , Suicide, 68
-0, 1, 1, 1, , Suicide, 85
-0, 1, 0, 2, , Killed , 87
-1, 1, 0, , Suicide, 95
-0, 2, 0, 0, , Suicide, 64
-1, 0, 2, , Killed , 100
-0, 6, , Killed , 148
-0, 1, 0, 1, , Suicide, 37
-0, 1, 0, 0, , Suicide, 34
-0, 0, 1, 0, , Suicide, 29
-0, 0, 0, 0, , Suicide, 5
-0, 2, 2, 1, , Killed , 78
-1, 2, 3, , Suicide, 138
-0, 2, 0, 0, , Suicide, 61
-0, 1, 2, , Suicide, 85
-0, 0, 0, 1, , Suicide, 57
-1, 1, 0, 4, , Suicide, 89
-0, 0, 0, 0, , Suicide, 11
-0, 9, , Suicide, 176
-0, 3, 2, 3, , Suicide, 88
-0, 1, 3, 2, , Suicide, 93
-0, 1, 3, 4, , Killed , 104
-0, 3, 2, , Suicide, 75
-0, 0, 0, 0, , Suicide, 16
-0, 0, 0, 0, , Suicide, 27
-0, 0, 3, 0, , Suicide, 44
-1, 1, 2, 4, , Suicide, 118
-2, 3, 0, 1, , Killed , 95
-0, 1, 0, 0, , Suicide, 47
-0, 0, 7, , Suicide, 80
-0, 1, 0, 1, , Suicide, 26
-0, 1, 0, 1, , Killed , 74
-0, 0, 1, 0, , Suicide, 42
 0, 0, 0, 0, , Suicide, 14
-0, 0, 1, , Suicide, 100
 0, 0, 0, 0, , Suicide, 10
-1, 1, 2, 2, , Suicide, 106
-2, 1, 0, 2, , Suicide, 83
-1, 3, , Killed , 242
-0, 1, 2, 0, , Suicide, 78
-0, 0, 0, 1, , Suicide, 41
-5, 0, 2, , Suicide, 88
-0, 0, 0, 0, , Suicide, 15
-0, 2, 3, , Suicide, 108
-0, 1, 0, 0, , Suicide, 22
-1, 0, 1, 1, , Suicide, 64
-0, 0, 1, 1, , Suicide, 67
-0, 1, 3, 2, , Suicide, 107
-0, 1, , Suicide, 107
-0, 0, 3, 1, , Killed , 95
-0, 1, 1, 0, , Suicide, 35
-0, 0, 0, 0, , Suicide, 11
-5, 3, 2, , Killed , 133
-0, 1, 9, , Killed , 198
-0, 2, 2, 1, , Suicide, 47
-0, 1, 2, 1, , Suicide, 61
-3, 0, 10, , Killed , 172
-1, 1, 2, 1, , Suicide, 66
-0, 1, 0, , Suicide, 70
-0, 1, 0, 0, , Suicide, 22
-0, 0, 2, 1, , Suicide, 46
-0, 2, 2, 4, , Suicide, 168
 0, 0, 0, 0, , Suicide, 8
-0, 0, 0, 2, , Suicide, 27
+0, 0, 1, 1, , Suicide, 30
+0, 1, 2, 0, , Killed , 69
+0, 0, 0, 0, , Suicide, 14
 0, 0, 0, 0, , Suicide, 18
-0, 2, 3, , Suicide, 100
-0, 0, 1, 1, , Suicide, 44
-0, 3, , Suicide, 129
-0, 3, 5, , Killed , 108
-1, 3, 3, , Killed , 72
-0, 0, 0, 1, , Suicide, 54
+0, 0, 0, 0, , Suicide, 43
+0, 1, 1, 0, , Suicide, 53
+0, 1, 0, 0, , Suicide, 47
+0, 2, 0, 0, , Suicide, 79
+0, 1, 1, , Suicide, 58
+0, 0, 1, 2, , Suicide, 35
+0, 2, 0, 0, , Suicide, 37
+1, 1, 0, 0, , Suicide, 35
+0, 1, 2, 2, , Suicide, 75
+0, 0, 0, 0, , Suicide, 8
+0, 0, 1, 1, , Suicide, 19
+0, 0, 0, 0, , Suicide, 5
+0, 2, 0, 1, , Suicide, 81
+0, 0, 0, 0, , Suicide, 6
+0, 1, 0, 0, , Suicide, 14
+0, 1, 0, 2, , Suicide, 31
+0, 3, 0, 2, , Killed , 93
+0, 1, 2, 0, , Suicide, 24
+0, 0, 0, 0, , Suicide, 14
+0, 2, 0, 0, , Suicide, 81
+0, 2, 2, 3, , Suicide, 68
+0, 0, 0, 0, , Suicide, 5
+0, 0, 1, 0, , Suicide, 21
+0, 0, 1, 0, , Suicide, 16
+0, 0, 0, 1, , Suicide, 20
+1, 1, 1, , Suicide, 75
+0, 0, 0, 0, , Suicide, 22
+0, 3, 1, 1, , Suicide, 64
+0, 1, 3, , Suicide, 76
+0, 0, 0, 0, , Suicide, 8
+0, 1, 0, 1, , Suicide, 27
+0, 0, 0, 0, , Suicide, 27
+0, 0, 0, 0, , Suicide, 6
+0, 0, 0, 1, , Suicide, 18
+0, 0, 0, 0, , Suicide, 12
+0, 0, 0, 1, , Suicide, 20
+0, 0, 0, 0, , Suicide, 8
+0, 0, 0, 0, , Suicide, 5
+0, 2, 1, 2, , Suicide, 65
+2, 0, , Suicide, 120
+0, 0, 0, 0, , Suicide, 28
+6, 10, , Suicide, 147
+0, 1, 0, 4, , Killed , 87
+1, 1, 0, 0, , Suicide, 25
+0, 1, 0, 3, , Suicide, 57
+0, 1, 1, 2, , Suicide, 99
+0, 2, , Killed , 150
+0, 1, 3, 0, , Suicide, 64
+0, 1, 3, , Suicide, 144
+0, 0, 0, 0, , Suicide, 13
+0, 0, 1, 0, , Killed , 42
+1, 2, 3, , Suicide, 108
+0, 2, 0, 0, , Suicide, 45
+0, 3, 1, 2, , Killed , 78
+0, 1, 2, , Suicide, 96
+1, 4, 0, , Killed , 98
+0, 1, 0, 1, , Suicide, 52
+0, 0, 0, 0, , Suicide, 31
+0, 3, 3, 0, , Killed , 113
+0, 2, 1, 0, , Suicide, 46
+1, 1, 0, 1, , Suicide, 65
+0, 0, 3, 3, , Suicide, 68
+0, 0, 0, 0, , Suicide, 8
+0, 0, 0, 2, , Killed , 53
+0, 0, 0, 0, , Suicide, 32
+0, 0, 1, 0, , Suicide, 52
+0, 0, 0, 0, , Suicide, 5
+0, 0, 0, 0, , Suicide, 5
+0, 1, 0, 1, , Suicide, 44
+0, 0, 0, 0, , Suicide, 21
+0, 1, 0, 0, , Suicide, 34
+0, 0, 0, 0, , Suicide, 27
+0, 0, 0, 0, , Suicide, 15
+0, 3, 1, 2, , Killed , 100
+0, 0, 0, 0, , Suicide, 5
+1, 2, 3, , Suicide, 102
+1, 2, 2, , Suicide, 113
+1, 2, 1, 1, , Suicide, 86
+0, 8, , Suicide, 118
+0, 1, 5, , Suicide, 108
+1, 2, 0, 2, , Killed , 96
+2, 1, 1, 1, , Killed , 81
+0, 2, 1, 2, , Suicide, 77
+0, 1, 2, 2, , Suicide, 75
+0, 0, 0, 0, , Suicide, 15
+0, 0, 0, 0, , Suicide, 11
+0, 2, 2, 3, , Suicide, 129
+0, 1, 2, 2, , Suicide, 69
+0, 2, 2, , Suicide, 151
+0, 1, 0, 1, , Suicide, 70
+0, 1, 1, 0, , Suicide, 35
+0, 1, 0, , Suicide, 108
+0, 1, 2, 0, , Suicide, 82
+0, 3, 4, 1, , Suicide, 112
+0, 2, 1, 1, , Suicide, 60
+0, 1, 3, 0, , Suicide, 91
+1, 2, 0, 2, , Suicide, 62
+0, 0, 1, 0, , Suicide, 15
+0, 1, 2, 0, , Suicide, 63
+0, 0, 0, 0, , Suicide, 18
+1, 1, 3, 3, , Suicide, 102
+1, 4, 0, 2, , Killed , 114
+0, 1, , Killed , 148
+0, 0, 0, 2, , Suicide, 25
+1, 0, 0, 1, , Suicide, 36
+0, 1, 0, 0, , Suicide, 20
+1, 2, 2, 1, , Suicide, 86
+0, 1, 1, 0, , Suicide, 73
+1, 1, 1, 3, , Suicide, 121
+0, 2, 2, 2, , Suicide, 64
+0, 0, 0, 0, , Suicide, 37
+0, 0, 1, 1, , Suicide, 60
+0, 3, 2, , Killed , 109
+0, 0, 0, 0, , Suicide, 13
+0, 0, 2, 1, , Killed , 50
+0, 1, 0, 0, , Suicide, 24
+0, 1, 3, 2, , Suicide, 64
+0, 0, 0, 1, , Suicide, 22
+0, 7, 2, , Suicide, 106
+0, 2, 2, 0, , Suicide, 67
+0, 4, 7, , Suicide, 89
+0, 0, 2, 0, , Suicide, 41
+1, 1, 1, 1, , Suicide, 71
+0, 2, 0, 0, , Suicide, 41
+0, 0, 0, 0, , Suicide, 27
+0, 1, 2, 1, , Suicide, 42
+2, 2, 1, 1, , Killed , 114
+0, 0, 0, 0, , Suicide, 25
+2, 3, , Killed , 141
+0, 2, 0, 2, , Suicide, 65
+0, 0, 0, 2, , Suicide, 66
+0, 5, 2, 1, , Killed , 153
+0, 2, 1, 1, , Suicide, 87
+0, 1, 1, , Suicide, 89
+0, 2, 0, 0, , Suicide, 74
+0, 8, , Killed , 182
+0, 0, 0, 0, , Suicide, 15
+0, 3, 3, , Suicide, 86
+0, 0, 3, , Suicide, 114
+0, 3, 1, , Suicide, 97
+2, 3, 1, , Suicide, 74
+0, 0, 0, 0, , Suicide, 9
+1, 2, 1, , Suicide, 94
+0, 2, 0, 0, , Killed , 86
+0, 1, 0, 0, , Suicide, 32
+0, 2, 2, 2, , Killed , 104
+1, 3, 0, , Suicide, 83
+0, 0, 0, 0, , Suicide, 5
+0, 0, 3, 1, , Suicide, 70
+0, 6, 2, , Killed , 94
+0, 2, 2, 0, , Killed , 69
+0, 2, 0, 0, , Suicide, 37
+0, 2, 2, 2, , Suicide, 88
+1, 1, 3, 1, , Suicide, 115
+0, 10, , Suicide, 253
+0, 1, 1, 3, , Suicide, 50
+0, 1, 3, 2, , Suicide, 97
+0, 0, 1, 1, , Killed , 49
+0, 1, 1, 2, , Killed , 133
+0, 1, 0, 1, , Suicide, 50
+0, 9, 3, , Suicide, 125
+0, 0, 0, 0, , Suicide, 30
+0, 3, 2, 1, , Killed , 99
+0, 1, 3, 0, , Suicide, 74
+0, 2, 0, , Killed , 90
+1, 3, 4, , Killed , 195
+0, 0, 1, 0, , Suicide, 60
+0, 2, 2, 1, , Suicide, 69
+0, 0, 1, 0, , Suicide, 21
+0, 9, , Killed , 147
+0, 1, 1, 0, , Suicide, 40
+0, 2, 1, 1, , Killed , 68
+5, 2, 0, , Suicide, 113
+0, 0, 1, 0, , Suicide, 27
+0, 0, 0, 1, , Suicide, 30
+0, 0, 2, 4, , Suicide, 65
+0, 4, 1, , Suicide, 105
+0, 2, 0, 0, , Killed , 48
+0, 1, 0, 3, , Suicide, 66
+0, 2, 1, , Killed , 150
+1, 0, 1, , Killed , 107
+0, 2, 2, 1, , Killed , 81
+0, 1, , Killed , 151
+0, 2, 0, 2, , Killed , 79
+0, 3, , Killed , 125
+0, 2, 3, 3, , Killed , 117
+0, 1, 1, 1, , Suicide, 76
+0, 2, 0, 1, , Suicide, 42
+0, 0, 2, 0, , Killed , 78
+0, 1, 4, , Suicide, 121
+0, 0, 1, 0, , Suicide, 44
+0, 0, 1, 3, , Suicide, 94
+5, 2, 1, , Suicide, 126
+0, 4, 3, , Suicide, 98
+0, 2, 1, 1, , Suicide, 65
+0, 3, 0, 1, , Killed , 84
+0, 1, 0, 0, , Suicide, 73
+0, 0, 0, 0, , Suicide, 5
+0, 1, 1, 4, , Killed , 102
+0, 0, 0, 0, , Suicide, 13
+0, 1, 1, 0, , Suicide, 51
+0, 2, 0, 0, , Suicide, 92
+0, 1, 0, 1, , Suicide, 60
+1, 1, , Suicide, 154
+0, 5, , Suicide, 107
+1, 3, 0, 0, , Killed , 88
+0, 1, 2, 1, , Suicide, 89
+0, 6, 5, , Suicide, 105
+1, 1, 3, 1, , Killed , 92
+0, 4, 0, , Suicide, 95
+1, 3, 2, , Killed , 149
+0, 0, 0, 2, , Suicide, 51
+0, 0, 0, 0, , Suicide, 24
+2, 3, 2, 2, , Suicide, 221
+0, 1, 0, 3, , Killed , 80
+0, 4, 2, , Suicide, 181
+0, 4, 1, , Suicide, 129
+1, 0, 4, 2, , Suicide, 73
+0, 0, 0, 0, , Suicide, 9
+1, 3, 1, 2, , Suicide, 81
+1, 2, 1, , Suicide, 138
+0, 1, 1, 1, , Suicide, 54
+0, 1, 0, 3, , Suicide, 56
+0, 3, 1, 2, , Suicide, 80
+0, 3, 1, 2, , Suicide, 92
+0, 2, 0, 2, , Suicide, 59
+0, 4, 2, 0, , Suicide, 80
+0, 1, 5, 1, , Killed , 89
+0, 0, 0, 0, , Suicide, 14
+2, 1, 1, , Killed , 103
+0, 1, 1, , Suicide, 112
+0, 1, 0, 1, , Suicide, 39
+0, 1, 2, 1, , Killed , 74
+1, 2, , Suicide, 209
+0, 3, 1, , Killed , 186
+0, 2, 3, 1, , Suicide, 115
+0, 1, 2, 2, , Killed , 94
+0, 1, 0, 0, , Suicide, 32
