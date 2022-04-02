@@ -39,9 +39,7 @@ def mutation(
     for _ in range(mutation_count):
         mutation = original_state.copy()
         for reward in mutation:
-            mutation[reward] += np.round(
-                np.random.uniform(-mutation_rate / 2, mutation_rate / 2), decimals=1
-            )
+            mutation[reward] += np.random.normal(0, mutation_rate)
 
         mutations.append(mutation)
 
@@ -155,7 +153,7 @@ def selection(
 
     old_population_fitness: List[MutationFitness] = []
 
-    executor = ThreadPoolExecutor(max_workers=10)
+    executor = ThreadPoolExecutor(max_workers=20)
 
     old_phenotypes = [to_phenotype(mut) for mut in old_population]
 
@@ -203,14 +201,14 @@ def to_phenotype(genotype: Mutation) -> Mutation:
 
 def get_initial_state_task_1() -> Mutation:
     return {
-        e.COIN_COLLECTED: 25,
-        MOVED: -2,
-        e.INVALID_ACTION: -7,
-        e.WAITED: -10,
-        APPROACH_COIN: 5,
-        MOVED_AWAY_FROM_COIN: -5,
+        e.COIN_COLLECTED: 0,
+        MOVED: 0,
+        e.INVALID_ACTION: 0,
+        e.WAITED: 0,
+        APPROACH_COIN: 0,
+        MOVED_AWAY_FROM_COIN: 0,
         WIGGLE: 0,
-        e.SURVIVED_ROUND: 5,
+        e.SURVIVED_ROUND: 0,
     }
 
 
@@ -264,9 +262,7 @@ def evolution(
 
     initial = get_initial_state()
 
-    mutation_rates = np.concatenate([0.5 * np.exp(- np.linspace(0, int(iterations / 3), int(iterations / 3))),
-                                     np.linspace(100 * np.exp(- int(iterations / 3)), 0,
-                                                 iterations - int(iterations / 3))])
+    mutation_rates = np.concatenate([np.linspace(10, 0, iterations)])
 
     parents = mutation(initial, mutation_rates[0], mu)
 
@@ -327,7 +323,7 @@ if __name__ == "__main__":
     os.setpgrp()
     try:
         evolution(
-            30, 30 * 7, 10, "q_learning_task_1", [], "coin-hell", 10, "coin-heaven", 10, extract_score_task_1,
+            30, 30 * 7, 30, "q_learning_task_1", [], "coin-hell", 10, "coin-heaven", 10, extract_score_task_1,
             get_initial_state_task_1
         )
     except Exception as err:

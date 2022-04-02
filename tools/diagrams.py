@@ -46,7 +46,10 @@ def create_plot(agent: str, rewards: List[float]):
     ax.set_xlabel('Epochs')
     ax.set_ylabel('Total rewards per round')
 
-    plt.show()
+    # plt.show()
+
+    path = join('diagrams', f'{agent}-{len(rewards)}.png')
+    plt.savefig(path)
 
 
 def get_rewards_from_files(paths: List[TextIO]) -> Dict[str, List[float]]:
