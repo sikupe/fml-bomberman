@@ -2,17 +2,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from functools import reduce
+import operator
+
 from agent_code.common.feature_vector import BaseFeatureVector
 from agent_code.common.q_table_feature_vector import QTableFeatureVector
 
 
-@dataclass
-class FeatureVector(QTableFeatureVector, BaseFeatureVector):
-    @staticmethod
-    def bits():
-        """
-        Returns the bit size for the feature vector."""
-        return 7
+class FeatureVector(BaseFeatureVector, QTableFeatureVector):
 
     @staticmethod
     def size():
@@ -22,35 +19,36 @@ class FeatureVector(QTableFeatureVector, BaseFeatureVector):
         in_danger, coin_distance, coin_exists, crate_distance, crate_exists,
         bomb_distance, bomb_exists, move_to_danger, good bomb
         """
-        return 2 ** FeatureVector.bits()
+        return reduce(operator.mul, FeatureVector.encoding())
 
-    def shortest_useful_path(self):
-        if self.in_danger:
-            return self.shortest_path_to_safety
-        elif self.coin_distance.exists:
-            return self.coin_distance
-        elif self.crate_distance.exists:
-            return self.crate_distance
-        else:
-            return self.opponent_distance
+    @staticmethod
+    def feature_encoding(unencoded_state: list[int], encoding: list[int]) -> int:
+        result = [reduce(operator.mul, encoding[:idx + 1]) for idx in range(len(encoding))]
+        feature_encoding = [1] + result[:-1]
+        return sum([val * i for val, i in zip(unencoded_state, feature_encoding)])
+
+    @staticmethod
+    def encoding() -> list[int]:
+        """
+        Returns the bit size for the feature vector."""
+        return [5, 5, 5, 5, 16, 2]
 
     def to_state(self) -> int:
         """
-        Layout:   |x|xxxx|x|xx|x|xx|x|
-                  | |    | |  | |  |
-                  | |    | |  | |  |-in_danger
-                  | |    | |  | |-coin_distance|bomb_distance
-                  | |    | |  |-coin_exists|bomb_exists
-                  | |    | |-crate_distance
-                  | |    |-crate_exists
-                  | |-move_to_danger
-                  |-good bomb
+        Layout: 5 coins
+                5 crates
+                5 opponents
+                5 shortest_path_to_safety -> exists:
+                    -> in_danger
+                16 move_into_danger
+                2 good_bomb
         """
-
-        shortest_path = self.shortest_useful_path()
-
-        return int(
-            + (shortest_path.to_shortest_binary_encoding())
-            + (self.move_to_danger.to_binary_encoding() << 2)
-            + (self.good_bomb << 6)
-        )
+        unencoded_state = [
+            self.coin_distance.to_feature_encoding(),       # 5
+            self.crate_distance.to_feature_encoding(),      # 5
+            self.opponent_distance.to_feature_encoding(),   # 5
+            self.shortest_path_to_safety.to_feature_encoding(),   # 5
+            self.move_to_danger.to_binary_encoding(),
+            int(self.good_bomb)
+        ]
+        return self.feature_encoding(unencoded_state, self.encoding())
